@@ -18,10 +18,10 @@
     <ClCompile Include="robot_mgr.cpp">
       <Filter>robot</Filter>
     </ClCompile>
-    <ClCompile Include="robot_console.cpp">
+    <ClCompile Include="global_robots.cpp" />
+    <ClCompile Include="robot_console_login.cpp">
       <Filter>console</Filter>
     </ClCompile>
-    <ClCompile Include="global_robots.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="robots_app.h" />
@@ -37,10 +37,10 @@
     <ClInclude Include="robot_mgr.h">
       <Filter>robot</Filter>
     </ClInclude>
-    <ClInclude Include="robot_console.h">
+    <ClInclude Include="global_robots.h" />
+    <ClInclude Include="robot_console_login.h">
       <Filter>console</Filter>
     </ClInclude>
-    <ClInclude Include="global_robots.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="robot">

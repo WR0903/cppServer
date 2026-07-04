@@ -3,22 +3,24 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "apps", "apps", "{03909E62-0FD5-44B3-8553-AA6B4A8C07DE}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{F93E11B6-8D8F-4DF8-B2C9-51F116FF48E4}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{974F3CC9-A4FE-492D-B14E-0FA8EEC0CD97}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libserver", "src\libs\libserver\libserver.vcxproj", "{07CE9E74-2C56-4379-88C5-A7086A8DBCD5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "apps", "apps", "{2101C55C-EBE3-4E85-81B4-97EB2AEA5D31}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "login", "src\apps\login\login.vcxproj", "{5509012F-0D61-42CB-8D73-993BFFFB342D}"
-	ProjectSection(ProjectDependencies) = postProject
-		{07CE9E74-2C56-4379-88C5-A7086A8DBCD5} = {07CE9E74-2C56-4379-88C5-A7086A8DBCD5}
-	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{22F566CB-4C11-4303-BDCE-DDBB22A346D4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "robots", "src\tools\robots\robots.vcxproj", "{793CB1B4-2B27-477B-9F20-AD3EF9512377}"
-	ProjectSection(ProjectDependencies) = postProject
-		{07CE9E74-2C56-4379-88C5-A7086A8DBCD5} = {07CE9E74-2C56-4379-88C5-A7086A8DBCD5}
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{CEB39B1C-C53C-449C-9789-57CDCF4D0AC4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "proto", "proto", "{9DA1DF6B-B311-480C-ABF8-621A5E688EBA}"
+	ProjectSection(SolutionItems) = preProject
+		src\libs\libserver\protobuf\msg.proto = src\libs\libserver\protobuf\msg.proto
+		src\libs\libserver\protobuf\proto_id.proto = src\libs\libserver\protobuf\proto_id.proto
 	EndProjectSection
 EndProject
 Global
@@ -59,8 +61,9 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{07CE9E74-2C56-4379-88C5-A7086A8DBCD5} = {F93E11B6-8D8F-4DF8-B2C9-51F116FF48E4}
-		{5509012F-0D61-42CB-8D73-993BFFFB342D} = {03909E62-0FD5-44B3-8553-AA6B4A8C07DE}
-		{793CB1B4-2B27-477B-9F20-AD3EF9512377} = {974F3CC9-A4FE-492D-B14E-0FA8EEC0CD97}
+		{5509012F-0D61-42CB-8D73-993BFFFB342D} = {2101C55C-EBE3-4E85-81B4-97EB2AEA5D31}
+		{793CB1B4-2B27-477B-9F20-AD3EF9512377} = {22F566CB-4C11-4303-BDCE-DDBB22A346D4}
+		{9DA1DF6B-B311-480C-ABF8-621A5E688EBA} = {CEB39B1C-C53C-449C-9789-57CDCF4D0AC4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7065A001-E70F-4781-A305-E39B53EC963B}

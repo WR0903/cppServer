@@ -2,40 +2,28 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="network.h">
-      <Filter>network</Filter>
+      <Filter>entity\network</Filter>
     </ClInclude>
     <ClInclude Include="network_buffer.h">
-      <Filter>network\buffer</Filter>
+      <Filter>entity\network\buffer</Filter>
     </ClInclude>
     <ClInclude Include="network_connector.h">
-      <Filter>network</Filter>
+      <Filter>entity\network</Filter>
     </ClInclude>
     <ClInclude Include="network_listen.h">
-      <Filter>network</Filter>
+      <Filter>entity\network</Filter>
     </ClInclude>
     <ClInclude Include="packet.h">
-      <Filter>network\buffer</Filter>
+      <Filter>entity\network\buffer</Filter>
     </ClInclude>
     <ClInclude Include="connect_obj.h">
-      <Filter>network\connect_obj</Filter>
-    </ClInclude>
-    <ClInclude Include="singleton.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="sn_object.h">
-      <Filter>base</Filter>
+      <Filter>entity\network\connect_obj</Filter>
     </ClInclude>
     <ClInclude Include="common.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="thread_obj.h">
-      <Filter>thread</Filter>
-    </ClInclude>
     <ClInclude Include="thread.h">
       <Filter>thread</Filter>
-    </ClInclude>
-    <ClInclude Include="disposable.h">
-      <Filter>base</Filter>
     </ClInclude>
     <ClInclude Include="thread_mgr.h">
       <Filter>thread</Filter>
@@ -44,16 +32,10 @@
       <Filter>server\app</Filter>
     </ClInclude>
     <ClInclude Include="protobuf\msg.pb.h">
-      <Filter>message\protobuf</Filter>
+      <Filter>ecs\system\message\protobuf</Filter>
     </ClInclude>
     <ClInclude Include="protobuf\proto_id.pb.h">
-      <Filter>message\protobuf</Filter>
-    </ClInclude>
-    <ClInclude Include="message_list.h">
-      <Filter>message</Filter>
-    </ClInclude>
-    <ClInclude Include="socket_object.h">
-      <Filter>base</Filter>
+      <Filter>ecs\system\message\protobuf</Filter>
     </ClInclude>
     <ClInclude Include="state_template.h">
       <Filter>common</Filter>
@@ -62,7 +44,7 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="console.h">
-      <Filter>console</Filter>
+      <Filter>entity\console</Filter>
     </ClInclude>
     <ClInclude Include="robot_test.h">
       <Filter>server\robots</Filter>
@@ -71,24 +53,21 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="base_buffer.h">
-      <Filter>network\buffer</Filter>
+      <Filter>entity\network\buffer</Filter>
     </ClInclude>
     <ClInclude Include="robot_state_type.h">
       <Filter>server\robots</Filter>
     </ClInclude>
     <ClInclude Include="cache_refresh.h">
-      <Filter>cache</Filter>
+      <Filter>ecs\cache</Filter>
     </ClInclude>
     <ClInclude Include="cache_swap.h">
-      <Filter>cache</Filter>
+      <Filter>ecs\cache</Filter>
     </ClInclude>
     <ClInclude Include="global.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="object_pool.h">
-      <Filter>pool</Filter>
-    </ClInclude>
-    <ClInclude Include="object_block.h">
       <Filter>pool</Filter>
     </ClInclude>
     <ClInclude Include="object_pool_interface.h">
@@ -97,22 +76,67 @@
     <ClInclude Include="object_pool_mgr.h">
       <Filter>pool</Filter>
     </ClInclude>
+    <ClInclude Include="component_factory.h">
+      <Filter>ecs\factory</Filter>
+    </ClInclude>
+    <ClInclude Include="create_component.h">
+      <Filter>entity\create</Filter>
+    </ClInclude>
+    <ClInclude Include="singleton.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="sn_object.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="socket_object.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="system.h">
+      <Filter>ecs\system</Filter>
+    </ClInclude>
+    <ClInclude Include="component.h">
+      <Filter>ecs\system\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity.h">
+      <Filter>ecs\system\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity_system.h">
+      <Filter>ecs\system\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="message_system.h">
+      <Filter>ecs\system\message</Filter>
+    </ClInclude>
+    <ClInclude Include="message_list.h">
+      <Filter>ecs\system\message</Filter>
+    </ClInclude>
+    <ClInclude Include="network_interface.h">
+      <Filter>entity\network</Filter>
+    </ClInclude>
+    <ClInclude Include="disposable.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="regist_to_factory.h">
+      <Filter>ecs\factory</Filter>
+    </ClInclude>
+    <ClInclude Include="network_locator.h">
+      <Filter>entity\network\locator</Filter>
+    </ClInclude>
     <ClInclude Include="console_cmd_pool.h">
-      <Filter>console</Filter>
+      <Filter>entity\console</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="network.cpp">
-      <Filter>network</Filter>
+      <Filter>entity\network</Filter>
     </ClCompile>
     <ClCompile Include="network_buffer.cpp">
-      <Filter>network\buffer</Filter>
+      <Filter>entity\network\buffer</Filter>
     </ClCompile>
     <ClCompile Include="network_listen.cpp">
-      <Filter>network</Filter>
+      <Filter>entity\network</Filter>
     </ClCompile>
     <ClCompile Include="connect_obj.cpp">
-      <Filter>network\connect_obj</Filter>
+      <Filter>entity\network\connect_obj</Filter>
     </ClCompile>
     <ClCompile Include="thread.cpp">
       <Filter>thread</Filter>
@@ -124,43 +148,55 @@
       <Filter>server\app</Filter>
     </ClCompile>
     <ClCompile Include="protobuf\msg.pb.cc">
-      <Filter>message\protobuf</Filter>
+      <Filter>ecs\system\message\protobuf</Filter>
     </ClCompile>
     <ClCompile Include="protobuf\proto_id.pb.cc">
-      <Filter>message\protobuf</Filter>
+      <Filter>ecs\system\message\protobuf</Filter>
     </ClCompile>
     <ClCompile Include="console.cpp">
-      <Filter>console</Filter>
+      <Filter>entity\console</Filter>
     </ClCompile>
     <ClCompile Include="robot_test.cpp">
       <Filter>server\robots</Filter>
     </ClCompile>
-    <ClCompile Include="message_list.cpp">
-      <Filter>message</Filter>
-    </ClCompile>
     <ClCompile Include="packet.cpp">
-      <Filter>network\buffer</Filter>
+      <Filter>entity\network\buffer</Filter>
     </ClCompile>
     <ClCompile Include="base_buffer.cpp">
-      <Filter>network\buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="thread_obj.cpp">
-      <Filter>thread</Filter>
+      <Filter>entity\network\buffer</Filter>
     </ClCompile>
     <ClCompile Include="network_connector.cpp">
-      <Filter>network</Filter>
+      <Filter>entity\network</Filter>
     </ClCompile>
     <ClCompile Include="global.cpp">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="object_block.cpp">
-      <Filter>pool</Filter>
-    </ClCompile>
     <ClCompile Include="object_pool_mgr.cpp">
       <Filter>pool</Filter>
     </ClCompile>
+    <ClCompile Include="create_component.cpp">
+      <Filter>entity\create</Filter>
+    </ClCompile>
+    <ClCompile Include="component.cpp">
+      <Filter>ecs\system\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity.cpp">
+      <Filter>ecs\system\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity_system.cpp">
+      <Filter>ecs\system\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="message_system.cpp">
+      <Filter>ecs\system\message</Filter>
+    </ClCompile>
+    <ClCompile Include="message_list.cpp">
+      <Filter>ecs\system\message</Filter>
+    </ClCompile>
+    <ClCompile Include="network_locator.cpp">
+      <Filter>entity\network\locator</Filter>
+    </ClCompile>
     <ClCompile Include="console_cmd_pool.cpp">
-      <Filter>console</Filter>
+      <Filter>entity\console</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -173,52 +209,70 @@
     <Filter Include="common">
       <UniqueIdentifier>{d189b5ff-9d0e-43ba-8d63-e64fb2a6e8ee}</UniqueIdentifier>
     </Filter>
-    <Filter Include="network">
-      <UniqueIdentifier>{175c5e8c-712b-4f98-8fe2-9ec8925e560d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="network\buffer">
-      <UniqueIdentifier>{45e1e476-bc5b-4630-8804-510363871c41}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="network\connect_obj">
-      <UniqueIdentifier>{a49c6797-1391-44f7-8562-9dd2a2ef2ac0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="base">
-      <UniqueIdentifier>{8bf5c4c2-4691-44d0-8407-e771c23085ff}</UniqueIdentifier>
-    </Filter>
     <Filter Include="server">
       <UniqueIdentifier>{e38215ae-009a-40b7-a05a-f960af16ec40}</UniqueIdentifier>
     </Filter>
     <Filter Include="server\app">
       <UniqueIdentifier>{4191aecb-0a65-4525-a576-2a01985eedfc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="message">
-      <UniqueIdentifier>{9d71cd89-e3be-4e1f-abf8-1aadfd05652f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="message\protobuf">
-      <UniqueIdentifier>{8abb53a7-e381-4b51-a631-a1cf019c89c6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="message\protobuf\proto">
-      <UniqueIdentifier>{f649b8a2-7573-4108-b540-ba047070f59b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="console">
-      <UniqueIdentifier>{638fac00-f522-4b1b-b45a-01fe042de45c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="server\robots">
       <UniqueIdentifier>{a02d3dab-c0e7-4743-9e54-aca75e41eab5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="cache">
-      <UniqueIdentifier>{c48c9ce3-66ea-4f29-94e1-215d7a5c072c}</UniqueIdentifier>
     </Filter>
     <Filter Include="pool">
       <UniqueIdentifier>{d5ccb2d0-253c-4e90-b028-696f9ec02a07}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ecs">
+      <UniqueIdentifier>{63835dd9-0632-4927-adcc-0b6c65810946}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\factory">
+      <UniqueIdentifier>{ce6a7c16-3e26-450c-b92a-8f68a0b956f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity">
+      <UniqueIdentifier>{641a2f3f-5992-435d-93b9-75a1478b1a89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\network">
+      <UniqueIdentifier>{175c5e8c-712b-4f98-8fe2-9ec8925e560d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\network\buffer">
+      <UniqueIdentifier>{45e1e476-bc5b-4630-8804-510363871c41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\network\connect_obj">
+      <UniqueIdentifier>{a49c6797-1391-44f7-8562-9dd2a2ef2ac0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\console">
+      <UniqueIdentifier>{638fac00-f522-4b1b-b45a-01fe042de45c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\cache">
+      <UniqueIdentifier>{c48c9ce3-66ea-4f29-94e1-215d7a5c072c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\create">
+      <UniqueIdentifier>{0517ef10-8c91-4cbc-8c5d-9b6b3b846ebb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\system">
+      <UniqueIdentifier>{9f2aa449-e788-4142-8291-aa1f2bf1fbba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\system\entity">
+      <UniqueIdentifier>{6c389f45-cf3a-4eaf-8b75-344f15109d0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\system\message">
+      <UniqueIdentifier>{d618ce8a-a701-47e3-823a-61f17e82d8e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\system\message\protobuf">
+      <UniqueIdentifier>{8abb53a7-e381-4b51-a631-a1cf019c89c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\system\message\protobuf\proto">
+      <UniqueIdentifier>{f649b8a2-7573-4108-b540-ba047070f59b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\network\locator">
+      <UniqueIdentifier>{8261de6d-b019-416b-a976-56d07de1adf6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="protobuf\msg.proto">
-      <Filter>message\protobuf\proto</Filter>
+      <Filter>ecs\system\message\protobuf\proto</Filter>
     </None>
     <None Include="protobuf\proto_id.proto">
-      <Filter>message\protobuf\proto</Filter>
+      <Filter>ecs\system\message\protobuf\proto</Filter>
     </None>
   </ItemGroup>
 </Project>
