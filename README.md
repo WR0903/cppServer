@@ -8,10 +8,27 @@
 cppServer/
 ├── engine.sln                  # Visual Studio 解决方案
 ├── make-all.sh                 # Linux 编译脚本
-├── [[bin/                        # 输出目录
+├── bin/                        # 输出目录
 └── src/
-    ├── libs/libserver/         # 核心服务器引擎库（60 个文件）
-    ├── apps/login/    ](url)](url)         # 登录服务器应用
+    ├── libs/libserver/         # 核心 ECS 服务器引擎库
+    │   ├── component.h/.cpp          # Component 基类（ECS 组件）
+    │   ├── entity.h/.cpp             # Entity 基类（ECS 实体）
+    │   ├── entity_system.h/.cpp      # EntitySystem（ECS 核心引擎）
+    │   ├── component_factory.h       # 组件工厂（反射创建）
+    │   ├── create_component.h/.cpp   # 远程动态创建组件
+    │   ├── system.h                  # System 接口定义
+    │   ├── message_system.h/.cpp     # 消息系统接口
+    │   ├── thread.h/.cpp             # 工作线程（子 EntitySystem）
+    │   ├── thread_mgr.h/.cpp         # 线程管理器（主 EntitySystem）
+    │   ├── network.h/.cpp            # 网络实体
+    │   ├── connect_obj.h/.cpp        # 连接对象实体
+    │   ├── object_pool.h             # 对象池（模板）
+    │   └── ...                       # 工具类（cache_swap, singleton 等）
+    ├── apps/login/             # 登录服务器应用
+    │   ├── account.cpp/.h            # 账号组件
+    │   ├── login_obj_mgr.cpp/.h      # 玩家管理组件
+    │   ├── http_request.cpp/.h       # HTTP 请求组件
+    │   └── ...
     └── tools/robots/           # 压测机器人工具
 ```
 
@@ -43,16 +60,18 @@ int main(int argc, char *argv[]) {
 
 // apps/login/login_app.cpp
 void LoginApp::InitApp() {
-    AddListenerToThread(”127.0.0.1“, 2233);   // 1. 创建监听网络
-    _pThreadMgr->AddObjToThread(new RobotTest()); // 2. 加入业务对象
-    _pThreadMgr->AddObjToThread(new Account());
-    _pThreadMgr->AddObjToThread(new Console());
+    CreateComponent<NetworkListen>("127.0.0.1", 2233); // 1. 创建网络监听组件（ECS 方式）
+    _pThreadMgr->CreateComponent<RobotTest>();          // 2. 创建业务组件
+    _pThreadMgr->CreateComponent<Account>();
+    _pThreadMgr->CreateComponent<Console>();
 }
 ```
 
+
+
 ### 2.2 ServerApp 构造与运行
 
-`ServerApp` 构造时完成全局单例初始化与线程池创建：
+`ServerApp` 构造时完成全局单例初始化并启动 ECS 引擎：
 
 ```c++
 // server_app.cpp:6-25
@@ -61,66 +80,301 @@ ServerApp::ServerApp(APP_TYPE appType) {
     _appType = appType;
     DynamicObjectPoolMgr::Instance();        // 对象池管理器
     Global::Instance();                      // 全局状态
-    ThreadMgr::Instance();                   // 线程管理器
+    ThreadMgr::Instance();                   // 主 EntitySystem + 线程管理器
     _pThreadMgr = ThreadMgr::GetInstance();
     UpdateTime();
 
-    for (int i = 0; i < 3; i++) {            // 默认创建 3 个工作线程
+    for (int i = 0; i < 3; i++) {            // 默认创建 3 个工作线程（每个都是 EntitySystem）
         _pThreadMgr->NewThread();
     }
     _pThreadMgr->StartAllThread();
 }
 ```
 
-主循环 `Run()` 负责：更新时间 → 主线程 `Update`（分发消息）→ 对象池 `Update`（回收对象），收到停止信号后按 ”停线程 → 回收线程资源 → 回收主线程资源 → 销毁对象池“ 顺序优雅退出。
+主循环 `Run()` 负责：更新时间 → `_pThreadMgr->Update()`（ECS 引擎更新：消息分发 + Component Update）→ 对象池 `Update`（回收对象），收到停止信号后按 "停线程 → 回收线程资源 → 回收主线程资源 → 销毁对象池" 顺序优雅退出。
 
-### 2.3 架构分层
-
-```plain&#x20;text
-┌─────────────────────────────────────────────┐
-│              ServerApp (主线程)              │
-│   Run(): 时间更新 + 消息分发 + 对象池回收     │
-├─────────────────────────────────────────────┤
-│              ThreadMgr (单例)                │
-│   管理多个 Thread，路由 Packet 与 Network     │
-├──────────┬──────────┬──────────┬────────────┤
-│ Thread 1 │ Thread 2 │ Thread 3 │  ...        │
-│ ┌──────┐ │ ┌──────┐ │ ┌──────┐ │             │
-│ │Network│ │ │Object│ │ │Object│ │  每个线程   │
-│ │Listen │ │ │      │ │ │      │ │  独立事件循环│
-│ └──────┘ │ └──────┘ │ └──────┘ │             │
-│ + Objects│ + Objects│ + Objects│             │
-└──────────┴──────────┴──────────┴────────────┘
-```
-
-## 三、多线程模块
-
-### 3.1 核心类关系
+### 2.3 架构分层（ECS）
 
 ```plain&#x20;text
-ThreadObject (thread_obj.h)        ← 线程对象基类（Actor 雏形）
-  └─ MessageList (message_list.h)  ← 消息回调注册
-  └─ SnObject (sn_object.h)        ← 全局唯一 SN
-
-ThreadObjectList (thread.h)        ← 线程内对象与消息容器
-  ├─ CacheRefresh<ThreadObject>    ← 对象增删双缓存
-  └─ CacheSwap<Packet>             ← 消息读写双缓存
-
-Thread (thread.h)                  ← 线程，继承 ThreadObjectList + SnObject
-ThreadMgr (thread_mgr.h)           ← 单例，管理所有线程
+┌──────────────────────────────────────────────────────┐
+│                  ServerApp (主线程)                     │
+│      Run(): 时间更新 + ECS 引擎 Update + 对象池回收       │
+├──────────────────────────────────────────────────────┤
+│            ThreadMgr (主 EntitySystem，单例)             │
+│      管理子 EntitySystem，路由消息与动态创建 Component      │
+├──────────┬──────────┬──────────┬───────────────────┤
+│ Thread 1 │ Thread 2 │ Thread 3 │  ...                │
+│(子EntityS│(子EntityS│(子EntityS│                      │
+│┌───────┐│┌───────┐│┌───────┐││  每个线程是独立的         │
+││Network│││Account│││RobotT │││  EntitySystem，管理       │
+││Listen │││Comp   │││est    │││  各自的 Component/Entity  │
+│└───────┘│└───────┘│└───────┘││                          │
+│+Entity  │+Entity  │+Entity  ││                          │
+│+Component│+Component│+Component│                      │
+└──────────┴──────────┴──────────┴────────────────────┘
 ```
 
-### 3.2 Thread —— 线程封装
+## 三、ECS 核心架构
 
-`Thread` 封装 `std::thread`，启动后进入事件循环：
+### 3.1 Entity-Component-System 三层设计
+
+框架分为两套独立的继承体系，具体业务类通过**多重继承**同时组合二者：
+
+```plain&#x20;text
+SnObject                         ← 全局唯一 SN
+  ├── IComponent                 ← 组件基类
+  │     ├── Component<T>         ← 类型化组件模板
+  │     │     ├── Account          (账号验证组件)
+  │     │     ├── NetworkLocator   (网络定位器组件)
+  │     │     ├── HttpRequest      (HTTP 请求组件)
+  │     │     └── ...
+  │     └── IEntity               ← 实体 = 特殊组件，可容纳子组件
+  │           └── Entity<T>       ← 类型化实体模板
+  │                 ├── Network          (网络实体)
+  │                 ├── ConnectObj       (连接对象实体)
+  │                 ├── Console          (控制台实体)
+  │                 └── CreateComponentC (远程创建组件实体)
+  └── EntitySystem                ← 实体系统（管理所有 Component/Entity）
+        ├── Thread                ← 工作线程（子 EntitySystem）
+        └── ThreadMgr             ← 主线程管理器（主 EntitySystem，Singleton）
+
+ISystem                            ← System 接口基类（独立继承树）
+  ├── IAwakeFromPoolSystem<T...>   ← 对象池唤醒回调（替代旧 Init）
+  ├── IUpdateSystem                ← 每帧更新回调（替代旧 Update）
+  └── IMessageSystem               ← 消息回调（替代旧 MessageList）
+```
+
+> **组合方式**：`IComponent` 和 `ISystem` 是两套**平级独立**的继承树。具体类通过多重继承同时组合两者。
+> 例如 `CreateComponentC` 继承 `Entity<CreateComponentC>` + `IMessageSystem` + `IAwakeFromPoolSystem<>`，同时获得 Entity 的身份和 System 的能力。
+
+**核心设计理念**：
+
+- **Entity 仍是 Actor**：Entity 本质上是独立的并发单元，通过消息通信。
+- **Component 扩展功能**：Entity 按需组合 Component，通过 System 接口（`IAwakeFromPoolSystem` / `IUpdateSystem` / `IMessageSystem`）声明 Init、Update、消息处理能力。
+- **IEntity 继承 IComponent**：Entity 本身也是一个 Component，统一由 EntitySystem 管理，实现"组合即实体"。
+- **Entity 可包含子 Component**：`IEntity::AddComponent<T>()` 可从对象池分配子组件，`GetComponent<T>()` 通过 `dynamic_cast` 查找。
+
+### 3.2 IComponent —— 组件基类
 
 ```c++
-// thread.cpp:93-108
+// component.h:9-37
+class IComponent : virtual public SnObject {
+public:
+    friend class EntitySystem;
+
+    void SetPool(IDynamicObjectPool* pPool);
+    void SetParent(IEntity* pObj);
+    void SetEntitySystem(EntitySystem* pSys);
+
+    bool IsActive() const { return _active; }
+    template<class T> T* GetParent();                     // 获取所属 Entity
+    EntitySystem* GetEntitySystem() const;                // 获取所属引擎
+    virtual void BackToPool() = 0;                        // 归还对象池
+    virtual void ComponentBackToPool();                    // 通用回收流程
+
+protected:
+    bool _active{ true };
+private:
+    IEntity* _parent{ nullptr };
+    EntitySystem* _pEntitySystem{ nullptr };
+    IDynamicObjectPool* _pPool{ nullptr };
+};
+
+template<class T>
+class Component : public IComponent {
+public:
+    virtual const char* GetTypeName();    // typeid 运行时类型
+    uint64 GetTypeHashCode();            // typeid hash
+};
+```
+
+组件通过 `Component<T>` 模板实现运行时类型识别（RTTI），所有业务对象只需继承 `Component<T>`。
+
+### 3.3 IEntity —— 实体（可容纳子组件）
+
+```c++
+// entity.h:12-53
+class IEntity : public IComponent {
+public:
+    virtual ~IEntity();
+
+    template<class T, typename... TArgs>
+    void AddComponent(TArgs... args);          // 从对象池分配子组件
+
+    template<class T>
+    T* GetComponent();                         // 按类型查找子组件
+
+private:
+    std::map<uint64, IComponent*> _components; // 子组件映射表
+};
+
+template<class T>
+class Entity : public IEntity {
+    virtual const char* GetTypeName();
+    uint64 GetTypeHashCode();
+};
+```
+
+> 例如 `Network` 继承 `Entity<Network>`，可通过 `AddComponent<SomeComponent>()` 动态挂载子组件，实现功能的模块化组合。
+
+### 3.4 System 接口体系
+
+```c++
+// system.h
+class ISystem { };                             // 纯虚基类
+
+template<typename... TArgs>
+class IAwakeSystem : virtual public ISystem {  // 首次构造时初始化
+    virtual void Awake(TArgs... args) = 0;
+};
+
+template<typename... TArgs>
+class IAwakeFromPoolSystem : virtual public ISystem {  // 从对象池取出时重新初始化
+    virtual void AwakeFromPool(TArgs... args) = 0;
+};
+
+class IUpdateSystem : virtual public ISystem {  // 每帧 Update
+    virtual void Update() = 0;
+};
+
+// message_system.h
+class IMessageSystem : virtual public ISystem { // 消息处理
+    virtual void RegisterMsgFunction() = 0;
+    void AttachCallBackHandler(MessageCallBackFunctionInfo* pCallback);
+    bool IsFollowMsgId(Packet* packet) const;
+    void ProcessPacket(Packet* packet) const;
+    static void DispatchPacket(Packet* pPacket);  // 广播到所有线程
+    static void SendPacket(Packet* pPacket);      // 定向网络发送
+};
+```
+
+**System 接口组合示例**：
+
+```c++
+// Account 组件：同时支持池化初始化和消息处理
+class Account : public Component<Account>,
+                public IAwakeFromPoolSystem<>,
+                public IMessageSystem { ... };
+
+// Network 实体：同时支持池化初始化和消息处理
+class Network : public Entity<Network>,
+                public IAwakeFromPoolSystem<NetworkType, std::string, int>,
+                public IMessageSystem { ... };
+
+// Console 实体：支持池化和每帧 Update
+class Console : public Entity<Console>,
+                public IAwakeFromPoolSystem<>,
+                public IUpdateSystem { ... };
+```
+
+### 3.5 EntitySystem —— ECS 核心引擎
+
+`EntitySystem` 是每个线程的运行时容器，统一管理所有 Component/Entity 的生命周期与调度：
+
+```c++
+// entity_system.h:15-51
+class EntitySystem : virtual public SnObject, public IDisposable {
+public:
+    void InitComponent();                         // 自动添加 CreateComponentC 等基础组件
+
+    template<class T, typename... TArgs>
+    T* AddComponent(TArgs... args);               // 从对象池创建绑定到当前系统
+
+    template<typename... TArgs>
+    IComponent* AddComponentByName(std::string className, TArgs... args); // 反射创建
+
+    template<class T>
+    T* GetComponent();                            // 按类型查找组件
+
+    virtual void Update();                        // 每帧：消息分发 + Component Update
+    void UpdateMessage();                         // 双缓存消息分发
+    void AddPacketToList(Packet* pPacket);        // 写入消息双缓存
+    void Dispose() override;
+
+protected:
+    void AddToSystem(IComponent* pObj);           // 注册到对应 System 列表
+
+protected:
+    std::list<IUpdateSystem*> _updateSystems;     // Update 系统列表
+    std::list<IMessageSystem*> _messageSystems;   // 消息系统列表
+    std::map<uint64, IComponent*> _objSystems;    // 所有组件（SN 索引）
+    std::mutex _packet_lock;
+    CacheSwap<Packet> _cachePackets;              // 消息双缓存
+};
+```
+
+**AddToSystem 核心逻辑** —— 自动类型识别与注册：
+
+```c++
+// entity_system.cpp:65-80
+void EntitySystem::AddToSystem(IComponent* pComponent) {
+    pComponent->SetEntitySystem(this);
+    _objSystems[pComponent->GetSN()] = pComponent;
+
+    // dynamic_cast 自动识别：是 IUpdateSystem 则加入 _updateSystems
+    const auto objUpdate = dynamic_cast<IUpdateSystem*>(pComponent);
+    if (objUpdate != nullptr)
+        _updateSystems.emplace_back(objUpdate);
+
+    // 是 IMessageSystem 则注册回调并加入 _messageSystems
+    const auto objMsg = dynamic_cast<IMessageSystem*>(pComponent);
+    if (objMsg != nullptr) {
+        objMsg->RegisterMsgFunction();
+        _messageSystems.emplace_back(objMsg);
+    }
+}
+```
+
+**每帧 Update 流程** —— 消息分发 + 组件更新 + 自动回收：
+
+```c++
+// entity_system.cpp:13-33
+void EntitySystem::Update() {
+    UpdateMessage();                  // 1. 双缓存交换 → 遍历分发消息
+
+    auto iter = _updateSystems.begin();
+    while (iter != _updateSystems.end()) {
+        auto pComponent = dynamic_cast<IComponent*>(*iter);
+        if (!pComponent->IsActive()) {
+            // 2. 非活跃组件自动归还对象池
+            _objSystems.erase(pComponent->GetSN());
+            iter = _updateSystems.erase(iter);
+            pComponent->ComponentBackToPool();
+        } else {
+            (*iter)->Update();        // 3. 正常组件每帧 Update
+            ++iter;
+        }
+    }
+}
+```
+
+### 3.6 Thread —— 工作线程（子 EntitySystem）
+
+```c++
+// thread.h:15-28
+class Thread : public EntitySystem {          // 直接继承 EntitySystem！
+public:
+    Thread();
+    void Start();
+    bool IsRun() const;
+    bool IsStop() const;
+    bool IsDispose();
+private:
+    ThreadState _state;
+    std::thread _thread;
+};
+```
+
+启动后进入 ECS 事件循环：
+
+```c++
+// thread.cpp:11-26
 void Thread::Start() {
     _thread = std::thread([this]() {
+        InitComponent();                       // 自动安装 CreateComponentC 等基础组件
         _state = ThreadState_Run;
         while (!Global::GetInstance()->IsStop) {
-            Update();                                        // 处理消息与对象
+            Update();                          // EntitySystem::Update（消息+组件Update）
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
         _state = ThreadState_Stoped;
@@ -128,134 +382,331 @@ void Thread::Start() {
 }
 ```
 
-线程状态机：`ThreadState_Init → ThreadState_Run → ThreadState_Stoped`。停止分两阶段：先置 `IsStop` 让循环退出（`IsStop`），再 `join()`（`IsDispose`）。
-
-### 3.3 ThreadObjectList —— 线程内调度核心
-
-这是单线程内对象与消息调度的核心，采用**双缓存无锁读**设计：
+### 3.7 ThreadMgr —— 主线程 + 线程管理器（主 EntitySystem）
 
 ```c++
-// thread.h:20-36
-class ThreadObjectList : public IDisposable {
-protected:
-    std::mutex _obj_lock;
-    CacheRefresh<ThreadObject> _objlist;    // 对象增删缓存
-    std::mutex _packet_lock;
-    CacheSwap<Packet> _cachePackets;        // 消息读写缓存
-};
-```
-
-`Update()` 是每个线程每帧的执行逻辑：
-
-```c++
-// thread.cpp:26-71 (关键流程)
-void ThreadObjectList::Update() {
-    // 1. 交换对象增删缓存，回收已删除对象
-    if (_objlist.CanSwap()) {
-        auto pDelList = _objlist.Swap();
-        for (auto pOne : pDelList) { pOne->Dispose(); delete pOne; }
-    }
-    // 2. 交换消息缓存（写 → 读）
-    if (_cachePackets.CanSwap()) { _cachePackets.Swap(); }
-    // 3. 遍历所有对象，分发消息并 Update
-    auto pList = _objlist.GetReaderCache();
-    auto pMsgList = _cachePackets.GetReaderCache();
-    for (auto pObj : *pList) {
-        for (auto pPacket : *pMsgList) {
-            if (pObj->IsFollowMsgId(pPacket))
-                pObj->ProcessPacket(pPacket);   // 仅处理关心的消息
-        }
-        pObj->Update();
-        if (!pObj->IsActive())
-            _objlist.GetRemoveCache()->emplace_back(pObj);
-    }
-    pMsgList->clear();
-}
-```
-
-**设计要点**：
-
-* 锁仅保护”写入/交换“瞬间，**读取与处理完全无锁**，降低竞争。
-
-* 消息按 `IsFollowMsgId` 过滤后分发，实现”订阅式“消息投递。
-
-* 非激活对象（`IsActive()==false`）自动回收。
-
-### 3.4 ThreadMgr —— 线程管理
-
-`ThreadMgr` 是单例，负责线程创建、对象分配、消息路由：
-
-```c++
-// thread_mgr.cpp:30-62  轮询分配对象到线程
-bool ThreadMgr::AddObjToThread(ThreadObject* obj) {
-    std::lock_guard<std::mutex> guard(_thread_lock);
-    auto iter = _threads.begin();
-    if (_lastThreadSn > 0)
-        iter = _threads.find(_lastThreadSn);
-    // 取下一个活动线程（轮询）
-    do {
-        ++iter;
-        if (iter == _threads.end()) iter = _threads.begin();
-    } while (!(iter->second->IsRun()));
-    iter->second->AddObject(obj);
-    _lastThreadSn = iter->second->GetSN();   // 记住上次分配位置
-    return true;
-}
-```
-
-**消息分发**有两种方式：
-
-```c++
-// thread_mgr.cpp:126-144
-void ThreadMgr::DispatchPacket(Packet* pPacket) {
-    AddPacketToList(pPacket);                 // 主线程
-    for (auto& pair : _threads)              // 所有子线程（广播）
-        pair.second->AddPacketToList(pPacket);
-}
-
-void ThreadMgr::SendPacket(Packet* pPacket) {
-    NetworkListen* pLocator = static_cast<NetworkListen*>(GetNetwork(APP_Listen));
-    pLocator->SendPacket(pPacket);           // 投递到网络层发送
-}
-```
-
-* `DispatchPacket`：**广播**到所有线程（主+子），由各对象自行过滤。
-
-* `SendPacket`：定向投递到监听网络的发送队列。
-
-### 3.5 ThreadObject —— 线程对象（Actor 雏形）
-
-```c++
-// thread_obj.h:7-22
-class ThreadObject : public MessageList, public SnObject {
+// thread_mgr.h:15-52
+class ThreadMgr : public Singleton<ThreadMgr>, public EntitySystem {
 public:
-    virtual bool Init() = 0;                 // 初始化
-    virtual void RegisterMsgFunction() = 0;  // 注册消息处理
-    virtual void Update() = 0;               // 每帧逻辑
-    void SetThread(Thread* pThread);
-    bool IsActive() const;
-protected:
-    bool _active{ true };
-    Thread* _pThread{ nullptr };
+    template<class T, typename... TArgs>
+    void CreateComponent(TArgs... args);       // 动态创建组件（序列化到子线程）
+    void DispatchPacket(Packet* pPacket);      // 广播消息
+    void Update() override;                    // 每帧分发创建指令 + EntitySystem::Update
+private:
+    std::vector<Thread*> _threads;
+    size_t _threadIndex{ 0 };
+    std::mutex _create_lock;
+    CacheSwap<Packet> _createPackets;          // 创建组件指令双缓存
 };
 ```
 
-生命周期：`AddObject` 时调用 `Init()` → `RegisterMsgFunction()` → 每帧 `Update()` + 消息处理 → `Dispose()` 后被回收。
+**CreateComponent —— 远程动态创建组件**：
 
-## 四、网络 Epoll / Reactor 模块
+```c++
+// thread_mgr.h:54-72
+template<class T, typename... TArgs>
+inline void ThreadMgr::CreateComponent(TArgs... args) {
+    std::lock_guard<std::mutex> guard(_create_lock);
 
-### 4.1 类继承体系
+    const std::string className = typeid(T).name();
+    if (!ComponentFactory<TArgs...>::GetInstance()->IsRegisted(className))
+        RegistToFactory<T, TArgs...>();       // 自动注册到工厂
+
+    // 将创建指令序列化为 Protobuf 消息
+    Proto::CreateComponent proto;
+    proto.set_class_name(className.c_str());
+    AnalyseParam(proto, std::forward<TArgs>(args)...);
+
+    auto pCreatePacket = new Packet(Proto::MsgId::MI_CreateComponent, 0);
+    pCreatePacket->SerializeToBuffer(proto);
+    _createPackets.GetWriterCache()->emplace_back(pCreatePacket);
+}
+```
+
+**主线程 Update** —— 轮询分发创建指令 + ECS Update：
+
+```c++
+// thread_mgr.cpp:17-37
+void ThreadMgr::Update() {
+    // 1. 交换创建指令双缓存
+    _create_lock.lock();
+    if (_createPackets.CanSwap()) { _createPackets.Swap(); }
+    _create_lock.unlock();
+
+    // 2. 轮询分发到子线程
+    auto pList = _createPackets.GetReaderCache();
+    for (auto iter = pList->begin(); iter != pList->end(); ++iter) {
+        if (_threadIndex >= _threads.size()) _threadIndex = 0;
+        _threads[_threadIndex]->AddPacketToList(*iter);
+        _threadIndex++;
+    }
+    pList->clear();
+
+    // 3. 主线程自己的 ECS Update
+    EntitySystem::Update();
+}
+```
+
+**DispatchPacket** —— 广播到主线程 + 所有子线程：
+
+```c++
+// thread_mgr.cpp:84-94
+void ThreadMgr::DispatchPacket(Packet* pPacket) {
+    AddPacketToList(pPacket);                  // 主线程
+    for (auto iter = _threads.begin(); iter != _threads.end(); ++iter)
+        (*iter)->AddPacketToList(pPacket);     // 所有子线程
+}
+```
+
+### 3.8 ComponentFactory —— 反射创建组件
+
+支持按**类名字符串**运行时动态创建组件：
+
+```c++
+// component_factory.h:7-62
+template<typename... Targs>
+class ComponentFactory {
+public:
+    typedef std::function<IComponent*(Targs...)> FactoryFunction;
+
+    bool Regist(const std::string& className, FactoryFunction pFunc);
+    bool IsRegisted(const std::string& className);
+    IComponent* Create(const std::string className, Targs... args);
+
+private:
+    std::map<std::string, FactoryFunction> _map;   // className → 创建函数
+    std::mutex _lock;
+};
+```
+
+配合 `RegistToFactory<T, TArgs...>` 模板实现自动注册：
+
+```c++
+// regist_to_factory.h — 编译期自动将类型注册到 ComponentFactory
+template<class T, typename... TArgs>
+void RegistToFactory() {
+    ComponentFactory<TArgs...>::GetInstance()->Regist(
+        typeid(T).name(),
+        [](TArgs... args) -> IComponent* {
+            auto pObj = DynamicObjectPool<T>::GetInstance()->MallocObject(args...);
+            return pObj;
+        }
+    );
+}
+```
+
+### 3.9 CreateComponentC —— 协议驱动的远程动态创建
+
+通过 Protobuf 协议从网络接收创建指令，在工作线程中动态实例化 Component：
+
+```c++
+// create_component.h:7-18
+class CreateComponentC : public Entity<CreateComponentC>,
+                         public IMessageSystem,
+                         public IAwakeFromPoolSystem<> {
+    void HandleCreateComponent(Packet* pPacket) const;   // 处理创建指令
+    void HandleRemoveComponent(Packet* pPacket);         // 处理移除指令
+};
+```
+
+核心实现 —— 编译期递归解析变长参数：
+
+```c++
+// create_component.cpp:14-52
+template<size_t ICount>
+struct DynamicCall {
+    template<typename... TArgs>
+    static IComponent* Invoke(EntitySystem* pEntitySystem, const std::string classname,
+                               std::tuple<TArgs...> t1,
+                               google::protobuf::RepeatedPtrField<Proto::CreateComponentParam>& params) {
+        if (params.size() == 0)
+            return ComponentFactoryEx(pEntitySystem, classname, t1, ...);
+
+        Proto::CreateComponentParam param = (*(params.begin()));
+        params.erase(params.begin());
+
+        if (param.type() == Proto::CreateComponentParam::Int)
+            return DynamicCall<ICount-1>::Invoke(pEntitySystem, classname,
+                        std::tuple_cat(t1, std::make_tuple(param.int_param())), params);
+        if (param.type() == Proto::CreateComponentParam::String)
+            return DynamicCall<ICount-1>::Invoke(pEntitySystem, classname,
+                        std::tuple_cat(t1, std::make_tuple(param.string_param())), params);
+        return nullptr;
+    }
+};
+```
+
+**创建流程**：`ThreadMgr::CreateComponent<T>()` → 序列化为 Proto → 通过双缓存分发到工作线程 → `CreateComponentC::HandleCreateComponent` → `DynamicCall` 解析参数 → `ComponentFactory::Create` → `EntitySystem::AddToSystem`。
 
 ```plain&#x20;text
-ThreadObject
-  └─ Network (network.h)              ← 网络基类，IO 多路复用
-       ├─ NetworkListen               ← 服务端监听 + Accept
-       └─ NetworkConnector            ← 客户端连接 + 断线重连
-
-ConnectObj (connect_obj.h)            ← 单连接对象（池化）
-  ├─ RecvNetworkBuffer               ← 接收环形缓冲
-  └─ SendNetworkBuffer               ← 发送环形缓冲
+ThreadMgr::CreateComponent<Account>(args...)
+    │
+    ├─ 1. 自动注册到 ComponentFactory（首次）
+    ├─ 2. 序列化为 Proto::CreateComponent
+    └─ 3. 写入 _createPackets 双缓存
+         │
+         ▼ (下一帧 ThreadMgr::Update 轮询分发)
+    Thread[N]::AddPacketToList(MI_CreateComponent)
+         │
+         ▼ (子线程 UpdateMessage)
+    CreateComponentC::HandleCreateComponent
+         │
+         ├─ 4. DynamicCall<N> 解析变长参数
+         ├─ 5. ComponentFactory::Create(className, args...)
+         └─ 6. EntitySystem::AddToSystem(pComponent)
+              ├─ dynamic_cast → IUpdateSystem → _updateSystems
+              └─ dynamic_cast → IMessageSystem → _messageSystems
 ```
+
+## 四、游戏循环与运行时流程
+
+### 4.1 整体运行时架构
+
+```plain&#x20;text
+ServerApp::Run()                                   主线程循环
+  │
+  ├─ UpdateTime()                                  更新时间戳
+  ├─ ThreadMgr::Update()
+  │   ├─ ① 处理 _createPackets                     组件创建消息（双缓存交换）
+  │   ├─ ② 轮询分发到 _threads[]                     均衡分配
+  │   └─ ③ EntitySystem::Update()                  主线程自己的 ECS 更新
+  └─ DynamicObjectPoolMgr::Update()                 对象池回收
+
+ 同时每个工作线程在独立 std::thread 中运行自己的循环（见 4.3）。
+```
+
+### 4.2 ThreadMgr —— 线程管理器
+
+`ThreadMgr` 是单例，同时继承 `EntitySystem`：既是线程调度中心，也是主线程自己的 ECS 容器。内部维护一个 `Thread*` 数组和轮询索引，实现创建请求的均匀分配。
+
+**创建组件流程**：`CreateComponent<T>(args...)` 不直接创建组件，而是将类型名和参数序列化为 Protobuf 消息，存入双缓存队列。主线程 `Update()` 时交换缓存，**轮询（round-robin）** 分发到各工作线程，由目标线程的 `CreateComponentC` 反序列化后调用 `ComponentFactory::Create()` 完成实际创建。
+
+**消息广播**：`DispatchPacket` 同时向主线程和所有子线程投递消息包。
+
+**生命周期**：`CreateThread` → `StartAllThread` → 运行中检查 `IsStopAll` / `IsDisposeAll` → `Dispose` 销毁全部。
+
+### 4.3 Thread —— 工作线程
+
+每个 `Thread` 继承 `EntitySystem`，封装一个 `std::thread`。启动流程：
+
+1. `InitComponent()` — 创建 `CreateComponentC` 实体，用于处理远程组件创建消息
+2. 进入游戏循环 — 每帧调用 `Update()`（消息处理 → 组件更新），间隔 1ms 让出 CPU
+3. 收到全局停止信号后退出循环，状态标记为 `Stoped`
+
+状态机：`Init → Run → Stoped`。主线程通过 `IsStop()` 检查状态，`IsDispose()` 中 `join()` 等待线程结束并回收。
+
+### 4.4 AddToSystem —— 组件注册
+
+这是 ECS 运行时的核心入口。任何 Component/Entity 创建后都会经过此方法：
+
+```plain&#x20;text
+AddToSystem(pComponent)
+  │
+  ├─ pComponent->SetEntitySystem(this)            绑定所属引擎
+  ├─ _objSystems[SN] = pComponent                 全局对象映射
+  │
+  ├─ dynamic_cast<IUpdateSystem*>(pComponent)
+  │   └─ 非空 → _updateSystems.push_back()         注册为可更新组件
+  │
+  └─ dynamic_cast<IMessageSystem*>(pComponent)
+      └─ 非空 → RegisterMsgFunction()              注册消息回调（子类实现）
+              → _messageSystems.push_back()        注册为消息处理者
+```
+
+三种 System 接口的注册时机：
+
+| System 接口 | 注册时机 | 触发方式 |
+|-------------|----------|----------|
+| `IMessageSystem` | `AddToSystem` 中自动 | `dynamic_cast` + `RegisterMsgFunction()` |
+| `IUpdateSystem` | `AddToSystem` 中自动 | `dynamic_cast` |
+| `IAwakeFromPoolSystem` | 对象池分配后 | 调用方手动执行 `AwakeFromPool(args...)` |
+
+### 4.5 EntitySystem::Update —— 每帧更新
+
+每帧严格执行 **先消息、后更新** 的顺序：
+
+```plain&#x20;text
+EntitySystem::Update()
+  │
+  ├─ ① UpdateMessage()
+  │   ├─ 交换 _cachePackets（双缓存，swap 时加锁）     消息入队线程安全
+  │   ├─ 遍历 _messageSystems[]
+  │   │   └─ IsFollowMsgId → ProcessPacket()           按 MsgId 匹配分发
+  │   └─ 清空已处理包
+  │
+  └─ ② 遍历 _updateSystems[]
+      ├─ IsActive() == true  → Update()                正常更新
+      └─ IsActive() == false → 从 _objSystems 移除
+                               从 _updateSystems 移除
+                               ComponentBackToPool()    归还对象池
+```
+
+**关键细节**：
+
+- **消息优先**：先处理本帧收到的所有消息，再执行 Component 的 Update。消息处理结果能在同一帧 Update 中体现。
+- **自动回收**：Component 设置 `_active = false` 后，下一帧 Update 自动检测并从系统中移除、归还对象池，无需手动管理生命周期。
+- **双缓存无锁读**：消息入队（`AddPacketToList`）加锁写入 writer-cache，`UpdateMessage` 只处理 reader-cache，swap 时短暂加锁。
+
+### 4.6 完整生命周期示例
+
+以 `Network`（网络监听实体）的完整流程串联以上各环节：
+
+```plain&#x20;text
+┌── 1. 创建 ──────────────────────────────────────────────────┐
+│ ThreadMgr::CreateComponent<NetworkListen>("127.0.0.1", 2233) │
+│   → Protobuf 序列化 → _createPackets writer-cache 入队        │
+│                                                              │
+│ ThreadMgr::Update()（主线程）                                  │
+│   → _createPackets.Swap() → 轮询分发到 Thread[0]              │
+│   → Thread[0].AddPacketToList(packet)                        │
+└──────────────────────────────────────────────────────────────┘
+                            ↓
+┌── 2. 初始化 ────────────────────────────────────────────────┐
+│ Thread[0]::Update()                                         │
+│   → UpdateMessage()                                         │
+│     → CreateComponentC::HandleCreateComponent(packet)       │
+│       → Protobuf 反序列化 className + params                │
+│       → ComponentFactory::Create("NetworkListen", ...)      │
+│       → AddToSystem(pComponent)                             │
+│         ├─ dynamic_cast<IUpdateSystem*>  ✓ → _updateSystems │
+│         └─ dynamic_cast<IMessageSystem*> ✓ → _messageSystems│
+│                  + RegisterMsgFunction()                    │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌── 3. 运行 ──────────────────────────────────────────────────┐
+│ 每帧：UpdateMessage() 处理收包  →  Update() 执行业务逻辑       │
+│ Entity 通过 IMessageSystem::SendPacket() 发送消息            │
+│ Entity 通过 IMessageSystem::DispatchPacket() 广播消息        │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌── 4. 销毁 ──────────────────────────────────────────────────┐
+│ 如连接断开 → _active = false                                 │
+│   → 下一帧 Update() 检测到 !IsActive()                       │
+│   → 从 _objSystems / _updateSystems / _messageSystems 移除  │
+│   → ComponentBackToPool() 归还对象池                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 五、网络 Epoll / Reactor 模块
+
+### 4.1 类继承体系（ECS 架构下）
+
+```plain&#x20;text
+IComponent
+  └─ IEntity
+       └─ Entity<T>
+            └─ Network (network.h)              ← 网络实体基类，IO 多路复用
+                 ├─ NetworkListen               ← 服务端监听 + Accept
+                 └─ NetworkConnector            ← 客户端连接 + 断线重连
+
+ConnectObj (connect_obj.h)                     ← 连接实体（池化，继承 Entity<ConnectObj>）
+  ├─ RecvNetworkBuffer                         ← 接收环形缓冲
+  └─ SendNetworkBuffer                         ← 发送环形缓冲
+```
+
+
 
 ### 4.2 平台 IO 抽象
 
@@ -482,7 +933,7 @@ void Network::SetSocketOpt(SOCKET socket) {
 }
 ```
 
-## 五、Protobuf 通信模块
+## 六、Protobuf 通信模块
 
 ### 5.1 Proto 定义
 
@@ -576,9 +1027,9 @@ if (descriptor->FindValueByNumber(head.MsgId) == nullptr) {
 }
 ```
 
-### 5.4 消息回调系统（MessageList）
+### 5.4 消息回调系统（MessageList / IMessageSystem）
 
-`MessageList` 提供消息注册与分发，是 Actor 模型的消息处理基础：
+`MessageList` 提供消息注册与分发，是消息处理的基础：
 
 ```c++
 // message_list.h:18-30
@@ -606,21 +1057,32 @@ void Network::RegisterMsgFunction() {
 }
 ```
 
-## 六、Actor 消息模型
+## 七、ECS 消息流转
 
-本项目采用**轻量级 Actor 模型**：每个 `ThreadObject` 是一个 Actor，通过消息（`Packet`）进行线程间通信，无共享状态。
+### 7.1 消息机制概述
 
-### 6.1 Actor 核心特征
+Entity 是消息处理的主体（Actor），`IMessageSystem` 作为 Component 实现消息回调。`EntitySystem::AddToSystem` 通过 `dynamic_cast<IMessageSystem*>` 自动识别并注册，统一调度。
 
-| Actor 概念 | 本项目对应                                               |
-| ——— | ————————————————— |
-| Actor 实体 | `ThreadObject`（及其子类如 `Network`、`Account`、`Console`） |
-| 消息       | `Packet`（含 MsgId + protobuf 体）                      |
-| 邮箱       | `ThreadObjectList::_cachePackets`（双缓存）              |
-| 消息处理     | `RegisterMsgFunction` 注册 + `ProcessPacket` 分发       |
-| 调度器      | `Thread`（每个线程调度其内多个 Actor）                          |
+### 7.2 IMessageSystem —— 消息处理者接口
 
-### 6.2 消息流转
+```c++
+// message_system.h
+class IMessageSystem : virtual public ISystem {
+public:
+    virtual void RegisterMsgFunction() = 0;
+    void AttachCallBackHandler(MessageCallBackFunctionInfo* pCallback);
+    bool IsFollowMsgId(Packet* packet) const;
+    void ProcessPacket(Packet* packet) const;
+    static void DispatchPacket(Packet* pPacket);   // 广播到所有线程
+    static void SendPacket(Packet* pPacket);       // 定向网络发送
+};
+```
+
+EntitySystem 在 `AddToSystem` 时通过 `dynamic_cast<IMessageSystem*>` 自动识别并加入 `_messageSystems` 列表。
+
+
+
+### 6.3 消息收发流程
 
 ```plain&#x20;text
                   ┌─────────────────────────────────┐
@@ -631,25 +1093,47 @@ void Network::RegisterMsgFunction() {
         ▼
    RecvNetworkBuffer::GetPacket  (解析出 Packet)
         │
-        ├─ 广播模式: ThreadMgr::DispatchPacket → 所有线程 _cachePackets(写)
-        └─ 定向模式: Thread::AddPacketToList  → 单线程 _cachePackets(写)
+        ├─ 广播: ThreadMgr::DispatchPacket → 主+所有子 EntitySystem._cachePackets(写)
+        └─ 定向: EntitySystem::AddPacketToList → 单 EntitySystem._cachePackets(写)
         │
         ▼ (下一帧)
-   Thread::Update → CacheSwap::Swap → 遍历对象 → ProcessPacket(读,无锁)
+   EntitySystem::UpdateMessage → CacheSwap::Swap → 遍历 _messageSystems
+        │
+        ▼
+   IMessageSystem::ProcessPacket → MessageCallBackFunction → 注册的回调
 
                   ┌─────────────────────────────────┐
                   │        发消息路径                 │
                   └─────────────────────────────────┘
-   ThreadObject::SendPacket (MessageList 静态方法)
+   IMessageSystem::SendPacket(pPacket)
         │
         ▼
-   ThreadMgr::SendPacket → NetworkListen::SendPacket → _sendMsgList(写)
+   NetworkListen::SendPacket → _sendMsgList(写)
         │
         ▼ (下一帧)
    Network::Update → CacheSwap::Swap → ConnectObj::SendPacket → 发送缓冲 → epoll 发送
+
+                  ┌─────────────────────────────────────────┐
+                  │  动态创建 Component 协议路径                │
+                  └─────────────────────────────────────────┘
+   ThreadMgr::CreateComponent<T>(args...)    ← 主线程调用
+        │
+        ├─ 自动注册到 ComponentFactory
+        ├─ 序列化为 Proto::CreateComponent
+        └─ 写入 _createPackets(写)
+        │
+        ▼ (下一帧 ThreadMgr::Update 轮询)
+   分发到 Thread[N]._cachePackets(写)
+        │
+        ▼ (子线程 UpdateMessage)
+   CreateComponentC::HandleCreateComponent   ← 处理 MI_CreateComponent 协议
+        │
+        ├─ DynamicCall<N> 解析变长参数
+        ├─ ComponentFactory::Create(className, args...)
+        └─ EntitySystem::AddToSystem → 自动注册 Update/Message System
 ```
 
-### 6.3 双缓存实现无锁读
+### 6.4 双缓存实现无锁读
 
 **CacheSwap**（消息缓存）：读写两个 `list` 指针，写时入 writer，帧末 `Swap` 交换指针，读时访问 reader：
 
@@ -681,25 +1165,25 @@ inline std::list<T*> CacheRefresh<T>::Swap() {
 
 **核心优势**：锁只持有极短时间（仅 push/swap），消息处理与对象遍历完全无锁。
 
-### 6.4 线程间通信示例
+### 7.5 线程间通信示例
 
-业务对象（如 `Account`）发送消息：
+业务组件（如 `Account`）发送消息：
 
 ```c++
-// 任何 ThreadObject 中均可调用
-MessageList::SendPacket(pPacket);
-// → ThreadMgr::SendPacket → NetworkListen::SendPacket → 网络
+// 任何 IMessageSystem 中均可调用
+IMessageSystem::SendPacket(pPacket);
+// → NetworkListen::SendPacket → 网络
 ```
 
-网络收到消息后广播给所有业务 Actor：
+网络收到消息后广播给所有业务 Component：
 
 ```c++
 // connect_obj.cpp:125-132
 if (_pNetWork->IsBroadcast())
-    ThreadMgr::GetInstance()->DispatchPacket(pPacket);  // 广播
+    ThreadMgr::GetInstance()->DispatchPacket(pPacket);  // 广播到所有 EntitySystem
 ```
 
-## 七、内存池模块
+## 八、内存池模块
 
 ### 7.1 整体设计
 
@@ -840,7 +1324,7 @@ protected:
 };
 ```
 
-环形缓冲通过 `_dataSize` 记录有效数据量，解决”首尾重合“歧义：
+环形缓冲通过 `_dataSize` 记录有效数据量，解决"首尾重合"歧义：
 
 ```c++
 // network_buffer.h:43-46
@@ -865,7 +1349,7 @@ void ConsoleCmdPool::HandleShow(std::vector<std::string>& params) {
 
 `Show()` 在 Debug 模式输出总数量、空闲数、使用数、累计分配次数。
 
-## 八、全局辅助模块
+## 九、全局辅助模块
 
 ### 8.1 Singleton —— 单例模板
 
@@ -910,7 +1394,7 @@ class SnObject {
 };
 ```
 
-`Thread`、`ThreadObject`、`ObjectBlock` 均继承此类，便于对象追踪与日志。
+`Thread`、`EntitySystem`、`IComponent`、`IEntity`、`ObjectBlock` 均继承此类，便于对象追踪与日志。
 
 ### 8.4 IDisposable —— 资源释放接口
 
@@ -923,7 +1407,7 @@ class IDisposable {
 
 所有需要资源管理的类统一实现此接口，由容器在销毁时统一调用。
 
-## 九、关键设计总结
+## 十、关键设计总结
 
 ### 9.1 并发模型
 
@@ -960,46 +1444,62 @@ class IDisposable {
 
 ### 9.4 扩展性
 
-* **新增应用**：继承 `ServerApp`，实现 `InitApp` 添加监听与业务对象。
+* **新增应用**：继承 `ServerApp`，实现 `InitApp` 通过 `CreateComponent<T>()` 添加网络与业务组件。
 
-* **新增业务 Actor**：继承 `ThreadObject`，实现 `Init/RegisterMsgFunction/Update`，通过 `AddObjToThread` 加入线程。
+* **新增业务 Component**：继承 `Component<T>` + 对应 System 接口（`IAwakeFromPoolSystem`、`IUpdateSystem`、`IMessageSystem`），通过 `ThreadMgr::CreateComponent<T>()` 加入 ECS 引擎。
+
+* **新增 Entity**：继承 `Entity<T>` + 对应 System 接口，可通过 `AddComponent<T>()` 动态挂载子组件。
 
 * **新增协议**：在 `.proto` 中定义消息与 MsgId，`protoc` 生成代码后注册回调。
 
-* **新增池化对象**：继承 `ObjectBlock`，实现 `BackToPool`，用 `DynamicObjectPool<T>` 管理。
+* **新增池化对象**：继承 `IComponent` 或 `ObjectBlock`，实现 `BackToPool`，用 `DynamicObjectPool<T>` 管理。
 
-## 十、模块依赖关系图
+* **协议动态创建 Component**：客户端发送 `MI_CreateComponent` 协议 → `CreateComponentC` 处理 → `ComponentFactory` 反射创建 → 自动加入 EntitySystem。
+
+## 十一、模块依赖关系图（ECS 架构）
 
 ```plain&#x20;text
-                    ┌──────────┐
-                    │ ServerApp│
-                    └────┬─────┘
-            ┌───────────┼───────────┐
-            ▼           ▼           ▼
-       ┌────────┐  ┌────────┐  ┌────────────┐
-       │ThreadMgr│  │ Global │  │PoolMgr     │
-       └────┬────┘  └────────┘  └─────┬──────┘
-            │                           │
-       ┌────┴────┐               ┌─────┴──────┐
-       │ Thread  │               │ObjectPool<T>│
-       │  (多个) │               └─────┬──────┘
-       └────┬────┘                     │
-            │                     ┌────┴────┐
-       ┌────┴──────────┐          │ObjectBlock│
-       │ThreadObjectList│         └────┬────┘
-       │ (对象+消息缓存) │              │
-       └────┬──────────┘         ┌─────┴─────┐
-            │                    │ ConnectObj │
-   ┌────────┼────────┐           └─────┬─────┘
-   ▼        ▼        ▼                 │
-┌─────┐ ┌─────┐ ┌─────────┐       ┌────┴─────┐
-│Net- │ │Net- │ │ 业务对象 │       │Recv/Send │
-│Listen│ │Conn │ │(Account)│       │ Buffer   │
-└──┬──┘ └─────┘ └─────────┘       └──────────┘
-   │
-   ▼  epoll/select
-┌──────────────────┐
-│ Packet + Protobuf│
-└──────────────────┘
+                         ┌──────────┐
+                         │ ServerApp│
+                         └────┬─────┘
+                 ┌─────────────┼────────────┐
+                 ▼             ▼            ▼
+          ┌──────────┐  ┌──────────┐  ┌────────────┐
+          │ ThreadMgr│  │  Global  │  │  PoolMgr   │
+          │(主EntityS│  └──────────┘  └─────┬──────┘
+          │  ystem ) │                       │
+          └────┬─────┘              ┌────────┴───────┐
+               │                    │ ObjectPool<T>  │
+          ┌────┴────┐               │ (Component/    │
+          │ Thread  │               │  Entity/Packet)│
+          │(子Entity│               └────────┬───────┘
+          │ System) │                        │
+          │  (多个) │               ┌────────┴───────┐
+          └────┬────┘               │  IComponent    │
+               │                    │  IEntity       │
+         ┌─────┴──────┐             │  ConnectObj... │
+         │EntitySystem│             └────────────────┘
+         │ (消息+组件) │
+         └─────┬──────┘
+               │
+  ┌────────────┼──────────────┐
+  ▼            ▼              ▼
+┌───────┐ ┌─────────┐ ┌────────────┐
+│Net-   │ │业务组件  │ │CreateComp- │
+│Listen │ │Account  │ │onentC      │
+│Entity │ │Component│ │Entity      │
+└───┬───┘ │RobotTest│ │(协议动态    │
+    │     │Component│ │ 创建组件)   │
+    ▼     └─────────┘ └────────────┘
+  epoll/select
+    │
+    ▼
+┌──────────────────────┐
+│  Packet + Protobuf   │
+│  + ComponentFactory  │
+│  (反射 + 动态创建)     │
+└──────────────────────┘
 ```
+
+
 
