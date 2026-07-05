@@ -157,7 +157,6 @@
     <ClCompile Include="account.cpp" />
     <ClCompile Include="http_request.cpp" />
     <ClCompile Include="http_request_account.cpp" />
-    <ClCompile Include="login_app.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="login_obj.cpp" />
     <ClCompile Include="login_obj_mgr.cpp" />
@@ -166,7 +165,7 @@
     <ClInclude Include="account.h" />
     <ClInclude Include="http_request.h" />
     <ClInclude Include="http_request_account.h" />
-    <ClInclude Include="login_app.h" />
+    <ClInclude Include="login.h" />
     <ClInclude Include="login_obj.h" />
     <ClInclude Include="login_obj_mgr.h" />
   </ItemGroup>

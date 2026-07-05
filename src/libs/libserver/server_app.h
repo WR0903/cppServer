@@ -10,27 +10,16 @@
 #include <csignal>
 #endif
 
-template<class APPClass>
-inline int MainTemplate()
-{
-	APPClass* pApp = new APPClass();
-	pApp->InitApp();	
-	pApp->Run();
-	delete pApp;
-	return 0;
-}
-
-class ServerApp : public IDisposable
+class ServerApp :public Singleton<ServerApp>, public IDisposable
 {
 public:
-	ServerApp(APP_TYPE  appType);
-	~ServerApp();
+    ServerApp(APP_TYPE appType, int argc, char* argv[]);
 
-	virtual void InitApp() = 0;
-	void Dispose() override;
+    void Initialize();
+    void Dispose() override;
 
-	void Run() const;
-	void UpdateTime() const;
+    void Run();
+    void UpdateTime() const;
 
     // signal
     static void Signalhandler(int signalValue);
@@ -38,5 +27,8 @@ public:
 protected:
 	ThreadMgr * _pThreadMgr;
 	APP_TYPE _appType;
+
+    int _argc;
+    char** _argv;
 };
 

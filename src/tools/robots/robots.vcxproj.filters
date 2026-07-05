@@ -5,7 +5,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="robots_app.cpp" />
     <ClCompile Include="robot.cpp">
       <Filter>robot</Filter>
     </ClCompile>
@@ -24,7 +23,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="robots_app.h" />
     <ClInclude Include="robot.h">
       <Filter>robot</Filter>
     </ClInclude>

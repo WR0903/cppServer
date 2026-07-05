@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="login_app.cpp" />
     <ClCompile Include="account.cpp">
       <Filter>account</Filter>
     </ClCompile>
@@ -20,7 +19,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="login_app.h" />
     <ClInclude Include="account.h">
       <Filter>account</Filter>
     </ClInclude>
@@ -36,6 +34,7 @@
     <ClInclude Include="login_obj_mgr.h">
       <Filter>account</Filter>
     </ClInclude>
+    <ClInclude Include="login.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />

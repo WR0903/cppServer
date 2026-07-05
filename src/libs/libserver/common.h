@@ -2,6 +2,7 @@
 
 #include <climits>
 #include "protobuf/proto_id.pb.h"
+#include "protobuf/db.pb.h"
 #include "protobuf/msg.pb.h"
 
 #ifndef PATH_MAX  
@@ -22,9 +23,13 @@
 #include <stdint.h>
 #define engine_stricmp strcasecmp
 #define engine_access access
+#define engine_strncpy(dest, destsz, src, srcsz) strncpy(dest, src, srcsz)
+
 #else
 #define engine_stricmp _stricmp
 #define engine_access _access
+#define engine_strncpy(dest, destsz, src, srcsz) strncpy_s(dest, destsz, src, srcsz)
+
 #endif
 
 #if ENGINE_PLATFORM != PLATFORM_WIN32

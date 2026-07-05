@@ -139,6 +139,9 @@
     <ClInclude Include="util_time.h">
       <Filter>common\base</Filter>
     </ClInclude>
+    <ClInclude Include="protobuf\db.pb.h">
+      <Filter>ecs\system\message\protobuf</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="network.cpp">
@@ -227,6 +230,9 @@
     </ClCompile>
     <ClCompile Include="app_type_mgr.cpp">
       <Filter>common\app_type</Filter>
+    </ClCompile>
+    <ClCompile Include="protobuf\db.pb.cc">
+      <Filter>ecs\system\message\protobuf</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -320,6 +326,9 @@
       <Filter>ecs\system\message\protobuf\proto</Filter>
     </None>
     <None Include="protobuf\proto_id.proto">
+      <Filter>ecs\system\message\protobuf\proto</Filter>
+    </None>
+    <None Include="protobuf\db.proto">
       <Filter>ecs\system\message\protobuf\proto</Filter>
     </None>
   </ItemGroup>

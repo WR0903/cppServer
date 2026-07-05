@@ -1,5 +1,5 @@
 syntax = "proto3";
-
+import "db.proto";
 package Proto;
 
 ///////////////////////////////////////////////////////////////
@@ -34,21 +34,22 @@ message AccountCheck {
 	string password = 2;
 }
 
-message AccountCheckRs {
-	enum ReturnCode {
-		ARC_OK = 0;
-		ARC_UNKONWN = 1;
-		ARC_NOT_FOUND_ACCOUNT = 2;
-		ARC_PASSWORD_WRONG = 3;
-		ARC_LOGGING = 4; // 正在登录
-		ARC_TIMEOUT = 5; // 超时
-	}
+enum AccountCheckReturnCode {
+	ARC_OK = 0;
+	ARC_UNKONWN = 1;
+	ARC_NOT_FOUND_ACCOUNT = 2;
+	ARC_PASSWORD_WRONG = 3;
+	ARC_LOGGING = 4;	 // 正在登录
+	ARC_TIMEOUT = 5;	// 超时
+	ARC_ONLINE = 6;		// 已在线		
+}
 
-	int32 return_code = 1;
+message AccountCheckRs {
+	AccountCheckReturnCode return_code = 1;
 }
 
 message AccountCheckToHttpRs {
-	int32 return_code = 1;	// AccountCheckRs::ReturnCode
+	AccountCheckReturnCode return_code = 1;	// AccountCheckRs::ReturnCode
 	string account = 2;
 }
 
@@ -63,4 +64,73 @@ message RobotSyncState {
 
 message RobotTestEnd {
 	int32 state = 1;
+}
+
+// 玩家精减信息
+message PlayerLittle {
+	uint64 sn = 1;
+	string name = 2;
+	Gender gender = 3;
+	int32 level = 4;
+}
+
+message PlayerList {
+	string account = 1;
+	repeated PlayerLittle player = 2;
+}
+
+message QueryPlayerList {
+	string account = 1;
+}
+
+message QueryPlayer {
+	uint64 player_sn = 1;
+}
+
+message QueryPlayerRs {
+	string account = 1;
+	Player player = 2;
+}
+
+message CreatePlayer {
+	string name = 1;
+	Gender gender = 2; 
+}
+
+enum CreatePlayerReturnCode {
+	CPR_Create_OK = 0;
+	CPR_Unkonwn = 1;
+	CPR_Rename = 2; 
+}
+
+message CreatePlayerRs {
+	CreatePlayerReturnCode return_code = 2;
+}
+
+message CreatePlayerToDB {
+	string account = 1;
+	Player player = 2;
+}
+
+message CreatePlayerToDBRs {
+	string account = 1;
+	CreatePlayerReturnCode return_code = 2;
+}
+
+message SelectPlayer {
+	uint64 player_sn = 1;
+}
+
+message SelectPlayerRs {
+
+	enum SelectPlayerReturnCode {
+		SPRC_OK = 0;
+		SPRC_NotFound = 1;
+	}
+
+	SelectPlayerReturnCode return_code = 1;
+}
+message SavePlayer {
+	uint64 player_sn = 1;
+	Player player = 2;
 }

@@ -14,11 +14,22 @@
 #include <sys/time.h>
 #endif
 
-ServerApp::ServerApp(APP_TYPE  appType)
+ServerApp::ServerApp(APP_TYPE appType, int argc, char* argv[])
+{
+    _appType = appType;
+    _argc = argc;
+    _argv = argv;
+}
+
+void ServerApp::Dispose()
+{
+    ThreadMgr::DestroyInstance();
+    Global::DestroyInstance();
+}
+
+void ServerApp::Initialize()
 {
     signal(SIGINT, Signalhandler);
-
-    _appType = appType;
     Global::Instance(_appType, 1);
 
     // 全局数据
@@ -48,11 +59,6 @@ ServerApp::ServerApp(APP_TYPE  appType)
     _pThreadMgr->StartAllThread();
 }
 
-ServerApp::~ServerApp()
-{
-    _pThreadMgr->DestroyInstance();
-}
-
 void ServerApp::Signalhandler(const int signalValue)
 {
     switch (signalValue)
@@ -71,12 +77,7 @@ void ServerApp::Signalhandler(const int signalValue)
     std::cout << "\nrecv signal. value:" << signalValue << " Global IsStop::" << Global::GetInstance()->IsStop << std::endl;
 }
 
-void ServerApp::Dispose()
-{
-    _pThreadMgr->Dispose();
-}
-
-void ServerApp::Run() const
+void ServerApp::Run()
 {
     while (!Global::GetInstance()->IsStop)
     {
@@ -113,11 +114,7 @@ void ServerApp::Run() const
     DynamicObjectPoolMgr::GetInstance()->Update();
     DynamicObjectPoolMgr::GetInstance()->Dispose();
     DynamicObjectPoolMgr::DestroyInstance();
-
-    Global::DestroyInstance();
-    ThreadMgr::DestroyInstance();
 }
-
 
 void ServerApp::UpdateTime() const
 {
@@ -125,7 +122,7 @@ void ServerApp::UpdateTime() const
     struct timeval tv;
     gettimeofday(&tv, nullptr);
     Global::GetInstance()->TimeTick = tv.tv_sec * 1000 +  tv.tv_usec * 0.001;
-#else    
+#else
     auto timeValue = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     Global::GetInstance()->TimeTick = timeValue.time_since_epoch().count();
 #endif

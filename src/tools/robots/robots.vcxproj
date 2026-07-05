@@ -158,7 +158,6 @@
     <ClCompile Include="global_robots.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="robot.cpp" />
-    <ClCompile Include="robots_app.cpp" />
     <ClCompile Include="robot_console_login.cpp" />
     <ClCompile Include="robot_mgr.cpp" />
     <ClCompile Include="robot_state.cpp" />
@@ -167,7 +166,6 @@
   <ItemGroup>
     <ClInclude Include="global_robots.h" />
     <ClInclude Include="robot.h" />
-    <ClInclude Include="robots_app.h" />
     <ClInclude Include="robot_console_login.h" />
     <ClInclude Include="robot_mgr.h" />
     <ClInclude Include="robot_state.h" />

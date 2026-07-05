@@ -48,6 +48,7 @@
     <ClInclude Include="object_pool_interface.h" />
     <ClInclude Include="object_pool_mgr.h" />
     <ClInclude Include="packet.h" />
+    <ClInclude Include="protobuf\db.pb.h" />
     <ClInclude Include="protobuf\msg.pb.h" />
     <ClInclude Include="protobuf\proto_id.pb.h" />
     <ClInclude Include="regist_to_factory.h" />
@@ -88,6 +89,7 @@
     <ClCompile Include="network_locator.cpp" />
     <ClCompile Include="object_pool_mgr.cpp" />
     <ClCompile Include="packet.cpp" />
+    <ClCompile Include="protobuf\db.pb.cc" />
     <ClCompile Include="protobuf\msg.pb.cc" />
     <ClCompile Include="protobuf\proto_id.pb.cc" />
     <ClCompile Include="res_path.cpp" />
@@ -101,6 +103,7 @@
     <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="protobuf\db.proto" />
     <None Include="protobuf\msg.proto" />
     <None Include="protobuf\proto_id.proto" />
   </ItemGroup>
