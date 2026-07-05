@@ -2,6 +2,7 @@
 #include "disposable.h"
 #include "common.h"
 #include "thread_mgr.h"
+#include "app_type_mgr.h"
 
 #if ENGINE_PLATFORM != PLATFORM_WIN32
 #include <signal.h>

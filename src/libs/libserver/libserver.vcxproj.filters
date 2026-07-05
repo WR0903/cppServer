@@ -19,9 +19,6 @@
     <ClInclude Include="connect_obj.h">
       <Filter>entity\network\connect_obj</Filter>
     </ClInclude>
-    <ClInclude Include="common.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="thread.h">
       <Filter>thread</Filter>
     </ClInclude>
@@ -37,20 +34,11 @@
     <ClInclude Include="protobuf\proto_id.pb.h">
       <Filter>ecs\system\message\protobuf</Filter>
     </ClInclude>
-    <ClInclude Include="state_template.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="util_string.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="console.h">
       <Filter>entity\console</Filter>
     </ClInclude>
     <ClInclude Include="robot_test.h">
       <Filter>server\robots</Filter>
-    </ClInclude>
-    <ClInclude Include="util_time.h">
-      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="base_buffer.h">
       <Filter>entity\network\buffer</Filter>
@@ -63,9 +51,6 @@
     </ClInclude>
     <ClInclude Include="cache_swap.h">
       <Filter>ecs\cache</Filter>
-    </ClInclude>
-    <ClInclude Include="global.h">
-      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="object_pool.h">
       <Filter>pool</Filter>
@@ -81,15 +66,6 @@
     </ClInclude>
     <ClInclude Include="create_component.h">
       <Filter>entity\create</Filter>
-    </ClInclude>
-    <ClInclude Include="singleton.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="sn_object.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="socket_object.h">
-      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="system.h">
       <Filter>ecs\system</Filter>
@@ -112,9 +88,6 @@
     <ClInclude Include="network_interface.h">
       <Filter>entity\network</Filter>
     </ClInclude>
-    <ClInclude Include="disposable.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="regist_to_factory.h">
       <Filter>ecs\factory</Filter>
     </ClInclude>
@@ -123,6 +96,48 @@
     </ClInclude>
     <ClInclude Include="console_cmd_pool.h">
       <Filter>entity\console</Filter>
+    </ClInclude>
+    <ClInclude Include="log4.h">
+      <Filter>common\log4</Filter>
+    </ClInclude>
+    <ClInclude Include="log4_help.h">
+      <Filter>common\log4</Filter>
+    </ClInclude>
+    <ClInclude Include="yaml.h">
+      <Filter>common\yaml</Filter>
+    </ClInclude>
+    <ClInclude Include="res_path.h">
+      <Filter>common\res_path</Filter>
+    </ClInclude>
+    <ClInclude Include="global.h">
+      <Filter>common\global</Filter>
+    </ClInclude>
+    <ClInclude Include="app_type_mgr.h">
+      <Filter>common\app_type</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>common\base</Filter>
+    </ClInclude>
+    <ClInclude Include="disposable.h">
+      <Filter>common\base</Filter>
+    </ClInclude>
+    <ClInclude Include="singleton.h">
+      <Filter>common\base</Filter>
+    </ClInclude>
+    <ClInclude Include="sn_object.h">
+      <Filter>common\base</Filter>
+    </ClInclude>
+    <ClInclude Include="socket_object.h">
+      <Filter>common\base</Filter>
+    </ClInclude>
+    <ClInclude Include="state_template.h">
+      <Filter>common\base</Filter>
+    </ClInclude>
+    <ClInclude Include="util_string.h">
+      <Filter>common\base</Filter>
+    </ClInclude>
+    <ClInclude Include="util_time.h">
+      <Filter>common\base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -168,9 +183,6 @@
     <ClCompile Include="network_connector.cpp">
       <Filter>entity\network</Filter>
     </ClCompile>
-    <ClCompile Include="global.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="object_pool_mgr.cpp">
       <Filter>pool</Filter>
     </ClCompile>
@@ -197,6 +209,24 @@
     </ClCompile>
     <ClCompile Include="console_cmd_pool.cpp">
       <Filter>entity\console</Filter>
+    </ClCompile>
+    <ClCompile Include="log4.cpp">
+      <Filter>common\log4</Filter>
+    </ClCompile>
+    <ClCompile Include="log4_help.cpp">
+      <Filter>common\log4</Filter>
+    </ClCompile>
+    <ClCompile Include="yaml.cpp">
+      <Filter>common\yaml</Filter>
+    </ClCompile>
+    <ClCompile Include="res_path.cpp">
+      <Filter>common\res_path</Filter>
+    </ClCompile>
+    <ClCompile Include="global.cpp">
+      <Filter>common\global</Filter>
+    </ClCompile>
+    <ClCompile Include="app_type_mgr.cpp">
+      <Filter>common\app_type</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -265,6 +295,24 @@
     </Filter>
     <Filter Include="entity\network\locator">
       <UniqueIdentifier>{8261de6d-b019-416b-a976-56d07de1adf6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\global">
+      <UniqueIdentifier>{3bfabaa4-306a-4b3a-a3fd-d594b5161b53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\app_type">
+      <UniqueIdentifier>{767ee24c-3a59-46d4-b00b-20216b5fffe1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\log4">
+      <UniqueIdentifier>{a2dde0be-9634-4351-9736-ebc7375ace65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\res_path">
+      <UniqueIdentifier>{91c52d19-5b0b-4cc9-9b2e-8fdd0653decd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\yaml">
+      <UniqueIdentifier>{2cce1509-5d39-4dfb-a3e1-b3861ed7b002}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\base">
+      <UniqueIdentifier>{0b7ff889-b19b-43ab-a63e-50a9c661dcbe}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

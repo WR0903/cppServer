@@ -5,6 +5,10 @@
 #include "console.h"
 #include "console_cmd_pool.h"
 #include "network_locator.h"
+#include "res_path.h"
+#include "app_type_mgr.h"
+#include "yaml.h"
+#include "log4.h"
 
 #if ENGINE_PLATFORM != PLATFORM_WIN32
 #include <sys/time.h>
@@ -15,28 +19,33 @@ ServerApp::ServerApp(APP_TYPE  appType)
     signal(SIGINT, Signalhandler);
 
     _appType = appType;
+    Global::Instance(_appType, 1);
 
+    // 全局数据
+    AppTypeMgr::Instance();
     DynamicObjectPoolMgr::Instance();
-    Global::Instance();
-    Global::GetInstance()->SetAppInfo(_appType, 1);
+    ResPath::Instance();
+    Log4::Instance(_appType);
+    Yaml::Instance();
 
     ThreadMgr::Instance();
     _pThreadMgr = ThreadMgr::GetInstance();
     UpdateTime();
 
+    // 全局 Component
+    _pThreadMgr->AddComponent<NetworkLocator>();
+    auto pConsole = _pThreadMgr->AddComponent<Console>();
+    pConsole->Register<ConsoleCmdPool>("pool");
+
     // 创建线程
-    for (int i = 0; i < 3; i++)
+    const auto pLoginConfig = dynamic_cast<AppConfig*>(Yaml::GetInstance()->GetConfig(_appType));
+    for (int i = 0; i < pLoginConfig->ThreadNum; i++)
     {
         _pThreadMgr->CreateThread();
     }
 
+    _pThreadMgr->InitComponent();
     _pThreadMgr->StartAllThread();
-
-    // 全局 Component
-    _pThreadMgr->AddComponent<NetworkLocator>();
-
-    auto pConsole = _pThreadMgr->AddComponent<Console>();
-    pConsole->Register<ConsoleCmdPool>("pool");
 }
 
 ServerApp::~ServerApp()
@@ -116,7 +125,7 @@ void ServerApp::UpdateTime() const
     struct timeval tv;
     gettimeofday(&tv, nullptr);
     Global::GetInstance()->TimeTick = tv.tv_sec * 1000 +  tv.tv_usec * 0.001;
-#else
+#else    
     auto timeValue = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     Global::GetInstance()->TimeTick = timeValue.time_since_epoch().count();
 #endif
