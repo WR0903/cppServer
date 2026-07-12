@@ -68,30 +68,30 @@ enum MsgId : int {
   MI_CreateComponent = 51,
   MI_Ping = 101,
   C2L_AccountCheck = 1001,
-  L2C_AccountCheckRs = 1002,
+  C2L_AccountCheckRs = 1002,
   MI_AccountQueryOnlineToRedis = 1003,
   MI_AccountQueryOnlineToRedisRs = 1004,
   MI_AccountCheckToHttpRs = 1005,
   L2DB_QueryPlayerList = 1010,
-  DB2L_QueryPlayerListRs = 1011,
+  L2DB_QueryPlayerListRs = 1011,
   G2DB_QueryPlayer = 1101,
-  DB2G_QueryPlayerRs = 1102,
+  G2DB_QueryPlayerRs = 1102,
   L2C_PlayerList = 1103,
   C2L_CreatePlayer = 1105,
-  L2C_CreatePlayerRs = 1106,
+  C2L_CreatePlayerRs = 1106,
   L2DB_CreatePlayer = 1107,
-  DB2L_CreatePlayerRs = 1108,
+  L2DB_CreatePlayerRs = 1108,
   G2DB_SavePlayer = 1800,
   MI_RobotSyncState = 5001,
   MI_RobotTestBegin = 5100,
   MI_RobotTestEnd = 5101,
-  MI_CmdShowThreadEntites = 20003,
+  MI_CmdThread = 20003,
   MsgId_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   MsgId_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool MsgId_IsValid(int value);
 constexpr MsgId MsgId_MIN = None;
-constexpr MsgId MsgId_MAX = MI_CmdShowThreadEntites;
+constexpr MsgId MsgId_MAX = MI_CmdThread;
 constexpr int MsgId_ARRAYSIZE = MsgId_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* MsgId_descriptor();

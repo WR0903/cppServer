@@ -1,16 +1,18 @@
 #include "mysql_connector.h"
 #include "libserver/log4_help.h"
+#include "libserver/component_help.h"
+
 #include <thread>
 
 #define MysqlPingTime 2 * 60
 
-void MysqlConnector::AwakeFromPool()
+void MysqlConnector::Awake()
 {
     mysql_thread_init();
 
     LOG_DEBUG("MysqlConnector::Awake. id:" << std::this_thread::get_id());
 
-    auto pYaml = Yaml::GetInstance();
+    auto pYaml = ComponentHelp::GetYaml();
     auto pConfig = pYaml->GetConfig(APP_DB_MGR);
     auto pDbCfig = dynamic_cast<DBMgrConfig*>(pConfig);
 
@@ -139,6 +141,7 @@ void MysqlConnector::CleanStmts()
     for (auto one : _mapStmt)
     {
         one.second->Close();
+        delete one.second;
     }
 
     _mapStmt.clear();
@@ -267,7 +270,7 @@ void MysqlConnector::AddParamInt(DatabaseStmt* stmt, int val)
 void MysqlConnector::AddParamStr(DatabaseStmt* stmt, const char* val)
 {
     MYSQL_BIND* pBind = &stmt->bind[stmt->bind_index];
-    int len = strlen(val);
+    size_t len = strlen(val);
     if (len >= MAX_BIND_STR)
     {
         LOG_ERROR("add_str_param error, str size:" << len << " out of limit:" << MAX_BIND_STR);

@@ -3,6 +3,8 @@
 #include "network_locator.h"
 #include "entity_system.h"
 #include "log4_help.h"
+#include "object_pool_packet.h"
+#include "component_help.h"
 
 void MessageSystemHelp::DispatchPacket(Packet* pPacket)
 {
@@ -55,7 +57,7 @@ void MessageSystemHelp::SendPacket(Packet* packet, APP_TYPE appType, int appId)
         }
         else
         {
-            LOG_ERROR("can't find network. appType:" << AppTypeMgr::GetInstance()->GetAppName(appType).c_str() << " appId:" << appId);
+            LOG_ERROR("can't find network. appType:" << GetAppName(appType) << " appId:" << appId);
         }
     }
 }
@@ -84,5 +86,5 @@ void MessageSystemHelp::SendPacket(Packet* pPacket)
 
 Packet* MessageSystemHelp::CreatePacket(Proto::MsgId msgId, SOCKET socket)
 {
-    return DynamicObjectPool<Packet>::GetInstance()->MallocObject(nullptr, msgId, socket);
+    return DynamicPacketPool::GetInstance()->MallocPacket(msgId, socket);
 }

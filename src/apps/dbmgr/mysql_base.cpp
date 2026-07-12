@@ -7,11 +7,11 @@ bool MysqlBase::ConnectInit()
     Disconnect();
 
     // 由mysql库自行new出Mysql对象的方式
-    _pMysql = mysql_init(nullptr);
+    _pMysql = new MYSQL();
+    _pMysql = mysql_init(_pMysql);
     if (_pMysql == nullptr)
     {
         CheckMysqlError();
-        LOG_ERROR("mysql_init == nullptr");
         return false;
     }
 
@@ -43,6 +43,7 @@ void MysqlBase::Disconnect()
     if (_pMysql != nullptr)
     {
         mysql_close(_pMysql);
+        delete _pMysql;
         _pMysql = nullptr;
     }
 }

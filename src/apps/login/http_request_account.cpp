@@ -6,8 +6,9 @@
 #include "libserver/packet.h"
 #include "libserver/update_component.h"
 #include "libserver/yaml.h"
+#include "libserver/component_help.h"
 
-void HttpRequestAccount::AwakeFromPool(std::string account, std::string password)
+void HttpRequestAccount::Awake(std::string account, std::string password)
 {
     // update
     auto pUpdateComponent = AddComponent<UpdateComponent>();
@@ -17,16 +18,18 @@ void HttpRequestAccount::AwakeFromPool(std::string account, std::string password
     _account = account;
     _password = password;
     _curlRs = CRS_None;
-    _method = HttpResquestMethod::HRM_Post;
+    _method = HttpResquestMethod::HRM_Get;
+    _state = HttpResquestState::HRS_Send;
 
     // yaml
-    auto pYaml = Yaml::GetInstance();
+    auto pYaml = ComponentHelp::GetYaml();
     const auto pLoginConfig = dynamic_cast<LoginConfig*>(pYaml->GetConfig(APP_LOGIN));
 
     _url = pLoginConfig->UrlLogin;
     _params.append("account=").append(_account).append("&password=").append(_password);
 
-    //std::cout << "account check url:" << _url.c_str() << "?" << _params.c_str() << std::endl;
+    // timeout
+    AddTimer(1, 10, false, 0, BindFunP0(this, &HttpRequestAccount::ProcessTimeout));
 }
 
 void HttpRequestAccount::ProcessMsg(Json::Value value)

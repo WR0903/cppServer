@@ -31,6 +31,9 @@ void RobotState::EnterState()
     auto pPacket = MessageSystemHelp::CreatePacket(Proto::MsgId::MI_RobotSyncState, 0);
     pPacket->SerializeToBuffer(protoState);
     ThreadMgr::GetInstance()->GetMessageSystem()->AddPacketToList(pPacket);
+    
+    // 非常规途径，手动打开Ref
+    pPacket->OpenRef();
 
     OnEnterState();
 }

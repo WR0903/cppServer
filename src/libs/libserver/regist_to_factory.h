@@ -15,6 +15,8 @@ public:
 
     static T* CreateComponent(SystemManager* pSysMgr, Targs... args)
     {
-        return DynamicObjectPool<T>::GetInstance()->MallocObject(pSysMgr, std::forward<Targs>(args)...);
+        auto pCollector = pSysMgr->GetPoolCollector();
+        auto pPool = (DynamicObjectPool<T>*)pCollector->GetPool<T>();
+        return pPool->MallocObject(pSysMgr, std::forward<Targs>(args)...);
     }
 };

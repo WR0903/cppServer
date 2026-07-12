@@ -2,7 +2,7 @@
 #include "disposable.h"
 #include "common.h"
 #include "thread_mgr.h"
-#include "app_type_mgr.h"
+#include "app_type.h"
 
 #if ENGINE_PLATFORM != PLATFORM_WIN32
 #include <signal.h>
@@ -19,14 +19,13 @@ public:
     void Dispose() override;
 
     void Run();
-    void UpdateTime() const;
 
     // signal
     static void Signalhandler(int signalValue);
 
 protected:
-	ThreadMgr * _pThreadMgr;
-	APP_TYPE _appType;
+    ThreadMgr* _pThreadMgr{ nullptr };
+    APP_TYPE _appType;
 
     int _argc;
     char** _argv;

@@ -5,7 +5,7 @@
 class HttpRequestAccount : public HttpRequest, public IAwakeFromPoolSystem<std::string, std::string>
 {
 public:
-    void AwakeFromPool(std::string account, std::string password);
+    void Awake(std::string account, std::string password);
 
 protected:
     void ProcessMsg(Json::Value value) override;

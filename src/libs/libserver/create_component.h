@@ -5,10 +5,10 @@
 #include "message_system.h"
 
 class Packet;
-class CreateComponentC :public Entity<CreateComponentC>, public IAwakeFromPoolSystem<>
+class CreateComponentC :public Entity<CreateComponentC>, public IAwakeSystem<>
 {
 public:
-    void AwakeFromPool() override;
+    void Awake() override;
     void BackToPool() override;
 
 private:

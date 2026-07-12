@@ -13,9 +13,6 @@
     <ClInclude Include="network_listen.h">
       <Filter>entity\network</Filter>
     </ClInclude>
-    <ClInclude Include="packet.h">
-      <Filter>entity\network\buffer</Filter>
-    </ClInclude>
     <ClInclude Include="connect_obj.h">
       <Filter>entity\network\connect_obj</Filter>
     </ClInclude>
@@ -53,13 +50,10 @@
       <Filter>ecs\cache</Filter>
     </ClInclude>
     <ClInclude Include="object_pool.h">
-      <Filter>pool</Filter>
+      <Filter>entity\pool</Filter>
     </ClInclude>
     <ClInclude Include="object_pool_interface.h">
-      <Filter>pool</Filter>
-    </ClInclude>
-    <ClInclude Include="object_pool_mgr.h">
-      <Filter>pool</Filter>
+      <Filter>entity\pool</Filter>
     </ClInclude>
     <ClInclude Include="component_factory.h">
       <Filter>ecs\factory</Filter>
@@ -91,9 +85,6 @@
     <ClInclude Include="network_locator.h">
       <Filter>entity\network\locator</Filter>
     </ClInclude>
-    <ClInclude Include="console_cmd_pool.h">
-      <Filter>entity\console</Filter>
-    </ClInclude>
     <ClInclude Include="log4.h">
       <Filter>common\log4</Filter>
     </ClInclude>
@@ -108,9 +99,6 @@
     </ClInclude>
     <ClInclude Include="global.h">
       <Filter>common\global</Filter>
-    </ClInclude>
-    <ClInclude Include="app_type_mgr.h">
-      <Filter>common\app_type</Filter>
     </ClInclude>
     <ClInclude Include="common.h">
       <Filter>common\base</Filter>
@@ -172,8 +160,26 @@
     <ClInclude Include="console_thread_component.h">
       <Filter>entity\console\thread</Filter>
     </ClInclude>
+    <ClInclude Include="object_pool_collector.h">
+      <Filter>entity\pool</Filter>
+    </ClInclude>
+    <ClInclude Include="object_pool_packet.h">
+      <Filter>entity\pool</Filter>
+    </ClInclude>
     <ClInclude Include="thread_collector_exclusive.h">
       <Filter>thread\collector</Filter>
+    </ClInclude>
+    <ClInclude Include="component_help.h">
+      <Filter>ecs\system\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="app_type.h">
+      <Filter>common\base</Filter>
+    </ClInclude>
+    <ClInclude Include="packet.h">
+      <Filter>entity\network\packet</Filter>
+    </ClInclude>
+    <ClInclude Include="timer_component.h">
+      <Filter>ecs\timer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -210,17 +216,11 @@
     <ClCompile Include="robot_test.cpp">
       <Filter>server\robots</Filter>
     </ClCompile>
-    <ClCompile Include="packet.cpp">
-      <Filter>entity\network\buffer</Filter>
-    </ClCompile>
     <ClCompile Include="base_buffer.cpp">
       <Filter>entity\network\buffer</Filter>
     </ClCompile>
     <ClCompile Include="network_connector.cpp">
       <Filter>entity\network</Filter>
-    </ClCompile>
-    <ClCompile Include="object_pool_mgr.cpp">
-      <Filter>pool</Filter>
     </ClCompile>
     <ClCompile Include="create_component.cpp">
       <Filter>entity\create</Filter>
@@ -240,9 +240,6 @@
     <ClCompile Include="network_locator.cpp">
       <Filter>entity\network\locator</Filter>
     </ClCompile>
-    <ClCompile Include="console_cmd_pool.cpp">
-      <Filter>entity\console</Filter>
-    </ClCompile>
     <ClCompile Include="log4.cpp">
       <Filter>common\log4</Filter>
     </ClCompile>
@@ -257,9 +254,6 @@
     </ClCompile>
     <ClCompile Include="global.cpp">
       <Filter>common\global</Filter>
-    </ClCompile>
-    <ClCompile Include="app_type_mgr.cpp">
-      <Filter>common\app_type</Filter>
     </ClCompile>
     <ClCompile Include="protobuf\db.pb.cc">
       <Filter>ecs\system\message\protobuf</Filter>
@@ -294,8 +288,26 @@
     <ClCompile Include="console_thread_component.cpp">
       <Filter>entity\console\thread</Filter>
     </ClCompile>
+    <ClCompile Include="object_pool_collector.cpp">
+      <Filter>entity\pool</Filter>
+    </ClCompile>
+    <ClCompile Include="object_pool_packet.cpp">
+      <Filter>entity\pool</Filter>
+    </ClCompile>
     <ClCompile Include="thread_collector_exclusive.cpp">
       <Filter>thread\collector</Filter>
+    </ClCompile>
+    <ClCompile Include="component_help.cpp">
+      <Filter>ecs\system\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="sn_object.cpp">
+      <Filter>common\base</Filter>
+    </ClCompile>
+    <ClCompile Include="packet.cpp">
+      <Filter>entity\network\packet</Filter>
+    </ClCompile>
+    <ClCompile Include="timer_component.cpp">
+      <Filter>ecs\timer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -313,9 +325,6 @@
     </Filter>
     <Filter Include="server\robots">
       <UniqueIdentifier>{a02d3dab-c0e7-4743-9e54-aca75e41eab5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="pool">
-      <UniqueIdentifier>{d5ccb2d0-253c-4e90-b028-696f9ec02a07}</UniqueIdentifier>
     </Filter>
     <Filter Include="ecs">
       <UniqueIdentifier>{63835dd9-0632-4927-adcc-0b6c65810946}</UniqueIdentifier>
@@ -365,9 +374,6 @@
     <Filter Include="common\global">
       <UniqueIdentifier>{3bfabaa4-306a-4b3a-a3fd-d594b5161b53}</UniqueIdentifier>
     </Filter>
-    <Filter Include="common\app_type">
-      <UniqueIdentifier>{767ee24c-3a59-46d4-b00b-20216b5fffe1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="common\log4">
       <UniqueIdentifier>{a2dde0be-9634-4351-9736-ebc7375ace65}</UniqueIdentifier>
     </Filter>
@@ -391,6 +397,15 @@
     </Filter>
     <Filter Include="entity\console\thread">
       <UniqueIdentifier>{2222be98-7c6d-485d-987a-36985ce5396e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\pool">
+      <UniqueIdentifier>{d5ccb2d0-253c-4e90-b028-696f9ec02a07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\network\packet">
+      <UniqueIdentifier>{d365c51e-ae1e-407e-8300-65e19c8a91c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\timer">
+      <UniqueIdentifier>{5c68a91c-06df-44e3-b5d0-fccd004293aa}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

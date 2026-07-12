@@ -2,9 +2,15 @@
 #include "common.h"
 #include "message_system.h"
 #include "yaml.h"
+#include "log4.h"
+#include "res_path.h"
 #include "packet.h"
-
 #include "log4_help.h"
+
+#include "network_locator.h"
+#include "console.h"
+#include "console_cmd_thread.h"
+
 #include "thread_collector_exclusive.h"
 
 #include <iostream>
@@ -15,11 +21,10 @@ ThreadMgr::ThreadMgr()
 
 void ThreadMgr::InitializeThread()
 {
-    const auto pConfig = Yaml::GetInstance()->GetConfig(Global::GetInstance()->GetCurAppType());
+    auto pGlobal = Global::GetInstance();
+    auto pYaml = GetEntitySystem()->GetComponent<Yaml>();
+    const auto pConfig = pYaml->GetConfig(pGlobal->GetCurAppType());
     auto pAppCofig = dynamic_cast<AppConfig*>(pConfig);
-
-    // 线程程上的基本组件
-    InitComponent(ThreadType::MainThread);
 
     if (pAppCofig->LogicThreadNum > 0)
     {
@@ -35,7 +40,9 @@ void ThreadMgr::InitializeThread()
 void ThreadMgr::CreateThread(ThreadType iType, int num)
 {
     // 不需要创建线程，单线程
-    const auto pConfig = Yaml::GetInstance()->GetConfig(Global::GetInstance()->GetCurAppType());
+    auto pGlobal = Global::GetInstance();
+    auto pYaml = GetEntitySystem()->GetComponent<Yaml>();
+    const auto pConfig = pYaml->GetConfig(pGlobal->GetCurAppType());
     auto pAppCofig = dynamic_cast<AppConfig*>(pConfig);
     if (pAppCofig->LogicThreadNum == 0 && pAppCofig->MysqlThreadNum == 0)
         return;
@@ -56,6 +63,21 @@ void ThreadMgr::CreateThread(ThreadType iType, int num)
     }
 }
 
+void ThreadMgr::InitializeGlobalComponent(APP_TYPE ppType, int appId)
+{
+    // 全局 Component
+    GetEntitySystem()->AddComponent<ResPath>();
+    GetEntitySystem()->AddComponent<Log4>(ppType);
+    GetEntitySystem()->AddComponent<Yaml>();
+    GetEntitySystem()->AddComponent<NetworkLocator>();
+
+    auto pConsole = GetEntitySystem()->AddComponent<Console>();
+    pConsole->Register<ConsoleCmdThread>("thread");
+
+    // 线程程上的基本组件
+    InitComponent(ThreadType::MainThread);
+}
+
 void ThreadMgr::Update()
 {
     UpdateCreatePacket();
@@ -74,10 +96,10 @@ void ThreadMgr::UpdateCreatePacket()
     auto pList = _createPackets.GetReaderCache();
     for (auto iter = pList->begin(); iter != pList->end(); ++iter)
     {
-        auto packet = (*iter);
+        auto pPacket = (*iter);
         if (_threads.size() > 0)
         {
-            auto pCreateProto = packet->ParseToProto<Proto::CreateComponent>();
+            auto pCreateProto = pPacket->ParseToProto<Proto::CreateComponent>();
             auto threadType = (ThreadType)(pCreateProto.thread_type());
             if (_threads.find(threadType) == _threads.end())
             {
@@ -86,13 +108,15 @@ void ThreadMgr::UpdateCreatePacket()
             }
 
             auto pThreadCollector = _threads[threadType];
-            pThreadCollector->HandlerCreateMessage(packet);
+            pThreadCollector->HandlerCreateMessage(pPacket);
         }
         else
         {
             // 单线程
-            GetMessageSystem()->AddPacketToList(packet);
+            GetMessageSystem()->AddPacketToList(pPacket);
         }
+
+        pPacket->OpenRef();
     }
     pList->clear();
 }
@@ -118,6 +142,8 @@ void ThreadMgr::UpdateDispatchPacket()
         {
             iter->second->HandlerMessage(pPacket);
         }
+
+        pPacket->OpenRef();
     }
     pList->clear();
 }
@@ -134,11 +160,19 @@ bool ThreadMgr::IsStopAll()
     return true;
 }
 
-bool ThreadMgr::IsDisposeAll()
+void ThreadMgr::DestroyThread()
 {
     for (auto iter = _threads.begin(); iter != _threads.end(); ++iter)
     {
-        if (!iter->second->IsDisposeAll())
+        iter->second->DestroyThread();
+    }
+}
+
+bool ThreadMgr::IsDestroyAll()
+{
+    for (auto iter = _threads.begin(); iter != _threads.end(); ++iter)
+    {
+        if (!iter->second->IsDestroyAll())
         {
             return false;
         }
@@ -152,8 +186,9 @@ void ThreadMgr::Dispose()
 
     for (auto iter = _threads.begin(); iter != _threads.end(); ++iter)
     {
-        auto pCollector = iter->second;
-        delete pCollector;
+        auto pObj = iter->second;
+        pObj->Dispose();
+        delete pObj;
     }
 
     _threads.clear();
@@ -164,3 +199,4 @@ void ThreadMgr::DispatchPacket(Packet* pPacket)
     std::lock_guard<std::mutex> guard(_packet_lock);
     _packets.GetWriterCache()->emplace_back(pPacket);
 }
+

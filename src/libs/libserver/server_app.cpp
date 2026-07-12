@@ -1,20 +1,12 @@
 #include "common.h"
 #include "server_app.h"
-#include "object_pool_mgr.h"
 
-#include "console.h"
-#include "console_cmd_pool.h"
-#include "console_cmd_thread.h"
-
-#include "network_locator.h"
 #include "res_path.h"
-#include "app_type_mgr.h"
+#include "app_type.h"
 #include "yaml.h"
-#include "log4.h"
 
-#if ENGINE_PLATFORM != PLATFORM_WIN32
-#include <sys/time.h>
-#endif
+#include "object_pool_packet.h"
+#include "component_help.h"
 
 ServerApp::ServerApp(APP_TYPE appType, int argc, char* argv[])
 {
@@ -25,31 +17,24 @@ ServerApp::ServerApp(APP_TYPE appType, int argc, char* argv[])
 
 void ServerApp::Dispose()
 {
+    DynamicPacketPool::GetInstance()->Dispose();
+    DynamicPacketPool::DestroyInstance();
+
     ThreadMgr::DestroyInstance();
-    Global::DestroyInstance();
 }
 
 void ServerApp::Initialize()
 {
     signal(SIGINT, Signalhandler);
-    Global::Instance(_appType, 1);
 
-    // 全局数据
-    AppTypeMgr::Instance();
-    DynamicObjectPoolMgr::Instance();
-    ResPath::Instance();
-    Log4::Instance(_appType);
-    Yaml::Instance();
+    Global::Instance(_appType, 0);
 
-    ThreadMgr::Instance();
-    _pThreadMgr = ThreadMgr::GetInstance();
-    UpdateTime();
+    // Packet对象池
+    DynamicPacketPool::Instance();
 
-    // 全局 Component
-    _pThreadMgr->GetEntitySystem()->AddComponent<NetworkLocator>();
-    auto pConsole = _pThreadMgr->GetEntitySystem()->AddComponent<Console>();
-    pConsole->Register<ConsoleCmdPool>("pool");
-    pConsole->Register<ConsoleCmdThread>("thread");
+    // 全局基础组件
+    _pThreadMgr = ThreadMgr::Instance();
+    _pThreadMgr->InitializeGlobalComponent(_appType, 0);
 
     // 创建线程
     _pThreadMgr->InitializeThread();
@@ -57,6 +42,7 @@ void ServerApp::Initialize()
 
 void ServerApp::Signalhandler(const int signalValue)
 {
+    auto pGlobal = Global::GetInstance();
     switch (signalValue)
     {
 #if ENGINE_PLATFORM != PLATFORM_WIN32
@@ -66,20 +52,23 @@ void ServerApp::Signalhandler(const int signalValue)
 
     case SIGTERM:
     case SIGINT:
-        Global::GetInstance()->IsStop = true;
+        pGlobal->IsStop = true;
         break;
     }
 
-    std::cout << "\nrecv signal. value:" << signalValue << " Global IsStop::" << Global::GetInstance()->IsStop << std::endl;
+    std::cout << "\nrecv signal. value:" << signalValue << " Global IsStop::" << pGlobal->IsStop << std::endl;
 }
 
 void ServerApp::Run()
 {
-    while (!Global::GetInstance()->IsStop)
+    log4cplus::initialize();
+
+    auto pGlobal = Global::GetInstance();
+    while (!pGlobal->IsStop)
     {
-        UpdateTime();
+        pGlobal->UpdateTime();
         _pThreadMgr->Update();
-        DynamicObjectPoolMgr::GetInstance()->Update();
+        DynamicPacketPool::GetInstance()->Update();
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
@@ -92,45 +81,18 @@ void ServerApp::Run()
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     } while (!isStop);
 
-    // 释放所有线程资源
-    std::cout << "disposing all threads..." << std::endl;
-
-    // 1.子线程资源
-    bool isDispose;
+    // 销毁线程
+    std::cout << "destroy all threads..." << std::endl;
+    _pThreadMgr->DestroyThread();
+    bool isDestroy;
     do
     {
-        isDispose = _pThreadMgr->IsDisposeAll();
+        isDestroy = _pThreadMgr->IsDestroyAll();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    } while (!isDispose);
+    } while (!isDestroy);
 
-    // 2.主线程资源
+    // 
     _pThreadMgr->Dispose();
 
-    std::cout << "disposing all pool..." << std::endl;
-    DynamicObjectPoolMgr::GetInstance()->Update();
-    DynamicObjectPoolMgr::GetInstance()->Dispose();
-    DynamicObjectPoolMgr::DestroyInstance();
-}
-
-void ServerApp::UpdateTime() const
-{
-#if ENGINE_PLATFORM != PLATFORM_WIN32
-    struct timeval tv;
-    gettimeofday(&tv, nullptr);
-    Global::GetInstance()->TimeTick = tv.tv_sec * 1000 +  tv.tv_usec * 0.001;
-#else
-    auto timeValue = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-    Global::GetInstance()->TimeTick = timeValue.time_since_epoch().count();
-#endif
-
-//#if ENGINE_PLATFORM != PLATFORM_WIN32
-//    auto tt = std::chrono::system_clock::to_time_t(timeValue);
-//    struct tm* ptm = localtime(&tt);
-//    Global::GetInstance()->YearDay = ptm->tm_yday;
-//#else
-//    auto tt = std::chrono::system_clock::to_time_t(timeValue);
-//    struct tm tm;
-//    localtime_s(&tm, &tt);
-//    Global::GetInstance()->YearDay = tm.tm_yday;
-//#endif
+    log4cplus::deinitialize();
 }

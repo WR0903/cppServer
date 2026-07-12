@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mysql_base.h"
+#include "libserver/singleton.h"
 
 #include <functional>
 

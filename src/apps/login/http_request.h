@@ -5,25 +5,24 @@
 #include <curl/curl.h>
 #include <json/json.h>  
 
-enum HttpResquestState 
+enum class HttpResquestState 
 {
-    HRS_Send,      // 发送数据
+    HRS_Send = 0 ,      // 发送数据
     HRS_Process,   // 等待数据
     HRS_Over,      // 完成
     HRS_NoActive,	  // 完成后的非激活状态，等待线程删除
     HRS_Timeout,	  // 请求超时
 };
 
-enum HttpResquestMethod
+enum class HttpResquestMethod
 {
-    HRM_Post,
+    HRM_Post = 0,
     HRM_Get,
 };
 
-
 enum CURLMRS
 {
-    CRS_None,
+    CRS_None = 0,
     CRS_OK,
     CRS_CURLM_CALL_MULTI_PERFORM, // call curl_multi_perform
     CRS_TIMEOUT,
@@ -43,18 +42,18 @@ protected:
     virtual bool ProcessOver();
 
     virtual bool Process();
-    virtual void ProcessMsg();
+    virtual bool ProcessMsg();
     virtual void ProcessMsg(Json::Value value) = 0;
 
 protected:
-    HttpResquestMethod _method{ HRM_Get };
+    HttpResquestMethod _method{ HttpResquestMethod::HRM_Get };
     CURL* _pCurl{ nullptr };
     CURLM *_pMultiHandle{ nullptr };
     CURLMRS _curlRs;
 
     std::string _url, _params;
     std::string _responseBuffer;
-    HttpResquestState State{ HRS_Send };
+    HttpResquestState _state{ HttpResquestState::HRS_Send };
 
     std::string _account;
 };

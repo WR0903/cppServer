@@ -8,7 +8,7 @@ class MessageComponent : public Component<MessageComponent>, public IAwakeFromPo
 {
 public:
     ~MessageComponent();
-    void AwakeFromPool(IMessageCallBackFunction* pCallback) override;
+    void Awake(IMessageCallBackFunction* pCallback) override;
     void BackToPool() override;
 
     bool IsFollowMsgId(Packet* packet) const;

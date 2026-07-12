@@ -2,10 +2,10 @@
 
 #include "network.h"
 
-class NetworkListen :public Network, public IAwakeFromPoolSystem<std::string, int>
+class NetworkListen :public Network, public IAwakeSystem<std::string, int>
 {
 public:
-    void AwakeFromPool(std::string ip, int port);
+    void Awake(std::string ip, int port);
     void Update();
     const char* GetTypeName() override;
 

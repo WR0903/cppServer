@@ -1,5 +1,6 @@
 #pragma once
 #include "component.h"
+
 #include "global.h"
 #include "cache_swap.h"
 #include "disposable.h"
@@ -8,6 +9,7 @@
 #include "component_collections.h"
 #include "system_manager.h"
 #include "log4_help.h"
+#include "object_pool_collector.h"
 
 class Packet;
 
@@ -64,12 +66,18 @@ inline void EntitySystem::AddComponent(T* pComponent)
 
     auto pEntities = _objSystems[typeHashCode];
     pEntities->Add(dynamic_cast<IComponent*>(pComponent));
+    pComponent->SetSystemManager(_systemManager);
 }
 
 template <class T, typename ... TArgs>
 T* EntitySystem::AddComponent(TArgs... args)
 {
-    auto pComponent = DynamicObjectPool<T>::GetInstance()->MallocObject(_systemManager, std::forward<TArgs>(args)...);
+    auto pCollector = _systemManager->GetPoolCollector();
+    auto pPool = (DynamicObjectPool<T>*)pCollector->GetPool<T>();
+    T* pComponent = pPool->MallocObject(_systemManager, std::forward<TArgs>(args)...);
+    if (pComponent == nullptr)
+        return nullptr;
+
     AddComponent(pComponent);
     return pComponent;
 }

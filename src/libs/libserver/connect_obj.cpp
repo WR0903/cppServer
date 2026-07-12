@@ -9,6 +9,9 @@
 #include "system_manager.h"
 #include "message_system.h"
 #include "message_system_help.h"
+#include "component_help.h"
+
+#include "object_pool_packet.h"
 
 ConnectObj::ConnectObj()
 {
@@ -26,7 +29,7 @@ ConnectObj::~ConnectObj()
         delete _sendBuffer;
 }
 
-void ConnectObj::AwakeFromPool(SOCKET socket)
+void ConnectObj::Awake(SOCKET socket)
 {
     _socket = socket;
 }
@@ -121,6 +124,7 @@ bool ConnectObj::Recv()
                 else
                 {
                     GetSystemManager()->GetMessageSystem()->AddPacketToList(pPacket);
+                    pPacket->OpenRef();
                 }
             }
         }
@@ -141,6 +145,7 @@ void ConnectObj::SendPacket(Packet* pPacket) const
     //std::cout << "send msg:" << name.c_str() << std::endl;
 
     _sendBuffer->AddPacket(pPacket);
+    DynamicPacketPool::GetInstance()->FreeObject(pPacket);
 }
 
 bool ConnectObj::Send() const
@@ -181,4 +186,5 @@ void ConnectObj::Close()
     // ConnectoObj 一定和Network在同一个线程中的，这里，只需要要本线程发送数据即可
     const auto pPacketDis = MessageSystemHelp::CreatePacket(Proto::MsgId::MI_NetworkRequestDisconnect, GetSocket());
     GetSystemManager()->GetMessageSystem()->AddPacketToList(pPacketDis);
+    pPacketDis->OpenRef();
 }

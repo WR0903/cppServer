@@ -10,6 +10,7 @@
 
 class EntitySystem;
 class MessageSystem;
+class DynamicObjectPoolCollector;
 
 class SystemManager : virtual public IDisposable
 {
@@ -22,6 +23,7 @@ public:
 
     MessageSystem* GetMessageSystem() const;
     EntitySystem* GetEntitySystem() const;
+    DynamicObjectPoolCollector* GetPoolCollector() const;
 
     std::default_random_engine* GetRandomEngine() const;
 
@@ -32,4 +34,6 @@ protected:
     std::list<ISystem*> _systems;
 
     std::default_random_engine* _pRandomEngine;
+
+    DynamicObjectPoolCollector* _pPoolCollector;
 };

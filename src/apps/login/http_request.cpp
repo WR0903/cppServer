@@ -19,7 +19,7 @@ size_t WriteFunction(void* buffer, size_t size, size_t nmemb, void* lpVoid)
 void HttpRequest::BackToPool()
 {
     _responseBuffer = "";
-    State = HttpResquestState::HRS_Send;
+    _state = HttpResquestState::HRS_Send;
 
     if (_pMultiHandle != nullptr && _pCurl != nullptr )
         curl_multi_remove_handle(_pMultiHandle, _pCurl);
@@ -36,32 +36,32 @@ void HttpRequest::BackToPool()
 
 void HttpRequest::Update()
 {
-    switch (State)
+    switch (_state)
     {
-    case HRS_Send:
+    case HttpResquestState::HRS_Send:
     {
         if (ProcessSend())
-            State = HRS_Process;
+            _state = HttpResquestState::HRS_Process;
     }
     break;
-    case HRS_Process:
+    case HttpResquestState::HRS_Process:
     {
         if (Process())
-            State = HRS_Over;
+            _state = HttpResquestState::HRS_Over;
     }
     break;
-    case HRS_Over:
+    case HttpResquestState::HRS_Over:
     {
         ProcessOver();
-        State = HRS_NoActive;
-        _active = false;
+        _state = HttpResquestState::HRS_NoActive;
+        GetSystemManager()->GetEntitySystem()->RemoveComponent(this);
     }
     break;
-    case HRS_Timeout:
+    case HttpResquestState::HRS_Timeout:
     {
         ProcessTimeout();
-        State = HRS_NoActive;
-        _active = false;
+        _state = HttpResquestState::HRS_NoActive;
+        GetSystemManager()->GetEntitySystem()->RemoveComponent(this);
     }
     break;
     default:
@@ -93,7 +93,7 @@ bool HttpRequest::ProcessSend()
 
     curl_multi_add_handle(_pMultiHandle, _pCurl);
 
-    State = HttpResquestState::HRS_Process;
+    _state = HttpResquestState::HRS_Process;
     return true;
 
 }
@@ -130,22 +130,21 @@ bool HttpRequest::Process()
     if (curlMcode != CURLMcode::CURLM_OK)
     {
         _curlRs = CRS_CURLMError;
-        State = HRS_Timeout;
+        _state = HttpResquestState::HRS_Timeout;
         return true;
     }
 
     // 处理完了，不再处理
     if (running_handle_count == 0)
     {
-        ProcessMsg();
-        return true;
+        return ProcessMsg();
     }
 
     CURLMRS rs = curl_multi_select(_pMultiHandle);
     if (rs != CRS_OK && rs != CRS_CURLM_CALL_MULTI_PERFORM)
     {
         _curlRs = rs;
-        State = HRS_Timeout;
+        _state = HttpResquestState::HRS_Timeout;
         return false;
     }
 
@@ -153,9 +152,10 @@ bool HttpRequest::Process()
     return false;
 }
 
-void HttpRequest::ProcessMsg()
+bool HttpRequest::ProcessMsg()
 {
-    int         msgs_left;
+    bool isRs = true;
+    int msgs_left;
     CURLMsg* msg;
     msg = curl_multi_info_read(_pMultiHandle, &msgs_left);
     if (CURLMSG_DONE == msg->msg)
@@ -180,9 +180,13 @@ void HttpRequest::ProcessMsg()
         else
         {
             std::cout << "json parse failed. " << _responseBuffer.c_str() << std::endl;
+            _state = HttpResquestState::HRS_Timeout;
+            isRs = false;
         }
 
         delete jsonReader;
     }
+
+    return isRs;
 }
 

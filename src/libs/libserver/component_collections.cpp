@@ -1,10 +1,21 @@
 #include "component_collections.h"
+#include <utility>
 #include "log4_help.h"
-#include "network.h"
+#include "packet.h"
 
 ComponentCollections::ComponentCollections(std::string componentName)
 {
     _componentName = componentName;
+}
+
+ComponentCollections::~ComponentCollections()
+{
+    if (!_objs.empty() || !_addObjs.empty())
+    {
+        std::cout << " class:" << _componentName.c_str() << " still reachable. " << std::endl;
+    }
+
+    _removeObjs.clear();
 }
 
 void ComponentCollections::Add(IComponent* pObj)
@@ -22,10 +33,10 @@ IComponent* ComponentCollections::Get(const uint64 sn)
 {
     if (sn == 0)
     {
-        if (_objs.size() > 0)
+        if (!_objs.empty())
             return _objs.begin()->second;
 
-        if (_addObjs.size() > 0)
+        if (!_addObjs.empty())
             return _addObjs.begin()->second;
     }
     else
@@ -43,7 +54,7 @@ IComponent* ComponentCollections::Get(const uint64 sn)
 
 void ComponentCollections::Remove(uint64 sn)
 {
-    _removeObjs.push_back(sn);
+    _removeObjs.emplace_back(sn);
 }
 
 std::map<uint64, IComponent*>& ComponentCollections::GetAll()
@@ -53,7 +64,7 @@ std::map<uint64, IComponent*>& ComponentCollections::GetAll()
 
 void ComponentCollections::Swap()
 {
-    if (_addObjs.size() > 0)
+    if (!_addObjs.empty())
     {
         for (auto pair : _addObjs)
         {
@@ -62,7 +73,7 @@ void ComponentCollections::Swap()
         _addObjs.clear();
     }
 
-    if (_removeObjs.size() > 0)
+    if (!_removeObjs.empty())
     {
         for (auto sn : _removeObjs)
         {
@@ -70,7 +81,8 @@ void ComponentCollections::Swap()
             if (iter != _objs.end())
             {
 #if LOG_SYSOBJ_OPEN
-                LOG_SYSOBJ("*[sys] dispose obj. obj sn:" << iter->second->GetSN() << " type:" << iter->second->GetTypeName() << " thead id:" << std::this_thread::get_id());
+                if (iter->second->GetTypeHashCode() != typeid(Packet).hash_code())
+                    LOG_SYSOBJ("*[sys] dispose obj. obj sn:" << iter->second->GetSN() << " type:" << iter->second->GetTypeName() << " thead id:" << std::this_thread::get_id());
 #endif
                 iter->second->ComponentBackToPool();
                 _objs.erase(iter);
@@ -87,7 +99,7 @@ void ComponentCollections::Swap()
 // 销毁时，一个Obj有可能存在两次调用，一次是在组件中，另一次是在自己的ComponentCollections类中
 void ComponentCollections::Dispose()
 {
-    for (auto pair : _objs)
+    for (const auto pair : _objs)
     {
         auto pComponent = pair.second;
         if (pComponent->GetSN() == 0)
@@ -97,7 +109,7 @@ void ComponentCollections::Dispose()
     }
 
     _objs.clear();
-    for (auto pair : _addObjs)
+    for (const auto pair : _addObjs)
     {
         auto pComponent = pair.second;
         if (pComponent->GetSN() == 0)

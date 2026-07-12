@@ -2,6 +2,8 @@
 #include "libserver/server_app.h"
 #include "libserver/network_listen.h"
 #include "libserver/network_connector.h"
+#include "libserver/component_help.h"
+
 #include "login.h"
 
 int main(int argc, char* argv[])
@@ -12,9 +14,10 @@ int main(int argc, char* argv[])
 
     auto pThreadMgr = ThreadMgr::GetInstance();
     InitializeComponentLogin(pThreadMgr);
-
-    auto pYaml = Yaml::GetInstance();
+       
+    auto pYaml = ComponentHelp::GetYaml();
     auto pCommonConfig = pYaml->GetIPEndPoint(curAppType);
+
     pThreadMgr->CreateThread(ListenThread, 1);
     pThreadMgr->CreateComponent<NetworkListen>(ListenThread, pCommonConfig->Ip, pCommonConfig->Port);
 

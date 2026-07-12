@@ -3,8 +3,9 @@
 #include "packet.h"
 #include "common.h"
 
-#include <iostream>
 #include "object_pool.h"
+
+#include <iostream>
 
 void Network::BackToPool()
 {
@@ -92,9 +93,11 @@ SOCKET Network::CreateSocket()
 
 void Network::CreateConnectObj(SOCKET socket)
 {
-    ConnectObj* pConnectObj = DynamicObjectPool<ConnectObj>::GetInstance()->MallocObject(GetSystemManager(), socket);
+    auto pSys = GetSystemManager();
+    auto pCollector = pSys->GetPoolCollector();
+    auto pPool = (DynamicObjectPool<ConnectObj>*)pCollector->GetPool<ConnectObj>();
+    ConnectObj* pConnectObj = pPool->MallocObject(pSys, socket);
     pConnectObj->SetParent(this);
-    pConnectObj->SetSystemManager(GetSystemManager());
     if (_connects.find(socket) != _connects.end())
     {
         std::cout << "Network::CreateConnectObj. socket is exist. socket:" << socket << std::endl;

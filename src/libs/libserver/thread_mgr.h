@@ -20,13 +20,16 @@ public:
     ThreadMgr();
     void InitializeThread();
     void CreateThread(ThreadType iType, int num);
-
+	
+    void InitializeGlobalComponent(APP_TYPE ppType, int appId);
     void Update() override;
     void UpdateCreatePacket();
     void UpdateDispatchPacket();
 
     bool IsStopAll();
-    bool IsDisposeAll();
+    void DestroyThread();
+    bool IsDestroyAll();
+
     void Dispose() override;
 
     template<class T, typename ...TArgs>

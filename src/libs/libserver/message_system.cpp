@@ -4,6 +4,7 @@
 #include "message_component.h"
 #include "entity_system.h"
 #include "component.h"
+#include "object_pool_packet.h"
 
 MessageSystem::MessageSystem(SystemManager* pMgr)
 {
@@ -19,6 +20,9 @@ void MessageSystem::AddPacketToList(Packet* pPacket)
 {
     std::lock_guard<std::mutex> guard(_packet_lock);
     _cachePackets.GetWriterCache()->emplace_back(pPacket);
+
+    // 进入时 Ref +1
+    pPacket->AddRef();
 }
 
 void MessageSystem::Update(EntitySystem* pEntities)
@@ -46,7 +50,11 @@ void MessageSystem::Update(EntitySystem* pEntities)
     auto packetLists = _cachePackets.GetReaderCache();
     for (auto iter = packetLists->begin(); iter != packetLists->end(); ++iter)
     {
-        Process((*iter), lists);
+        auto pPacket = (*iter);
+        Process(pPacket, lists);
+
+        // 离开时 Ref - 1
+        pPacket->RemoveRef();
     }
 
     _cachePackets.GetReaderCache()->clear();

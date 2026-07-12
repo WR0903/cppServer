@@ -1,16 +1,18 @@
 #pragma once
-#include "singleton.h"
+#include "component.h"
+#include "system.h"
 
-class ResPath : public Singleton<ResPath>
+class ResPath : public Component<ResPath>, public IAwakeSystem<>
 {
 public:
-    ResPath();
+    void Awake();
+    void BackToPool();
 
-	std::string FindResPath(const std::string& res);
-	std::string FindResPath(const char* res);
-	
+    std::string FindResPath(const std::string& res);
+    std::string FindResPath(const char* res);
+
 private:
-	std::string _resPath;
+    std::string _resPath{ "" };
 };
 
 

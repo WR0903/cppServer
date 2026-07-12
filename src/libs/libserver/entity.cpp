@@ -1,7 +1,7 @@
 #include "entity.h"
 #include "entity_system.h"
 
-void IEntity::BackToPool()
+void IEntity::ComponentBackToPool()
 {
     auto pSystemManager = GetSystemManager();
     for (auto pair : _components)
@@ -14,12 +14,8 @@ void IEntity::BackToPool()
     }
 
     _components.clear();
-}
 
-void IEntity::AddComponent(IComponent* pComponent)
-{
-    pComponent->SetParent(this);
-    _components.insert(std::make_pair(pComponent->GetSN(), pComponent));
+    IComponent::ComponentBackToPool();
 }
 
 void IEntity::RemoveComponent(IComponent* pComponent)

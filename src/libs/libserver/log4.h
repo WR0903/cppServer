@@ -1,17 +1,17 @@
 #pragma once
 
 #include "common.h"
+#include "app_type.h"
+#include "component.h"
+#include "system.h"
 
 #include <log4cplus/logger.h>   
 
-#include "system.h"
-#include "entity.h"
-
-class Log4 : public Singleton<Log4>
+class Log4 : public Component<Log4>, public IAwakeSystem<APP_TYPE>
 {
 public:
-    Log4(int appType);
-    ~Log4();
+    void Awake(APP_TYPE appType) override;
+    void BackToPool() override;
 
     static std::string GetMsgIdName(Proto::MsgId msgId);
 

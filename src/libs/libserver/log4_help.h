@@ -115,18 +115,11 @@ void SetColor(int colorEx);
 #define LOG_MSG_OPEN 1
 bool IsLogShowMsg(int msgId);
 #define LOG_MSG(...)  { LOG_COLOR( LogColorGrey, __VA_ARGS__ ) }
-#endif
+#endif 
 
 #if false
 #define LOG_SYSOBJ_OPEN 1
 #define LOG_SYSOBJ(...)  { LOG_COLOR( LogColorCyanEx, __VA_ARGS__ ) }
-#endif
-
-#if false
-#define LOG_POOL_OPEN 1
-#define LOG_POOL(...)  { LOG_COLOR( LogColorPurpleEx, __VA_ARGS__ ) }
-#else
-#define LOG_POOL(...)
 #endif
 
 #if false

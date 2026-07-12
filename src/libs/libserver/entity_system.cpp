@@ -23,12 +23,12 @@ void EntitySystem::RemoveComponent(IComponent* pObj)
         return;
     }
 
-    iterObj->second->Remove(entitySn);
+    ComponentCollections* pCollector = iterObj->second;
+    pCollector->Remove(entitySn);
 
 #if LOG_SYSOBJ_OPEN
     LOG_SYSOBJ("*[sys] remove obj. obj sn:" << pObj->GetSN() << " type:" << pObj->GetTypeName() << " thead id:" << std::this_thread::get_id());
 #endif
-
 }
 
 void EntitySystem::Update()
@@ -41,19 +41,18 @@ void EntitySystem::Update()
 
 void EntitySystem::Dispose()
 {
-    std::set<uint64> baseClass;
-    //baseClass.insert(typeid(TimeHeapComponent).hash_code());
-    baseClass.insert(typeid(Log4).hash_code());
-    baseClass.insert(typeid(Console).hash_code());
-
-    for (auto iter : _objSystems)
+    // 拆成两次销毁
+    // 1. Dispose 释放全部组件时,ComponentCollections有交叉引用
+    // 2. delete 
+    for (const auto one : _objSystems)
     {
-        if (baseClass.find(iter.first) != baseClass.end())
-            continue;
-
-        iter.second->Dispose();
-        delete iter.second;
+        auto pCollections = one.second;
+        pCollections->Dispose();
     }
-
+    
+    for (auto one : _objSystems) 
+    {       
+        delete one.second;
+    }
     _objSystems.clear();
 }

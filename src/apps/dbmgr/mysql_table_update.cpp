@@ -2,6 +2,7 @@
 
 #include "libserver/log4_help.h"
 #include "libserver/util_string.h"
+#include "libserver/component_help.h"
 
 #include <mysql/mysql.h>
 #include <mysql/mysqld_error.h>
@@ -23,7 +24,7 @@ void MysqlTableUpdate::Check()
     if (!ConnectInit())
         return;
 
-    auto pYaml = Yaml::GetInstance();
+    auto pYaml = ComponentHelp::GetYaml();
     auto pDbMgrCfig = dynamic_cast<DBMgrConfig*>(pYaml->GetConfig(APP_DB_MGR));
     _pDbCfg = pDbMgrCfig->GetDBConfig(DBMgrConfig::DBTypeMysql);
     if (_pDbCfg == nullptr)

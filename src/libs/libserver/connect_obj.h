@@ -19,7 +19,7 @@ public:
 	ConnectObj();
 	virtual ~ConnectObj();
 
-	void AwakeFromPool(SOCKET socket);
+	void Awake(SOCKET socket);
 	virtual void BackToPool() override;
 
 	SOCKET GetSocket() const { return _socket; }

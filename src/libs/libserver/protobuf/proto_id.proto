@@ -29,7 +29,7 @@ enum MsgId {
 
 	// 登录
 	C2L_AccountCheck					= 1001;  // 1.验证账号：client to login
-	L2C_AccountCheckRs					= 1002;  //   AccountCheckRs to client
+	C2L_AccountCheckRs					= 1002;  //   AccountCheckRs to client
 
 	MI_AccountQueryOnlineToRedis		= 1003;  // 2.验证账号：验证账号之前，向Redis询问是已在其他的Login登录验证账号
 	MI_AccountQueryOnlineToRedisRs		= 1004;
@@ -38,18 +38,18 @@ enum MsgId {
 
 
 	L2DB_QueryPlayerList				= 1010;  // 
-	DB2L_QueryPlayerListRs				= 1011;  //   
+	L2DB_QueryPlayerListRs				= 1011;  //   
 
 	G2DB_QueryPlayer				= 1101;  // 1.选择角色 
-	DB2G_QueryPlayerRs				= 1102;  //   PlayerListToDBRs
+	G2DB_QueryPlayerRs				= 1102;  //   PlayerListToDBRs
 
 	L2C_PlayerList                  = 1103;  // 2.选择角色：PlayerListToClient
 
 	C2L_CreatePlayer				= 1105;  // 3.选择角色：没有角色，请求创建角色
-	L2C_CreatePlayerRs				= 1106;  //   CreatePlayerRs to client
+	C2L_CreatePlayerRs				= 1106;  //   CreatePlayerRs to client
 
 	L2DB_CreatePlayer			    = 1107;  // 4.选择角色：创建角色ToDB
-	DB2L_CreatePlayerRs             = 1108;  //   CreatePlayerToDB
+	L2DB_CreatePlayerRs             = 1108;  //   CreatePlayerToDB
 
 	G2DB_SavePlayer					= 1800;
 
@@ -60,5 +60,5 @@ enum MsgId {
 	MI_RobotTestBegin	= 5100;	
 	MI_RobotTestEnd		= 5101;	
 
-	MI_CmdShowThreadEntites		= 20003;
+	MI_CmdThread        = 20003;
 }

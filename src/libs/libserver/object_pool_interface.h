@@ -1,13 +1,12 @@
 #pragma once
 
-class IComponent;
+#include "disposable.h"
+#include "component.h"
 
-class IDynamicObjectPool
+class IDynamicObjectPool:public IDisposable
 {
 public:
-    virtual ~IDynamicObjectPool() = default;
     virtual void Update() = 0;
-    virtual void DestroyInstance() = 0;
     virtual void FreeObject(IComponent* pObj) = 0;
+    virtual void Show() = 0;
 };
-

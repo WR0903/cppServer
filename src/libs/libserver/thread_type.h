@@ -12,7 +12,6 @@ enum ThreadType
     AllThreadType = MainThread | LogicThread | ListenThread | ConnectThread | MysqlThread
 };
 
-
 inline const char* GetThreadTypeName(const ThreadType threadType)
 {
     if (threadType == MainThread)

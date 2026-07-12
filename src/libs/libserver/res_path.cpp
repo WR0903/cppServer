@@ -7,7 +7,7 @@
 #include <unistd.h>
 #endif
 
-ResPath::ResPath()
+void ResPath::Awake()
 {
     // 获取引擎环境配置
 #if ENGINE_PLATFORM != PLATFORM_WIN32		
@@ -71,6 +71,10 @@ ResPath::ResPath()
     _resPath += "/res";
     std::cout << "GENGINE_RES_PATH=" << _resPath << std::endl;
 
+}
+
+void ResPath::BackToPool()
+{
 }
 
 std::string ResPath::FindResPath(const std::string& res)

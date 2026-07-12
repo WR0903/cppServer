@@ -7,23 +7,26 @@
 #include "system_manager.h"
 #include "thread_type.h"
 
-enum ThreadState
+enum class ThreadState
 {
-    ThreadState_Init,
-    ThreadState_Run,
-    ThreadState_Stoped,
+    Init,
+    Run,
+    Stop,
+    Destroy,
 };
 
 class Thread : public SystemManager, public SnObject
 {
 public:
     Thread(ThreadType threadType);
-    void BackToPool();
+    ~Thread();
 
     void Start();
-    bool IsRun() const;
-    bool IsStop() const;
-    bool IsDispose();
+    void DestroyThread();
+    void Dispose() override;
+
+    bool IsStop() const;    
+    bool IsDestroy()const;
 
 private:
     ThreadType _threadType;

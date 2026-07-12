@@ -47,7 +47,7 @@ void RobotConsoleLogin::HandleLoginEx(std::vector<std::string>& params) const
 
 	for (int i = 1; i <= count; i++)
 	{
-		const std::string account = params[0] + std::to_string(i);
+		std::string account = params[0] + std::to_string(i);
         pThreadMgr->CreateComponent<Robot>(account);
     }
 

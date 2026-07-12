@@ -5,15 +5,19 @@
 
 class Packet;
 
-class ConsoleThreadComponent :public Entity<ConsoleThreadComponent>, public IAwakeFromPoolSystem<ThreadType>
+class ConsoleThreadComponent :public Entity<ConsoleThreadComponent>, public IAwakeSystem<ThreadType>
 {
 public:
-    void AwakeFromPool(ThreadType iType);
+    void Awake(ThreadType iType);
     void BackToPool();
 
 private:
-    void HandleCmdShowThreadEntites(Packet* pPacket);
+    void HandleCmdThread(Packet* pPacket);
+    void HandleCmdThreadEntites(Packet* pPacket);
+    void HandleCmdThreadPool(Packet* pPacket);
 
 private:
     ThreadType _threadType;
+
+    static std::mutex _show_lock;
 };

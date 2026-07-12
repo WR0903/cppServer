@@ -2,24 +2,29 @@
 
 Packet::Packet()
 {
-    CleanBuffer();
     _bufferSize = DEFAULT_PACKET_BUFFER_SIZE;
     _beginIndex = 0;
     _endIndex = 0;
     _buffer = new char[_bufferSize];
+
+    _ref = 0;
+    _isRefOpen = false;
+    _socket = INVALID_SOCKET;
 }
 
 Packet::~Packet()
 {
-    CleanBuffer();
+    delete[] _buffer;
 }
 
-void Packet::AwakeFromPool(Proto::MsgId msgId, SOCKET socket)
+void Packet::Awake(Proto::MsgId msgId, SOCKET socket)
 {
     _socket = socket;
     _msgId = msgId;
     _beginIndex = 0;
     _endIndex = 0;
+    _ref = 0;
+    _isRefOpen = false;
 }
 
 void Packet::BackToPool()
@@ -27,16 +32,8 @@ void Packet::BackToPool()
     _msgId = Proto::MsgId::None;
     _beginIndex = 0;
     _endIndex = 0;
-}
-
-void Packet::CleanBuffer()
-{
-    if (_buffer != nullptr)
-        delete[] _buffer;
-
-    _beginIndex = 0;
-    _endIndex = 0;
-    _bufferSize = 0;
+    _ref = 0;
+    _isRefOpen = false;
 }
 
 char* Packet::GetBuffer() const
@@ -74,4 +71,28 @@ void Packet::SetSocket(SOCKET socket)
     _socket = socket;
 }
 
+void Packet::AddRef()
+{
+    _ref++;
+}
 
+void Packet::RemoveRef()
+{
+    _ref--;
+}
+
+void Packet::OpenRef()
+{
+    _isRefOpen = true;
+}
+
+bool Packet::CanBack2Pool()
+{
+    if (!_isRefOpen)
+        return false;
+
+    if (_ref == 0)
+        return true;
+
+    return false;
+}

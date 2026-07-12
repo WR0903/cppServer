@@ -2,10 +2,10 @@
 #include "network.h"
 #include "system.h"
 
-class NetworkLocator : public Component<NetworkLocator>, public IAwakeFromPoolSystem<>
+class NetworkLocator : public Component<NetworkLocator>, public IAwakeSystem<>
 {
 public:
-	void AwakeFromPool() override {};
+	void Awake() override {};
 	void BackToPool() override;
 	void AddConnectorLocator(INetwork* pNetwork, APP_TYPE appType, int appId);
 	void AddListenLocator(INetwork* pNetwork, NetworkType networkType);

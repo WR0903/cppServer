@@ -2,22 +2,25 @@
 #include "sn_object.h"
 #include "common.h"
 
+#include <functional>
+#include <list>
+
 class IEntity;
 class IDynamicObjectPool;
 class SystemManager;
 
+using TimerHandleFunction = std::function<void(void)>;
+
 class IComponent : virtual public SnObject
 {
 public:
-	friend class EntitySystem;
+    friend class EntitySystem;
 
     virtual ~IComponent() = default;
 
     void SetPool(IDynamicObjectPool* pPool);
     void SetParent(IEntity* pObj);
     void SetSystemManager(SystemManager* pObj);
-
-    bool IsActive() const { return _active; }
 
     template<class T>
     T* GetParent();
@@ -32,7 +35,8 @@ public:
     virtual uint64 GetTypeHashCode() = 0;
 
 protected:
-    bool _active{ true };
+    void AddTimer(const int total, const int durations, const bool immediateDo, const int immediateDoDelaySecond, TimerHandleFunction handler);
+    std::list<uint64> _timers;
 
 private:
     IEntity* _parent{ nullptr };
@@ -50,7 +54,7 @@ template<class T>
 class Component :public IComponent
 {
 public:
-	const char* GetTypeName() override;
+    const char* GetTypeName() override;
     uint64 GetTypeHashCode() override;
 };
 

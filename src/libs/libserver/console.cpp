@@ -6,6 +6,7 @@
 #include "util_string.h"
 #include "log4_help.h"
 #include "update_component.h"
+#include "component_help.h"
 
 void ConsoleCmd::OnRegisterHandler(std::string key, HandleConsole handler)
 {
@@ -52,7 +53,7 @@ void ConsoleCmd::Process(std::vector<std::string>& params)
 
 ///////////////////////////////////////////////////////////////////
 
-void Console::AwakeFromPool()
+void Console::Awake()
 {
     _thread = std::thread([this]()
         {
@@ -85,8 +86,8 @@ void Console::BackToPool()
     for (auto& pair : _handles)
     {
         pair.second->Dispose();
+        delete pair.second;
     }
-
     _handles.clear();
 
     if (_isRun)
@@ -98,7 +99,7 @@ void Console::BackToPool()
 void Console::Update()
 {
     _lock.lock();
-    if (_commands.size() <= 0)
+    if (_commands.empty())
     {
         _lock.unlock();
         return;
@@ -110,7 +111,7 @@ void Console::Update()
 
     std::vector<std::string> params;
     strutil::split(cmd, ' ', params);
-    if (params.size() <= 0)
+    if (params.empty())
         return;
 
     const std::string key = params[0];

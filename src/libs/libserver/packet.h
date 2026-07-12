@@ -27,13 +27,12 @@ struct PacketInnerHead :public PacketHead
 #define DEFAULT_PACKET_BUFFER_SIZE	1024 * 10
 #endif
 
-class Packet : public Entity<Packet>, public Buffer,
-    public IAwakeFromPoolSystem<Proto::MsgId, SOCKET>
+class Packet : public Entity<Packet>, public Buffer, public IAwakeFromPoolSystem<Proto::MsgId, SOCKET>
 {
 public:
     Packet();
     ~Packet();
-    void AwakeFromPool(Proto::MsgId msgId, SOCKET socket);
+    void Awake(Proto::MsgId msgId, SOCKET socket) override;
 
     template<class ProtoClass>
     ProtoClass ParseToProto()
@@ -56,8 +55,7 @@ public:
         FillData(total);
     }
 
-    void BackToPool();
-    void CleanBuffer();
+    void BackToPool() override;
 
     char* GetBuffer() const;
     unsigned short GetDataLength() const;
@@ -67,7 +65,17 @@ public:
     SOCKET GetSocket() const;
     void SetSocket(SOCKET socket);
 
+    // ref
+    void AddRef();
+    void RemoveRef();
+    void OpenRef();
+    bool CanBack2Pool();
+
 private:
     Proto::MsgId _msgId;
     SOCKET _socket;
+
+private:
+    std::atomic<int> _ref{ 0 };
+    bool _isRefOpen{ false };
 };

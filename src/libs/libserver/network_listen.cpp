@@ -9,7 +9,7 @@
 #include "message_component.h"
 #include "update_component.h"
 
-void NetworkListen::AwakeFromPool(std::string ip, int port)
+void NetworkListen::Awake(std::string ip, int port)
 {
     // 
     auto pNetworkLocator = ThreadMgr::GetInstance()->GetEntitySystem()->GetComponent<NetworkLocator>();

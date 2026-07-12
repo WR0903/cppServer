@@ -16,21 +16,19 @@ public:
 template <typename... TArgs>
 class IAwakeSystem : virtual public ISystem
 {
-protected:
-    IAwakeSystem() = default;
-
 public:
+    IAwakeSystem() = default;
     virtual ~IAwakeSystem() = default;
     virtual void Awake(TArgs... args) = 0;
+    static bool IsSingle() { return true; }
 };
 
 template <typename... TArgs>
 class IAwakeFromPoolSystem : virtual public ISystem
 {
-protected:
-    IAwakeFromPoolSystem() = default;
-
 public:
+    IAwakeFromPoolSystem() = default;
     virtual ~IAwakeFromPoolSystem() = default;
-    virtual void AwakeFromPool(TArgs... args) = 0;
+    virtual void Awake(TArgs... args) = 0;
+    static bool IsSingle() { return false; }
 };

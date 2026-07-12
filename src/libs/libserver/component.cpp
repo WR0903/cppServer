@@ -3,6 +3,7 @@
 #include "system_manager.h"
 #include "thread_mgr.h"
 #include "object_pool.h"
+#include "timer_component.h"
 
 void IComponent::SetParent(IEntity* pObj)
 {
@@ -33,14 +34,29 @@ void IComponent::ComponentBackToPool()
 {
     BackToPool();
 
-    _sn = 0;
-    _parent = nullptr;
-    _pSystemManager = nullptr;
-    _active = true;
+    if (!_timers.empty()) 
+    {
+        auto pTimer = _pSystemManager->GetEntitySystem()->GetComponent<TimerComponent>();
+        if (pTimer != nullptr)
+            pTimer->Remove(_timers);
+
+        _timers.clear();
+    }
 
     if (_pPool != nullptr)
     {
         _pPool->FreeObject(this);
         _pPool = nullptr;
     }
+
+    _sn = 0;
+    _parent = nullptr;
+    _pSystemManager = nullptr;
+}
+
+void IComponent::AddTimer(const int total, const int durations, const bool immediateDo, const int immediateDoDelaySecond, TimerHandleFunction handler)
+{
+    auto obj = GetSystemManager()->GetEntitySystem()->GetComponent<TimerComponent>();
+    const auto timer = obj->Add(total, durations, immediateDo, immediateDoDelaySecond, std::move(handler));
+    _timers.push_back(timer);
 }

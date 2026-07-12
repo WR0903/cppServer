@@ -6,11 +6,12 @@
 #include "libserver/message_component.h"
 #include "libserver/message_system_help.h"
 #include "libserver/update_component.h"
+#include "libserver/component_help.h"
 
 #include "global_robots.h"
 #include <sstream>
 
-void RobotMgr::AwakeFromPool()
+void RobotMgr::Awake()
 {
     // update
     auto pUpdateComponent = AddComponent<UpdateComponent>();
@@ -22,30 +23,20 @@ void RobotMgr::AwakeFromPool()
     pMsgCallBack->RegisterFunction(Proto::MsgId::MI_RobotSyncState, BindFunP1(this, &RobotMgr::HandleRobotState));
 
     // yaml
-    auto pYaml = Yaml::GetInstance();
-	const auto pLoginConfig = dynamic_cast<LoginConfig*>(pYaml->GetConfig(APP_LOGIN));
-	this->Connect(pLoginConfig->Ip, pLoginConfig->Port);
-}
+    auto pYaml = ComponentHelp::GetYaml();
+    const auto pLoginConfig = dynamic_cast<LoginConfig*>(pYaml->GetConfig(APP_LOGIN));
+    this->Connect(pLoginConfig->Ip, pLoginConfig->Port);
 
-void RobotMgr::Update()
-{
-    NetworkConnector::Update();
-
-    if (_nextShowInfoTime > Global::GetInstance()->TimeTick)
-        return;
-    
-    _nextShowInfoTime = timeutil::AddSeconds(Global::GetInstance()->TimeTick, 2);
-    ShowInfo();
+    AddTimer(0, 2, false, 0, BindFunP0(this, &RobotMgr::ShowInfo));
 }
 
 void RobotMgr::HandleRobotState(Packet* pPacket)
 {
     Proto::RobotSyncState protoState = pPacket->ParseToProto<Proto::RobotSyncState>();
 
-    if (_robots.size() == 0 && protoState.states_size() > 0)
+    if (_robots.empty() && protoState.states_size() > 0)
     {
         std::cout << "test begin" << std::endl;
-        _nextShowInfoTime = 0;
         Packet* pPacketBegin = MessageSystemHelp::CreatePacket(Proto::MsgId::MI_RobotTestBegin, GetSocket());
         SendPacket(pPacketBegin);
     }
@@ -72,12 +63,9 @@ void RobotMgr::NofityServer(RobotStateType iType)
         return;
 
     auto iter = std::find_if(_robots.begin(), _robots.end(), [&iType](auto pair)
-    {
-        if (pair.second < iType)
-            return true;
-
-        return false;
-    });
+        {
+            return pair.second < iType;
+        });
 
     if (iter == _robots.end())
     {
@@ -99,15 +87,15 @@ void RobotMgr::ShowInfo()
 
     std::map<RobotStateType, int> statData;
     std::for_each(_robots.cbegin(), _robots.cend(), [&statData](auto one)
-    {
-        auto state = one.second;
-        if (statData.find(state) == statData.end())
         {
-            statData[state] = 0;
-        }
+            auto state = one.second;
+            if (statData.find(state) == statData.end())
+            {
+                statData[state] = 0;
+            }
 
-        statData[state]++;
-    });
+            ++statData[state];
+        });
 
     std::stringstream show;
     auto curTime = timeutil::NowToString();

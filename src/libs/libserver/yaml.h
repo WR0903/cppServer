@@ -1,8 +1,10 @@
 #pragma once
 
 #include "common.h"
-#include "singleton.h"
-#include "app_type_mgr.h"
+#include "app_type.h"
+#include "component.h"
+#include "system.h"
+
 #include <yaml-cpp/yaml.h>
 
 struct YamlConfig
@@ -85,10 +87,12 @@ struct RobotConfig : public AppConfig
 
 };
 
-class Yaml : public Singleton<Yaml>
+class Yaml : public Component<Yaml>, public IAwakeSystem<>
 {
 public:
-    Yaml();
+    void Awake();
+    void BackToPool();
+
     YamlConfig* GetConfig(APP_TYPE appType);
     CommonConfig* GetIPEndPoint(APP_TYPE appType, int appId = 0);
 

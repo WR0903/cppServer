@@ -3,6 +3,7 @@
 #include "libserver/server_app.h"
 #include "libserver/console.h"
 #include "libserver/log4.h"
+#include "libserver/component_help.h"
 
 #include "login/login.h"
 #include "dbmgr/dbmgr.h"
@@ -24,7 +25,7 @@ int main(int argc, char *argv[])
 	// login
 	InitializeComponentLogin(pThreadMgr);
 
-    auto pYaml = Yaml::GetInstance();
+    auto pYaml = ComponentHelp::GetYaml();
     auto pCommonConfig = pYaml->GetIPEndPoint(curAppType);
 
     pThreadMgr->CreateThread(ListenThread, 1);

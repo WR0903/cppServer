@@ -10,12 +10,14 @@ class ComponentCollections :public IDisposable
 {
 public:
     ComponentCollections(std::string componentName);
+    ~ComponentCollections();
+
     void Add(IComponent* pObj);
     void Remove(uint64 sn);
 
     IComponent* Get(uint64 sn = 0);
     std::map<uint64, IComponent*>& GetAll();
-       
+
     void Swap();
     void Dispose() override;
 
@@ -26,5 +28,5 @@ private:
     std::map<uint64, IComponent*> _addObjs;
     std::list<uint64> _removeObjs;
 
-    std::string _componentName;
+    std::string _componentName{ "" };
 };

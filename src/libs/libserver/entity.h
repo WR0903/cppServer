@@ -7,18 +7,16 @@
 #include <queue>
 
 #include "component.h"
-#include "object_pool.h"
 #include "entity_system.h"
 
 class IEntity :public IComponent
 {
 public:
     virtual ~IEntity() = default;
-    void BackToPool() override;
+    void ComponentBackToPool() override;
 
     template <class T, typename... TArgs>
     T* AddComponent(TArgs... args);
-    void AddComponent(IComponent* pComponent);
 
     template<class T>
     T* GetComponent();
@@ -29,6 +27,7 @@ public:
     void RemoveComponent(IComponent* pObj);
 
 protected:
+    // <type hash code , IComponent>
     std::map<uint64, IComponent*> _components;
 };
 
@@ -36,30 +35,17 @@ template <class T, typename... TArgs>
 inline T* IEntity::AddComponent(TArgs... args)
 {
     auto pSystemManager = GetSystemManager();
-    T* pComponent;
-    if (pSystemManager != nullptr) 
-    {
-        pComponent = GetSystemManager()->GetEntitySystem()->AddComponent<T>(std::forward<TArgs>(args)...);
-    }
-    else {
-        pComponent = DynamicObjectPool<T>::GetInstance()->MallocObject(nullptr, std::forward<TArgs>(args)...);
-    }
-
-    AddComponent(pComponent);
+    T* pComponent = pSystemManager->GetEntitySystem()->AddComponent<T>(std::forward<TArgs>(args)...);
+    pComponent->SetParent(this);
+    _components.insert(std::make_pair(pComponent->GetTypeHashCode(), pComponent));
     return pComponent;
 }
 
 template<class T>
 T* IEntity::GetComponent()
 {
-    auto iter = std::find_if(_components.begin(), _components.end(), [](auto pair)
-        {
-            if (dynamic_cast<T*>(pair.second) != nullptr)
-                return true;
-
-            return false;
-        });
-
+    const auto typeHashCode = typeid(T).hash_code();
+    const auto iter = _components.find(typeHashCode);
     if (iter == _components.end())
         return nullptr;
 

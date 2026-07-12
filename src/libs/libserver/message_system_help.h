@@ -1,6 +1,6 @@
 #pragma once
 #include "common.h"
-#include "app_type_mgr.h"
+#include "app_type.h"
 #include "thread_type.h"
 #include "packet.h"
 
@@ -21,3 +21,4 @@ protected:
     static void SendPacket(Packet* packet, APP_TYPE appType, int appId = 0);
     static void SendPacket(Packet* pPacket);
 };
+

@@ -1,6 +1,6 @@
 allinone:
-  thread_logic: 2
-  thread_mysql: 2
+  thread_logic: 1
+  thread_mysql: 1
   ip: 127.0.0.1
   port: 5401
 
@@ -12,7 +12,7 @@ login:
 
 dbmgr:
   thread_logic: 1
-  thread_mysql: 3
+  thread_mysql: 2
   ip: 127.0.0.1
   port: 5800 
   dbs:
@@ -30,4 +30,4 @@ dbmgr:
       collation: utf8_general_ci
 
 robot:
-  thread_logic: 5
+  thread_logic: 10

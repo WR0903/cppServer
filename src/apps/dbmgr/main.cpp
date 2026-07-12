@@ -1,7 +1,8 @@
 #include "libserver/common.h"
-#include "libserver/app_type_mgr.h"
+#include "libserver/app_type.h"
 #include "libserver/server_app.h"
 #include "libserver/network_listen.h"
+#include "libserver/component_help.h"
 
 #include "dbmgr.h"
 #include "mysql_table_update.h"
@@ -21,9 +22,8 @@ int main(int argc, char* argv[])
     auto pThreadMgr = ThreadMgr::GetInstance();
     InitializeComponentDBMgr(pThreadMgr);
 
-    auto pYaml = Yaml::GetInstance();
+    auto pYaml = ComponentHelp::GetYaml();
     auto pCommonConfig = pYaml->GetIPEndPoint(curAppType, 0);
-
     pThreadMgr->CreateThread(ListenThread, 1);
     pThreadMgr->CreateComponent<NetworkListen>(ListenThread, pCommonConfig->Ip, pCommonConfig->Port);
     

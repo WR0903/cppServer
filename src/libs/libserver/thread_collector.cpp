@@ -5,21 +5,9 @@
 ThreadCollector::ThreadCollector(const ThreadType threadType, int initNum)
 {
     _threadType = threadType;
-    _index = 0;
+    _nextThreadSn = 0;
 
     CreateThread(initNum);
-}
-
-ThreadCollector::~ThreadCollector()
-{
-    _threads.Swap();
-    auto pList = _threads.GetReaderCache();
-    for (auto iter = pList->begin(); iter != pList->end(); ++iter)
-    {
-        delete (*iter);
-    }
-
-    _threads.GetReaderCache()->clear();
 }
 
 void ThreadCollector::CreateThread(int num)
@@ -27,14 +15,23 @@ void ThreadCollector::CreateThread(int num)
     for (int i = 0; i < num; i++)
     {
         const auto pThread = new Thread(_threadType);
-        _threads.GetAddCache()->push_back(pThread);
+        _threads.AddObj(pThread);
     }
 
-    _threads.Swap();
+    _threads.Swap(nullptr);
     auto pList = _threads.GetReaderCache();
     for (auto iter = pList->begin(); iter != pList->end(); ++iter)
     {
-        (*iter)->Start();
+        iter->second->Start();
+    }
+}
+
+void ThreadCollector::DestroyThread()
+{
+    auto pList = _threads.GetReaderCache();
+    for (auto iter = pList->begin(); iter != pList->end(); ++iter)
+    {
+        iter->second->DestroyThread();
     }
 }
 
@@ -42,45 +39,8 @@ void ThreadCollector::Update()
 {
     if (_threads.CanSwap())
     {
-        auto rs = _threads.Swap();
-        for (auto one : rs) {
-            delete one;
-        }
+        _threads.Swap(nullptr);
     }
-}
-
-void ThreadCollector::Dispose()
-{
-    auto pList = _threads.GetReaderCache();
-    for (auto iter = pList->begin(); iter != pList->end(); ++iter)
-    {
-        (*iter)->Dispose();
-    }
-    _threads.BackToPool();
-}
-
-bool ThreadCollector::IsDisposeAll()
-{
-    auto pList = _threads.GetReaderCache();
-    for (auto iter = pList->begin(); iter != pList->end(); ++iter)
-    {
-        if (!(*iter)->IsDispose())
-            return false;
-    }
-
-    return true;
-}
-
-bool ThreadCollector::IsRunAll()
-{
-    auto pList = _threads.GetReaderCache();
-    for (auto iter = pList->begin(); iter != pList->end(); ++iter)
-    {
-        if (!(*iter)->IsRun())
-            return false;
-    }
-
-    return true;
 }
 
 bool ThreadCollector::IsStopAll()
@@ -88,27 +48,52 @@ bool ThreadCollector::IsStopAll()
     auto pList = _threads.GetReaderCache();
     for (auto iter = pList->begin(); iter != pList->end(); ++iter)
     {
-        if (!(*iter)->IsStop())
+        if (!iter->second->IsStop())
             return false;
     }
 
     return true;
 }
 
+bool ThreadCollector::IsDestroyAll()
+{
+    auto pList = _threads.GetReaderCache();
+    for (auto iter = pList->begin(); iter != pList->end(); ++iter)
+    {
+        if (!iter->second->IsDestroy())
+            return false;
+    }
+
+    return true;
+}
+
+void ThreadCollector::Dispose()
+{
+    _threads.Dispose();
+}
 
 void ThreadCollector::HandlerMessage(Packet* pPacket)
 {
     auto pList = _threads.GetReaderCache();
     for (auto iter = pList->begin(); iter != pList->end(); ++iter)
     {
-        (*iter)->GetMessageSystem()->AddPacketToList(pPacket);
+        iter->second->GetMessageSystem()->AddPacketToList(pPacket);
     }
 }
 
 void ThreadCollector::HandlerCreateMessage(Packet* pPacket)
 {
-    auto vectors = *(_threads.GetReaderCache());
-    vectors[_index]->GetMessageSystem()->AddPacketToList(pPacket);
-    _index++;
-    _index = _index >= vectors.size() ? 0 : _index;
+    auto objs = _threads.GetReaderCache();
+    auto iter = objs->find(_nextThreadSn);
+    if (iter == objs->end()) {
+        iter = objs->begin();
+    }
+
+    iter->second->GetMessageSystem()->AddPacketToList(pPacket);
+    ++iter;
+    if (iter == objs->end()) {
+        iter = objs->begin();
+    }
+
+    _nextThreadSn = iter->first;
 }

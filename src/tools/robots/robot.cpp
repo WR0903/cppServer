@@ -1,6 +1,7 @@
 #include "robot.h"
 
 #include "robot_state_login.h"
+#include "global_robots.h"
 
 #include "libserver/common.h"
 #include "libserver/robot_state_type.h"
@@ -10,11 +11,12 @@
 #include "libserver/message_system_help.h"
 #include "libserver/message_component.h"
 #include "libserver/update_component.h"
+#include "libserver/component_help.h"
 
 #include <random>
 #include <thread>
 
-void Robot::AwakeFromPool(std::string account)
+void Robot::Awake(std::string account)
 {
     _account = account;
     _isBroadcast = false;
@@ -31,7 +33,7 @@ void Robot::AwakeFromPool(std::string account)
 
         return nullptr;
     };
-    pMsgCallBack->RegisterFunctionWithObj(Proto::MsgId::L2C_AccountCheckRs, BindFunP2(this, &Robot::HandleAccountCheckRs));
+    pMsgCallBack->RegisterFunctionWithObj(Proto::MsgId::C2L_AccountCheckRs, BindFunP2(this, &Robot::HandleAccountCheckRs));
     pMsgCallBack->RegisterFunctionWithObj(Proto::MsgId::L2C_PlayerList, BindFunP2(this, &Robot::HandlePlayerList));
 
     // update
@@ -39,8 +41,8 @@ void Robot::AwakeFromPool(std::string account)
     pUpdateComponent->UpdataFunction = BindFunP0(this, &Robot::Update);
 
     // yaml
-    auto pYaml = Yaml::GetInstance();
-	const auto pLoginConfig = dynamic_cast<LoginConfig*>(pYaml->GetConfig(APP_LOGIN));
+    auto pYaml = ComponentHelp::GetYaml();
+    const auto pLoginConfig = dynamic_cast<LoginConfig*>(pYaml->GetConfig(APP_LOGIN));
     this->Connect(pLoginConfig->Ip, pLoginConfig->Port);
 }
 
@@ -68,7 +70,7 @@ void Robot::HandleAccountCheckRs(Robot* pRobot, Packet* pPacket)
     Proto::AccountCheckRs proto = pPacket->ParseToProto<Proto::AccountCheckRs>();
     //std::cout << "account check result account:" << _account << " code:" << proto.return_code() << std::endl;
 
-    if (proto.return_code() == Proto::AccountCheckReturnCode::ARC_OK) 
+    if (proto.return_code() == Proto::AccountCheckReturnCode::ARC_OK)
     {
         ChangeState(RobotStateType::RobotState_Login_Logined);
     }
@@ -128,7 +130,9 @@ void Robot::HandlePlayerList(Robot* pRobot, Packet* pPacket)
     }
     else
     {
-        //LOG_DEBUG("recv players. size:" << protoList.player_size());
+        if (GlobalRobots::GetInstance()->GetRobotsCount() == 1)
+            LOG_DEBUG("recv players. size:" << protoList.player_size());
+
         ChangeState(RobotStateType::RobotState_Login_SelectPlayer);
     }
 }

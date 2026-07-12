@@ -9,25 +9,22 @@
 #include "util_string.h"
 #include "thread_mgr.h"
 #include "res_path.h"
-#include "app_type_mgr.h"
+#include "app_type.h"
 #include "log4_help.h"
+#include "component_help.h"
 
-Log4::Log4(int appType)
+void Log4::Awake(APP_TYPE appType)
 {
-	_appType = static_cast<APP_TYPE>(appType);
+    _appType = appType;
+    auto pResPath = ComponentHelp::GetResPath();
 
-    auto pResPath = ResPath::GetInstance();
-    auto pAppTypeMgr = AppTypeMgr::GetInstance();
-
-    const std::string filename = strutil::format("/log4/log4_%s.properties", pAppTypeMgr->GetAppName(_appType).c_str());
+    const std::string filename = strutil::format("/log4/log4_%s.properties", GetAppName(_appType));
     std::string filePath = pResPath->FindResPath(filename);
     if (filePath.empty())
     {
         std::cout << " !!!!! log4 properties not found! filename:" << filename.c_str() << std::endl;
         return;
     }
-
-    log4cplus::initialize();
 
     const log4cplus::tstring configFile = LOG4CPLUS_STRING_TO_TSTRING(filePath);
 
@@ -39,34 +36,33 @@ Log4::Log4(int appType)
     LOG_DEBUG("Log4::Initialize is Ok.");
 }
 
-Log4::~Log4()
-{
-	log4cplus::deinitialize();
-}
-
 void Log4::DebugInfo(log4cplus::Logger logger) const
 {
-	log4cplus::SharedAppenderPtrList appenderList = logger.getAllAppenders();
-	auto iter = appenderList.begin();
-	while (iter != appenderList.end())
-	{
-		log4cplus::Appender* pAppender = iter->get();
-		//log4cplus::RollingFileAppender* pFileAppender = static_cast<log4cplus::RollingFileAppender*>(pAppender);
-		//if (pFileAppender !=nullptr)
-		//	pFileAppender->imbue(std::locale("zh_CN"));
+    log4cplus::SharedAppenderPtrList appenderList = logger.getAllAppenders();
+    auto iter = appenderList.begin();
+    while (iter != appenderList.end())
+    {
+        log4cplus::Appender* pAppender = iter->get();
+        //log4cplus::RollingFileAppender* pFileAppender = static_cast<log4cplus::RollingFileAppender*>(pAppender);
+        //if (pFileAppender !=nullptr)
+        //	pFileAppender->imbue(std::locale("zh_CN"));
 
-		//log4cplus::ConsoleAppender* pConsoleAppender = static_cast<log4cplus::ConsoleAppender*>(pAppender);
-		//if (pConsoleAppender != nullptr)
-		//	pConsoleAppender->imbue(std::locale("zh_CN"));
-		
-		std::cout << "[log4] " << LOG4CPLUS_TSTRING_TO_STRING(logger.getName()) << " appender name:" << LOG4CPLUS_TSTRING_TO_STRING(pAppender->getName()) << std::endl;
-		++iter;
-	}
+        //log4cplus::ConsoleAppender* pConsoleAppender = static_cast<log4cplus::ConsoleAppender*>(pAppender);
+        //if (pConsoleAppender != nullptr)
+        //	pConsoleAppender->imbue(std::locale("zh_CN"));
+
+        std::cout << "[log4] " << LOG4CPLUS_TSTRING_TO_STRING(logger.getName()) << " appender name:" << LOG4CPLUS_TSTRING_TO_STRING(pAppender->getName()) << std::endl;
+        ++iter;
+    }
+}
+
+void Log4::BackToPool()
+{
 }
 
 std::string Log4::GetMsgIdName(const Proto::MsgId msgId)
 {
-	const google::protobuf::EnumDescriptor *descriptor = Proto::MsgId_descriptor();
-	return descriptor->FindValueByNumber(msgId)->name();
+    const google::protobuf::EnumDescriptor* descriptor = Proto::MsgId_descriptor();
+    return descriptor->FindValueByNumber(msgId)->name();
 }
 

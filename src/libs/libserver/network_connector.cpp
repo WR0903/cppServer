@@ -5,12 +5,13 @@
 #include "network_connector.h"
 #include "network_locator.h"
 #include "log4_help.h"
-#include "app_type_mgr.h"
+#include "app_type.h"
 #include "yaml.h"
 #include "thread_mgr.h"
 #include "update_component.h"
+#include "component_help.h"
 
-void NetworkConnector::AwakeFromPool(std::string ip, int port)
+void NetworkConnector::Awake(std::string ip, int port)
 {
     // update
     auto pUpdateComponent = AddComponent<UpdateComponent>();
@@ -20,17 +21,17 @@ void NetworkConnector::AwakeFromPool(std::string ip, int port)
     Connect(ip, port);
 }
 
-void NetworkConnector::AwakeFromPool(int appType, int appId)
+void NetworkConnector::Awake(int appType, int appId)
 {
     // update
     auto pUpdateComponent = AddComponent<UpdateComponent>();
     pUpdateComponent->UpdataFunction = BindFunP0(this, &NetworkConnector::Update);
 
     // yaml
-    auto pYaml = Yaml::GetInstance();
+    auto pYaml = ComponentHelp::GetYaml();
     auto pComponent = pYaml->GetIPEndPoint((APP_TYPE)appType, appId);
     if (pComponent == nullptr) {
-        LOG_ERROR("can't find yaml config. app type:" << AppTypeMgr::GetInstance()->GetAppName((APP_TYPE)appType).c_str() << " app id:" << appId);
+        LOG_ERROR("can't find yaml config. app type:" << GetAppName((APP_TYPE)appType) << " app id:" << appId);
         return;
     }
 

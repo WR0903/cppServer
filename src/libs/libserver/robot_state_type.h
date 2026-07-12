@@ -23,7 +23,6 @@ enum RobotStateType
 const char RobotStateTypeName[][255] = {
     "[     ] HttpRequest :",
     "[Login] Connecting :",
-
     "[Login] Connected  :",
     "[Login] Logined     :",
 
@@ -46,8 +45,8 @@ const char RobotStateTypeShortName[][255] = {
     //"Login-CreatePlayer",
     "Login-SelectPlayer",
 
-    "Game-Connectting",
-    "Game-Connectted",
+    "Game-Connecting",
+    "Game-Connected",
     "Game-Logined",
 
     "Space-EnterWorld",

@@ -4,10 +4,10 @@
 
 class Packet;
 
-class RobotTest :public Entity<RobotTest>, public IAwakeFromPoolSystem<>
+class RobotTest :public Entity<RobotTest>, public IAwakeSystem<>
 {
 public:
-    void AwakeFromPool() override;
+    void Awake() override;
     void BackToPool() override {};
 
 private:

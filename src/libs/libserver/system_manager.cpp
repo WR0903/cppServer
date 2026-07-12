@@ -7,6 +7,8 @@
 #include "update_system.h"
 
 #include "console_thread_component.h"
+#include "object_pool_collector.h"
+#include "timer_component.h"
 
 #include <thread>
 
@@ -26,16 +28,21 @@ SystemManager::SystemManager()
     std::seed_seq seed1(idstr.begin(), idstr.end());
     std::minstd_rand0 generator(seed1);
     _pRandomEngine = new std::default_random_engine(generator());
+
+    _pPoolCollector = new DynamicObjectPoolCollector(this);
 }
 
 void SystemManager::InitComponent(ThreadType threadType)
 {
+    _pEntitySystem->AddComponent<TimerComponent>();
     _pEntitySystem->AddComponent<CreateComponentC>();
     _pEntitySystem->AddComponent<ConsoleThreadComponent>(threadType);
 }
 
 void SystemManager::Update()
 {
+    _pPoolCollector->Update();
+
     _pEntitySystem->Update();
     _pMessageSystem->Update(_pEntitySystem);
 
@@ -64,6 +71,12 @@ void SystemManager::Dispose()
     _pEntitySystem->Dispose();
     delete _pEntitySystem;
     _pEntitySystem = nullptr;
+
+    // 再销毁之前，再做一次Update，让use中的对象回到Free中
+    _pPoolCollector->Update();
+    _pPoolCollector->Dispose();
+    delete _pPoolCollector;
+    _pPoolCollector = nullptr;
 }
 
 std::default_random_engine* SystemManager::GetRandomEngine() const
@@ -79,4 +92,9 @@ MessageSystem* SystemManager::GetMessageSystem() const
 EntitySystem* SystemManager::GetEntitySystem() const
 {
     return _pEntitySystem;
+}
+
+DynamicObjectPoolCollector* SystemManager::GetPoolCollector() const
+{
+    return _pPoolCollector;
 }
