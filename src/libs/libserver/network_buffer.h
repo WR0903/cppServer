@@ -6,7 +6,7 @@
 #define DEFAULT_SEND_BUFFER_SIZE	10
 #define DEFAULT_RECV_BUFFER_SIZE	10
 #else
-// Ä¬ÈÏ´óĞ¡ 128KB
+// é»˜è®¤å¤§å° 128KB
 #define DEFAULT_SEND_BUFFER_SIZE	1024 * 128
 #define DEFAULT_RECV_BUFFER_SIZE	1024 * 128
 #endif
@@ -14,7 +14,7 @@
 class Packet;
 class ConnectObj;
 
-// ´æ´¢Ğ­Òé×Ü³¤¶ÈµÄÀàĞÍ
+// å­˜å‚¨åè®®æ€»é•¿åº¦çš„ç±»å‹
 using TotalSizeType = unsigned short;
 
 class NetworkBuffer : public Buffer
@@ -26,13 +26,13 @@ public:
 
     bool HasData() const;
 
-    // °üÀ¨»·µÄÍ·Óë»·µÄÎ²Ò»¹²µÄ¿Õ×Ö½ÚÊı
+    // åŒ…æ‹¬ç¯çš„å¤´ä¸ç¯çš„å°¾ä¸€å…±çš„ç©ºå­—èŠ‚æ•°
     unsigned int GetEmptySize() override;
 
-    // µ±Ç°¿ÉĞ´³¤¶È
+    // å½“å‰å¯å†™é•¿åº¦
     unsigned int GetWriteSize() const;
 
-    // µ±Ç°¿É¶Á³¤¶È
+    // å½“å‰å¯è¯»é•¿åº¦
     unsigned int GetReadSize() const;
 
     void FillDate(unsigned int  size);
@@ -40,9 +40,9 @@ public:
     void ReAllocBuffer();
 
 protected:
-    // ÔÚ»·ĞÎÖĞ£¬¼«¶ËÇé¿öÏÂ _endIndex ¿ÉÄÜÓë _beginIndex ÖØºÏ
-    // ÖØºÏÊ±ÓĞÁ½ÖÖ¿ÉÄÜ£¬Ò»ÖÖÊÇÃ»ÓĞÊı¾İ£¬ÁíÒ»ÖÖÊÇÂúÊı¾İ
-    unsigned int _dataSize; // ÓĞĞ§Êı¾İ
+    // åœ¨ç¯å½¢ä¸­ï¼Œæç«¯æƒ…å†µä¸‹ _endIndex å¯èƒ½ä¸ _beginIndex é‡åˆ
+    // é‡åˆæ—¶æœ‰ä¸¤ç§å¯èƒ½ï¼Œä¸€ç§æ˜¯æ²¡æœ‰æ•°æ®ï¼Œå¦ä¸€ç§æ˜¯æ»¡æ•°æ®
+    unsigned int _dataSize; // æœ‰æ•ˆæ•°æ®
     ConnectObj* _pConnectObj{ nullptr };
 };
 

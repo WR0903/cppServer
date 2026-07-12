@@ -1,0 +1,3 @@
+/home/ubuntu/GameServer/src/libs/libserver/build/CMakeFiles/serverd.dir
+/home/ubuntu/GameServer/src/libs/libserver/build/CMakeFiles/edit_cache.dir
+/home/ubuntu/GameServer/src/libs/libserver/build/CMakeFiles/rebuild_cache.dir

@@ -24,7 +24,7 @@ private:
 	std::mutex _lock;
 	std::map<APP_TYPE, std::map<int, INetwork*>> _connectors;
 
-	// ¿ÉÄÜ´æÔÚÁ½¸ölisten, tcp ºÍ http Í¬Ê±´æÔÚ
+	// å¯èƒ½å­˜åœ¨ä¸¤ä¸ªlisten, tcp å’Œ http åŒæ—¶å­˜åœ¨
 	std::map<NetworkType, INetwork*> _listens;
 };
 

@@ -26,8 +26,8 @@ void RobotConsoleLogin::HandleLogin(std::vector<std::string>& params)
 	if (!CheckParamCnt(params, 1))
 		return;
 
-	// µ¥¶ÀµÇÂ¼Ê±£¬µÇÂ¼µ½Ö÷Ïß³Ì£¬·½±ãÊäÈëcmd
-	ThreadMgr::GetInstance()->AddComponent<Robot>(params[0]);
+	// å•ç‹¬ç™»å½•æ—¶ï¼Œç™»å½•åˆ°ä¸»çº¿ç¨‹ï¼Œæ–¹ä¾¿è¾“å…¥cmd
+	ThreadMgr::GetInstance()->GetEntitySystem()->AddComponent<Robot>(params[0]);
 	GlobalRobots::GetInstance()->SetRobotsCount(1);
 }
 

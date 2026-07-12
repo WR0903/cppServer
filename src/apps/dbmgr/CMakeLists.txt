@@ -19,15 +19,16 @@ aux_source_directory(../../libs/libserver/protobuf SRCS)
 
 include_directories(../../libs)
 include_directories(../../../../include/common)
-include_directories(/usr/local/include)
+include_directories(/home/ubuntu/GameBookServer/dependence/jsoncpp-1.9.1/include)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../../bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin)
 
-set(CMAKE_CXX_FLAGS "-Wall -std=c++14 -pthread -lprotobuf -lyaml-cpp -llog4cplus -DEPOLL -Wno-unknown-pragmas")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++14 -pthread -DEPOLL -Wno-unknown-pragmas")
 set(CMAKE_CXX_FLAGS_DEBUG "-D_DEBUG -O0 -g -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
-link_directories(${CMAKE_BINARY_DIR}/../../../../libs/linux)
+link_directories(${CMAKE_SOURCE_DIR}/../../../../libs/linux)
+link_directories(/home/ubuntu/GameBookServer/dependence/jsoncpp-1.9.1/build)
 
 add_executable(${MyProjectName} ${SRCS})
-target_link_libraries(${MyProjectName} -L/usr/lib64/mysql -lmysqlclient -lpthread -lz -lm -lssl -lcrypto -ldl) # mysql
+target_link_libraries(${MyProjectName} protobuf jsoncpp mysqlclient pthread z m ssl crypto dl yaml-cpp log4cplus)

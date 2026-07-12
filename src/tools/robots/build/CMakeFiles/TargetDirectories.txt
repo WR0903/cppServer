@@ -1,0 +1,3 @@
+/home/ubuntu/GameServer/src/tools/robots/build/CMakeFiles/robotsd.dir
+/home/ubuntu/GameServer/src/tools/robots/build/CMakeFiles/edit_cache.dir
+/home/ubuntu/GameServer/src/tools/robots/build/CMakeFiles/rebuild_cache.dir

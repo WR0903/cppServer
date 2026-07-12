@@ -17,7 +17,7 @@ public:
 	void BackToPool() override;
 
 private:
-	// 正在验证账号
+	// 姝ｅ湪楠岃瘉璐﹀彿
 	// <socket, loginPlayer*>
 	std::map<SOCKET, LoginObj*> _players;
 

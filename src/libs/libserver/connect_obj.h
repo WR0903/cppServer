@@ -10,8 +10,8 @@ class RecvNetworkBuffer;
 class SendNetworkBuffer;
 class Packet;
 
-#define PingTime 1000 // 1√Î
-#define PingDelayTime  10 * 1000 // 10√Î
+#define PingTime 1000 // 1Áßí
+#define PingDelayTime  10 * 1000 // 10Áßí
 
 class ConnectObj : public Entity<ConnectObj>, public IAwakeFromPoolSystem<SOCKET>
 {

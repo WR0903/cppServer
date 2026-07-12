@@ -5,7 +5,6 @@
 #include "libserver/util_time.h"
 #include "libserver/entity.h"
 #include "libserver/system.h"
-#include "libserver/message_system.h"
 #include "mysql_base.h"
 
 #include <mysql/mysql.h>
@@ -43,12 +42,12 @@ struct DatabaseStmt
 #define MAX_BIND_BUFFER    40960
 #define MAX_BIND_STR       30000
 
-class MysqlConnector : public MysqlBase, public Entity<MysqlConnector>, public IMessageSystem, public IAwakeFromPoolSystem<>
+class MysqlConnector : public MysqlBase, public Entity<MysqlConnector>, public IAwakeFromPoolSystem<>
 {
 public:
 	void AwakeFromPool() override;
 	void BackToPool() override;
-    void RegisterMsgFunction() override;
+    void InitMessageComponent();
 
 	bool Connect();
 	void Disconnect() override;
@@ -58,7 +57,7 @@ private:
 
 	void CheckPing();
 
-#pragma region ‘§¥¶¿Ì
+#pragma region È¢ÑÂ§ÑÁêÜ
 
 	void InitStmts();
 	void CleanStmts();
@@ -75,7 +74,7 @@ private:
 
 #pragma endregion 
 
-	// –≠“È¥¶¿Ì
+	// ÂçèËÆÆÂ§ÑÁêÜ
 	void HandleQueryPlayerList(Packet* pPacket);
     void QueryPlayerList(std::string account, SOCKET socket);
 

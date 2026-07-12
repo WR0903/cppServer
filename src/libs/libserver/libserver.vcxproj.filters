@@ -82,9 +82,6 @@
     <ClInclude Include="message_system.h">
       <Filter>ecs\system\message</Filter>
     </ClInclude>
-    <ClInclude Include="message_list.h">
-      <Filter>ecs\system\message</Filter>
-    </ClInclude>
     <ClInclude Include="network_interface.h">
       <Filter>entity\network</Filter>
     </ClInclude>
@@ -141,6 +138,27 @@
     </ClInclude>
     <ClInclude Include="protobuf\db.pb.h">
       <Filter>ecs\system\message\protobuf</Filter>
+    </ClInclude>
+    <ClInclude Include="component_collections.h">
+      <Filter>ecs\system\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="system_manager.h">
+      <Filter>ecs\system</Filter>
+    </ClInclude>
+    <ClInclude Include="message_system_help.h">
+      <Filter>ecs\system\message</Filter>
+    </ClInclude>
+    <ClInclude Include="message_component.h">
+      <Filter>ecs\system\message</Filter>
+    </ClInclude>
+    <ClInclude Include="message_callback.h">
+      <Filter>ecs\system\message</Filter>
+    </ClInclude>
+    <ClInclude Include="update_component.h">
+      <Filter>ecs\system\update</Filter>
+    </ClInclude>
+    <ClInclude Include="update_system.h">
+      <Filter>ecs\system\update</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -204,9 +222,6 @@
     <ClCompile Include="message_system.cpp">
       <Filter>ecs\system\message</Filter>
     </ClCompile>
-    <ClCompile Include="message_list.cpp">
-      <Filter>ecs\system\message</Filter>
-    </ClCompile>
     <ClCompile Include="network_locator.cpp">
       <Filter>entity\network\locator</Filter>
     </ClCompile>
@@ -234,14 +249,32 @@
     <ClCompile Include="protobuf\db.pb.cc">
       <Filter>ecs\system\message\protobuf</Filter>
     </ClCompile>
+    <ClCompile Include="component_collections.cpp">
+      <Filter>ecs\system\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="system_manager.cpp">
+      <Filter>ecs\system</Filter>
+    </ClCompile>
+    <ClCompile Include="message_system_help.cpp">
+      <Filter>ecs\system\message</Filter>
+    </ClCompile>
+    <ClCompile Include="message_component.cpp">
+      <Filter>ecs\system\message</Filter>
+    </ClCompile>
+    <ClCompile Include="message_callback.cpp">
+      <Filter>ecs\system\message</Filter>
+    </ClCompile>
+    <ClCompile Include="update_component.cpp">
+      <Filter>ecs\system\update</Filter>
+    </ClCompile>
+    <ClCompile Include="update_system.cpp">
+      <Filter>ecs\system\update</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="thread">
-      <UniqueIdentifier>{b924c834-403d-4eb0-8e52-7e6d15601855}</UniqueIdentifier>
-    </Filter>
     <Filter Include="common">
       <UniqueIdentifier>{d189b5ff-9d0e-43ba-8d63-e64fb2a6e8ee}</UniqueIdentifier>
     </Filter>
@@ -319,6 +352,12 @@
     </Filter>
     <Filter Include="common\base">
       <UniqueIdentifier>{0b7ff889-b19b-43ab-a63e-50a9c661dcbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thread">
+      <UniqueIdentifier>{b924c834-403d-4eb0-8e52-7e6d15601855}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\system\update">
+      <UniqueIdentifier>{d16fb338-775e-42b3-9e6f-2bb45967a7ae}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

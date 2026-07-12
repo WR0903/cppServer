@@ -32,7 +32,7 @@ void ServerApp::Initialize()
     signal(SIGINT, Signalhandler);
     Global::Instance(_appType, 1);
 
-    // È«¾ÖÊı¾İ
+    // å…¨å±€æ•°æ®
     AppTypeMgr::Instance();
     DynamicObjectPoolMgr::Instance();
     ResPath::Instance();
@@ -43,12 +43,12 @@ void ServerApp::Initialize()
     _pThreadMgr = ThreadMgr::GetInstance();
     UpdateTime();
 
-    // È«¾Ö Component
-    _pThreadMgr->AddComponent<NetworkLocator>();
-    auto pConsole = _pThreadMgr->AddComponent<Console>();
+    // å…¨å±€ Component
+    _pThreadMgr->GetEntitySystem()->AddComponent<NetworkLocator>();
+    auto pConsole = _pThreadMgr->GetEntitySystem()->AddComponent<Console>();
     pConsole->Register<ConsoleCmdPool>("pool");
 
-    // ´´½¨Ïß³Ì
+    // åˆ›å»ºçº¿ç¨‹
     const auto pLoginConfig = dynamic_cast<AppConfig*>(Yaml::GetInstance()->GetConfig(_appType));
     for (int i = 0; i < pLoginConfig->ThreadNum; i++)
     {
@@ -87,7 +87,7 @@ void ServerApp::Run()
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    // Í£Ö¹ËùÓĞÏß³Ì
+    // åœæ­¢æ‰€æœ‰çº¿ç¨‹
     std::cout << "stoping all threads..." << std::endl;
     bool isStop;
     do
@@ -96,10 +96,10 @@ void ServerApp::Run()
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     } while (!isStop);
 
-    // ÊÍ·ÅËùÓĞÏß³Ì×ÊÔ´
+    // é‡Šæ”¾æ‰€æœ‰çº¿ç¨‹èµ„æº
     std::cout << "disposing all threads..." << std::endl;
 
-    // 1.×ÓÏß³Ì×ÊÔ´
+    // 1.å­çº¿ç¨‹èµ„æº
     bool isDispose;
     do
     {
@@ -107,7 +107,7 @@ void ServerApp::Run()
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     } while (!isDispose);
 
-    // 2.Ö÷Ïß³Ì×ÊÔ´
+    // 2.ä¸»çº¿ç¨‹èµ„æº
     _pThreadMgr->Dispose();
 
     std::cout << "disposing all pool..." << std::endl;

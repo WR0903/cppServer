@@ -15,7 +15,7 @@ struct PacketHead {
 #if TestNetwork
 #define DEFAULT_PACKET_BUFFER_SIZE	10
 #else
-// Ĭ�ϴ�С 10KB
+// 默认大小 10KB
 #define DEFAULT_PACKET_BUFFER_SIZE	1024 * 10
 #endif
 

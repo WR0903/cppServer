@@ -29,14 +29,6 @@ void Network::Clean()
     _masterSocket = INVALID_SOCKET;
 }
 
-
-void Network::RegisterMsgFunction()
-{
-    auto pMsgCallBack = new MessageCallBackFunction();
-    AttachCallBackHandler(pMsgCallBack);
-    pMsgCallBack->RegisterFunction(Proto::MsgId::MI_NetworkRequestDisconnect, BindFunP1(this, &Network::HandleDisconnect));
-}
-
 #ifndef WIN32
 #define SetsockOptType void *
 #else
@@ -45,12 +37,12 @@ void Network::RegisterMsgFunction()
 
 void Network::SetSocketOpt(SOCKET socket)
 {
-    // 1.¶Ë¿Ú¹Ø±ÕºóÂíÉÏÖØĞÂÆôÓÃ
+    // 1.ç«¯å£å…³é—­åé©¬ä¸Šé‡æ–°å¯ç”¨
     bool isReuseaddr = true;
     setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (SetsockOptType)& isReuseaddr, sizeof(isReuseaddr));
 
-    // 2.·¢ËÍ¡¢½ÓÊÕtimeout
-    int netTimeout = 3000; // 1000 = 1Ãë
+    // 2.å‘é€ã€æ¥æ”¶timeout
+    int netTimeout = 3000; // 1000 = 1ç§’
     setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, (SetsockOptType)& netTimeout, sizeof(netTimeout));
     setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, (SetsockOptType)& netTimeout, sizeof(netTimeout));
 
@@ -59,9 +51,9 @@ void Network::SetSocketOpt(SOCKET socket)
     int keepAlive = 1;
     socklen_t optlen = sizeof(keepAlive);
 
-    int keepIdle = 60 * 2;	// ÔÚsocket Ã»ÓĞ½»»¥ºó ¶à¾Ã ¿ªÊ¼·¢ËÍÕì²â°ü
-    int keepInterval = 10;	// ¶à´Î·¢ËÍÕì²â°üÖ®¼äµÄ¼ä¸ô
-    int keepCount = 5;		// Õì²â°ü¸öÊı
+    int keepIdle = 60 * 2;	// åœ¨socket æ²¡æœ‰äº¤äº’å å¤šä¹… å¼€å§‹å‘é€ä¾¦æµ‹åŒ…
+    int keepInterval = 10;	// å¤šæ¬¡å‘é€ä¾¦æµ‹åŒ…ä¹‹é—´çš„é—´éš”
+    int keepCount = 5;		// ä¾¦æµ‹åŒ…ä¸ªæ•°
 
     setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, (SetsockOptType)& keepAlive, optlen);
     if (getsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, &keepAlive, &optlen) < 0)
@@ -80,7 +72,7 @@ void Network::SetSocketOpt(SOCKET socket)
 
 #endif
 
-    // 3.·Ç×èÈû
+    // 3.éé˜»å¡
     _sock_nonblock(socket);
 }
 
@@ -100,9 +92,9 @@ SOCKET Network::CreateSocket()
 
 void Network::CreateConnectObj(SOCKET socket)
 {
-    ConnectObj* pConnectObj = DynamicObjectPool<ConnectObj>::GetInstance()->MallocObject(socket);
+    ConnectObj* pConnectObj = DynamicObjectPool<ConnectObj>::GetInstance()->MallocObject(GetSystemManager(), socket);
     pConnectObj->SetParent(this);
-    pConnectObj->SetEntitySystem(GetEntitySystem());
+    pConnectObj->SetSystemManager(GetSystemManager());
     if (_connects.find(socket) != _connects.end())
     {
         std::cout << "Network::CreateConnectObj. socket is exist. socket:" << socket << std::endl;
@@ -116,11 +108,6 @@ void Network::CreateConnectObj(SOCKET socket)
 }
 
 #ifdef EPOLL
-
-#define RemoveConnectObj(iter) \
-    iter->second->ComponentBackToPool( ); \
-    DeleteEvent(_epfd, iter->first); \
-    iter = _connects.erase( iter ); 
 
 void Network::AddEvent(int epollfd, int fd, int flag)
 {
@@ -199,10 +186,6 @@ void Network::Epoll()
 
 }
 #else
-
-#define RemoveConnectObj(iter) \
-    iter->second->ComponentBackToPool( ); \
-    iter = _connects.erase( iter ); 
 
 void Network::Select()
 {
@@ -298,20 +281,6 @@ void Network::OnNetworkUpdate()
 #endif
     }
     pList->clear();
-}
-
-void Network::HandleDisconnect(Packet* pPacket)
-{
-    auto socket = pPacket->GetSocket();
-    auto iter = _connects.find(socket);
-    if (iter == _connects.end())
-    {
-        std::cout << "dis connect failed. socket not find. socket:" << socket << std::endl;
-        return;
-    }
-
-    RemoveConnectObj(iter);
-    std::cout << "logical layer requires shutdown. socket:" << socket << std::endl;
 }
 
 void Network::SendPacket(Packet*& pPacket)
