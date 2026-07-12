@@ -69,7 +69,7 @@ bool MysqlConnector::Connect()
         return false;
     }
 
-    // 涓嶉渶瑕佸叧闂嚜鍔ㄦ彁浜わ紝搴曞眰浼歋TART TRANSACTION涔嬪悗鍐岰OMMIT
+    // 不需要关闭自动提交，底层会START TRANSACTION之后再COMMIT
     // mysql_autocommit(mysql(), 0);
 
     mysql_ping(_pMysql);

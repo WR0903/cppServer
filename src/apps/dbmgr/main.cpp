@@ -23,7 +23,9 @@ int main(int argc, char* argv[])
 
     auto pYaml = Yaml::GetInstance();
     auto pCommonConfig = pYaml->GetIPEndPoint(curAppType, 0);
-    pThreadMgr->CreateComponent<NetworkListen>(pCommonConfig->Ip, pCommonConfig->Port);
+
+    pThreadMgr->CreateThread(ListenThread, 1);
+    pThreadMgr->CreateComponent<NetworkListen>(ListenThread, pCommonConfig->Ip, pCommonConfig->Port);
     
     app.Run();
     app.Dispose();

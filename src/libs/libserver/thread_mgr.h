@@ -11,29 +11,33 @@
 #include "component_factory.h"
 #include "regist_to_factory.h"
 #include "message_system_help.h"
-
-class Packet;
+#include "thread_collector.h"
+#include "thread_type.h"
 
 class ThreadMgr :public Singleton<ThreadMgr>, public SystemManager
 {
 public:
     ThreadMgr();
-    void StartAllThread();
+    void InitializeThread();
+    void CreateThread(ThreadType iType, int num);
+
     void Update() override;
+    void UpdateCreatePacket();
+    void UpdateDispatchPacket();
 
     bool IsStopAll();
     bool IsDisposeAll();
     void Dispose() override;
 
-    void CreateThread();
-
     template<class T, typename ...TArgs>
     void CreateComponent(TArgs... args);
+
+    template<class T, typename ...TArgs>
+    void CreateComponent(ThreadType iType, TArgs... args);
 
     // message
     void DispatchPacket(Packet* pPacket);
 
-private:
 private:
     template <typename...Args>
     void AnalyseParam(Proto::CreateComponent& proto, int value, Args...args);
@@ -45,32 +49,42 @@ private:
     }
 
 private:
-    std::vector<Thread*> _threads;
-    size_t _threadIndex{ 0 };	// 瀹炵幇绾跨▼瀵硅薄鍧囧垎
+    std::map<ThreadType, ThreadCollector*> _threads;
 
-    // 鍒涘缓缁勪欢娑堟伅
+    // 创建组件消息
     std::mutex _create_lock;
     CacheSwap<Packet> _createPackets;
+
+    // 创建组件消息
+    std::mutex _packet_lock;
+    CacheSwap<Packet> _packets;
 };
 
 template<class T, typename ...TArgs>
-inline void ThreadMgr::CreateComponent(TArgs ...args)
+void ThreadMgr::CreateComponent(TArgs ...args)
 {
-	std::lock_guard<std::mutex> guard(_create_lock);
+    CreateComponent<T>(LogicThread, std::forward<TArgs>(args)...);
+}
 
-	const std::string className = typeid(T).name();
-	if (!ComponentFactory<TArgs...>::GetInstance()->IsRegisted(className))
-	{
-		RegistToFactory<T, TArgs...>();
-	}
+template<class T, typename ...TArgs>
+void ThreadMgr::CreateComponent(ThreadType iType, TArgs ...args)
+{
+    std::lock_guard<std::mutex> guard(_create_lock);
 
-	Proto::CreateComponent proto;
-	proto.set_class_name(className.c_str());
-	AnalyseParam(proto, std::forward<TArgs>(args)...);
+    const std::string className = typeid(T).name();
+    if (!ComponentFactory<TArgs...>::GetInstance()->IsRegisted(className))
+    {
+        RegistToFactory<T, TArgs...>();
+    }
 
-	auto pCreatePacket = MessageSystemHelp::CreatePacket(Proto::MsgId::MI_CreateComponent, 0);
-	pCreatePacket->SerializeToBuffer(proto);
-	_createPackets.GetWriterCache()->emplace_back(pCreatePacket);
+    Proto::CreateComponent proto;
+    proto.set_thread_type((int)iType);
+    proto.set_class_name(className.c_str());
+    AnalyseParam(proto, std::forward<TArgs>(args)...);
+
+    auto pCreatePacket = MessageSystemHelp::CreatePacket(Proto::MsgId::MI_CreateComponent, 0);
+    pCreatePacket->SerializeToBuffer(proto);
+    _createPackets.GetWriterCache()->emplace_back(pCreatePacket);
 }
 
 template<typename ... Args>

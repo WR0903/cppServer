@@ -23,6 +23,7 @@ Yaml::Yaml()
     const std::string path = pResPath->FindResPath("/engine.yaml");
     YAML::Node config = YAML::LoadFile(path);
 
+    LoadConfig(APP_TYPE::APP_ALLINONE, config);
     LoadConfig(APP_TYPE::APP_LOGIN, config);
     LoadConfig(APP_TYPE::APP_ROBOT, config);
     LoadConfig(APP_TYPE::APP_DB_MGR, config);
@@ -52,7 +53,7 @@ void Yaml::LoadConfig(const APP_TYPE appType, YAML::Node& config)
         return;
     }
 
-    AppConfig* pAppConfig;
+    YamlConfig* pYamlConfig;
 
     switch (appType)
     {
@@ -60,7 +61,7 @@ void Yaml::LoadConfig(const APP_TYPE appType, YAML::Node& config)
     {
         auto pConfig = new LoginConfig();
         pConfig->UrlLogin = node["url_login"].as<std::string>();
-        pAppConfig = pConfig;
+        pYamlConfig = pConfig;
         break;
     }
 	case APP_DB_MGR:
@@ -73,31 +74,44 @@ void Yaml::LoadConfig(const APP_TYPE appType, YAML::Node& config)
 			DBConfig one = LoadDbConfig(node_dbs[i]);
 			pConfig->DBs.push_back(one);
 		}
-        pAppConfig = pConfig;
+        pYamlConfig = pConfig;
 		break;
 	}
     case APP_ROBOT:
     {
         auto pConfig = new RobotConfig();
-        pAppConfig = pConfig;
+        pYamlConfig = pConfig;
         break;
     }
     default:
     {
-        pAppConfig = new CommonConfig();
+        pYamlConfig = new CommonConfig();
         break;
     }
     }
 
-    auto pCommon = dynamic_cast<CommonConfig*>(pAppConfig);
+    auto pCommon = dynamic_cast<CommonConfig*>(pYamlConfig);
     if (pCommon != nullptr)
     {
         pCommon->Ip = node["ip"].as<std::string>();
         pCommon->Port = node["port"].as<int>();
     }
 
-    pAppConfig->ThreadNum = node["thread_num"].as<int>();
-    _configs.insert(std::make_pair(appType, pAppConfig));
+    const auto pAppConfig = dynamic_cast<AppConfig*>(pYamlConfig);
+    if (pAppConfig != nullptr)
+    {
+        if (node["thread_logic"])
+            pAppConfig->LogicThreadNum = node["thread_logic"].as<int>();
+        else
+            pAppConfig->LogicThreadNum = 0;
+
+        if (node["thread_mysql"])
+            pAppConfig->MysqlThreadNum = node["thread_mysql"].as<int>();
+        else
+            pAppConfig->MysqlThreadNum = 0;
+    }
+
+    _configs.insert(std::make_pair(appType, pYamlConfig));
 }
 
 DBConfig Yaml::LoadDbConfig(YAML::Node node) const

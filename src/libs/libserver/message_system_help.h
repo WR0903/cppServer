@@ -1,8 +1,8 @@
 #pragma once
 #include "common.h"
 #include "app_type_mgr.h"
-
-class Packet;
+#include "thread_type.h"
+#include "packet.h"
 
 class MessageSystemHelp
 {
@@ -21,4 +21,3 @@ protected:
     static void SendPacket(Packet* packet, APP_TYPE appType, int appId = 0);
     static void SendPacket(Packet* pPacket);
 };
-

@@ -2,6 +2,8 @@
 
 #include "base_buffer.h"
 #include "common.h"
+#include "entity.h"
+#include "system.h"
 
 #pragma pack(push)
 #pragma pack(4)
@@ -10,19 +12,28 @@ struct PacketHead {
     unsigned short MsgId;
 };
 
+struct PacketInnerHead :public PacketHead
+{
+    unsigned int ThreadType;
+    unsigned short ChooseType;
+};
+
 #pragma pack(pop)
 
 #if TestNetwork
 #define DEFAULT_PACKET_BUFFER_SIZE	10
 #else
-// 默认大小 10KB
+// Ĭ�ϴ�С 10KB
 #define DEFAULT_PACKET_BUFFER_SIZE	1024 * 10
 #endif
 
-class Packet : public Buffer {
+class Packet : public Entity<Packet>, public Buffer,
+    public IAwakeFromPoolSystem<Proto::MsgId, SOCKET>
+{
 public:
-    Packet(const Proto::MsgId msgId, SOCKET socket);
+    Packet();
     ~Packet();
+    void AwakeFromPool(Proto::MsgId msgId, SOCKET socket);
 
     template<class ProtoClass>
     ProtoClass ParseToProto()

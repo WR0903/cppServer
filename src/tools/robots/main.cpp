@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     auto pConsole = pThreadMgr->GetEntitySystem()->GetComponent<Console>();
     pConsole->Register<RobotConsoleLogin>("login");
 
-    // RobotMgrå¢žåŠ åˆ°ä¸»çº¿ç¨‹ä¸­
+    // RobotMgrÔö¼Óµ½Ö÷Ïß³ÌÖÐ
     pThreadMgr->GetEntitySystem()->AddComponent<RobotMgr>();
 
     app.Run();

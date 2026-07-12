@@ -3,7 +3,9 @@
 #include <thread>
 #include <list>
 
+#include "sn_object.h"
 #include "system_manager.h"
+#include "thread_type.h"
 
 enum ThreadState
 {
@@ -12,17 +14,20 @@ enum ThreadState
     ThreadState_Stoped,
 };
 
-class Thread : public SystemManager
+class Thread : public SystemManager, public SnObject
 {
 public:
-    Thread();
-    void Start();
+    Thread(ThreadType threadType);
+    void BackToPool();
 
+    void Start();
     bool IsRun() const;
     bool IsStop() const;
     bool IsDispose();
 
 private:
+    ThreadType _threadType;
+
     ThreadState _state;
     std::thread _thread;
 };

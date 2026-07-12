@@ -12,12 +12,14 @@ int main(int argc, char* argv[])
 
     auto pThreadMgr = ThreadMgr::GetInstance();
     InitializeComponentLogin(pThreadMgr);
-       
+
     auto pYaml = Yaml::GetInstance();
     auto pCommonConfig = pYaml->GetIPEndPoint(curAppType);
-    pThreadMgr->CreateComponent<NetworkListen>(pCommonConfig->Ip, pCommonConfig->Port);
+    pThreadMgr->CreateThread(ListenThread, 1);
+    pThreadMgr->CreateComponent<NetworkListen>(ListenThread, pCommonConfig->Ip, pCommonConfig->Port);
 
-    pThreadMgr->CreateComponent<NetworkConnector>((int)APP_TYPE::APP_DB_MGR, 0);
+    pThreadMgr->CreateThread(ConnectThread, 1);
+    pThreadMgr->CreateComponent<NetworkConnector>(ConnectThread, (int)APP_TYPE::APP_DB_MGR, 0);
 
     app.Run();
     app.Dispose();

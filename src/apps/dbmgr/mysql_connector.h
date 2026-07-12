@@ -57,7 +57,7 @@ private:
 
 	void CheckPing();
 
-#pragma region é¢„å¤„ç†
+#pragma region Ô¤´¦Àí
 
 	void InitStmts();
 	void CleanStmts();
@@ -74,7 +74,7 @@ private:
 
 #pragma endregion 
 
-	// åè®®å¤„ç†
+	// Ğ­Òé´¦Àí
 	void HandleQueryPlayerList(Packet* pPacket);
     void QueryPlayerList(std::string account, SOCKET socket);
 

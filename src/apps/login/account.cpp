@@ -1,6 +1,5 @@
 #include "account.h"
 #include "libserver/common.h"
-#include "libserver/packet.h"
 #include "libserver/thread_mgr.h"
 #include "libserver/log4_help.h"
 #include "libserver/message_component.h"
@@ -16,12 +15,12 @@ void Account::AwakeFromPool()
     pMsgCallBack->RegisterFunction(Proto::MsgId::C2L_AccountCheck, BindFunP1(this, &Account::HandleAccountCheck));
     pMsgCallBack->RegisterFunction(Proto::MsgId::MI_AccountCheckToHttpRs, BindFunP1(this, &Account::HandleAccountCheckToHttpRs));
     pMsgCallBack->RegisterFunction(Proto::MsgId::C2L_CreatePlayer, BindFunP1(this, &Account::HandleCreatePlayer));
-    pMsgCallBack->RegisterFunction(Proto::MsgId::L2DB_CreatePlayerRs, BindFunP1(this, &Account::HandleCreatePlayerRs));
+    pMsgCallBack->RegisterFunction(Proto::MsgId::DB2L_CreatePlayerRs, BindFunP1(this, &Account::HandleCreatePlayerRs));
 
     // db
-    pMsgCallBack->RegisterFunction(Proto::MsgId::L2DB_QueryPlayerListRs, BindFunP1(this, &Account::HandleQueryPlayerListRs));
+    pMsgCallBack->RegisterFunction(Proto::MsgId::DB2L_QueryPlayerListRs, BindFunP1(this, &Account::HandleQueryPlayerListRs));
 
-    // å¤„ç†æ–­çº¿
+    // ´¦Àí¶ÏÏß
     pMsgCallBack->RegisterFunction(Proto::MsgId::MI_NetworkDisconnect, BindFunP1(this, &Account::HandleNetworkDisconnect));
 }
 
@@ -43,25 +42,25 @@ void Account::HandleAccountCheck(Packet* pPacket)
 
     //std::cout << "account check account:" << protoCheck.account() << " socket:" << socket << std::endl;
 
-    // ç›¸åŒè´¦å·æ­£åœ¨ç™»å½•
+    // ÏàÍ¬ÕËºÅÕıÔÚµÇÂ¼
     auto pPlayer = _playerMgr.GetPlayer(protoCheck.account());
     if (pPlayer != nullptr)
     {
         Proto::AccountCheckRs protoResult;
         protoResult.set_return_code(Proto::AccountCheckReturnCode::ARC_LOGGING);
-        MessageSystemHelp::SendPacket(Proto::MsgId::C2L_AccountCheckRs, socket, protoResult);
+        MessageSystemHelp::SendPacket(Proto::MsgId::L2C_AccountCheckRs, socket, protoResult);
 
         std::cout << "account check failed. same account:" << protoCheck.account() << " socket:" << socket << std::endl;
 
-        // å…³é—­ç½‘ç»œ
+        // ¹Ø±ÕÍøÂç
         MessageSystemHelp::DispatchPacket(Proto::MsgId::MI_NetworkRequestDisconnect, socket);
         return;
     }
 
-    // æ›´æ–°ä¿¡æ¯
+    // ¸üĞÂĞÅÏ¢
     _playerMgr.AddPlayer(socket, protoCheck.account(), protoCheck.password());
 
-    // éªŒè¯è´¦å·(HTTP)
+    // ÑéÖ¤ÕËºÅ(HTTP)
     ThreadMgr::GetInstance()->CreateComponent<HttpRequestAccount>(protoCheck.account(), protoCheck.password());
 }
 
@@ -80,9 +79,9 @@ void Account::HandleAccountCheckToHttpRs(Packet* pPacket)
 
     Proto::AccountCheckRs protoResult;
     protoResult.set_return_code(proto.return_code());
-    MessageSystemHelp::SendPacket(Proto::MsgId::C2L_AccountCheckRs, pPlayer->GetSocket(), protoResult);
+    MessageSystemHelp::SendPacket(Proto::MsgId::L2C_AccountCheckRs, pPlayer->GetSocket(), protoResult);
 
-    // éªŒè¯æˆåŠŸï¼Œå‘DBå‘èµ·æŸ¥è¯¢
+    // ÑéÖ¤³É¹¦£¬ÏòDB·¢Æğ²éÑ¯
     if (proto.return_code() == Proto::AccountCheckReturnCode::ARC_OK)
     {
         Proto::QueryPlayerList protoQuery;
@@ -105,7 +104,7 @@ void Account::HandleQueryPlayerListRs(Packet* pPacket)
 
     //LOG_DEBUG("HandlePlayerListToDBRs account:" << account.c_str() << ", player size:" << protoRs.player_size());
 
-    // å°†ç»“æœè½¬é€ç»™å®¢æˆ·ç«¯
+    // ½«½á¹û×ªËÍ¸ø¿Í»§¶Ë
     MessageSystemHelp::SendPacket(Proto::MsgId::L2C_PlayerList, pPlayer->GetSocket(), protoRs);
 }
 
@@ -120,7 +119,7 @@ void Account::HandleCreatePlayer(Packet* pPacket)
     }
 
     std::string account = pPlayer->GetAccount();
-    LOG_DEBUG("create. account:" << account.c_str() << " name:" << protoCreate.name().c_str() << " gender:" << (int)protoCreate.gender());
+    //LOG_DEBUG("create. account:" << account.c_str() << " name:" << protoCreate.name().c_str() << " gender:" << (int)protoCreate.gender());
 
     Proto::CreatePlayerToDB proto2Db;
     proto2Db.set_account(account.c_str());
@@ -147,5 +146,5 @@ void Account::HandleCreatePlayerRs(Packet* pPacket)
 
     Proto::CreatePlayerRs createProto;
     createProto.set_return_code(protoRs.return_code());
-    MessageSystemHelp::SendPacket(Proto::MsgId::C2L_CreatePlayerRs, pPlayer->GetSocket(), createProto);
+    MessageSystemHelp::SendPacket(Proto::MsgId::L2C_CreatePlayerRs, pPlayer->GetSocket(), createProto);
 }

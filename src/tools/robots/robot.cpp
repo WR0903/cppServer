@@ -3,7 +3,6 @@
 #include "robot_state_login.h"
 
 #include "libserver/common.h"
-#include "libserver/packet.h"
 #include "libserver/robot_state_type.h"
 #include "libserver/yaml.h"
 #include "libserver/entity_system.h"
@@ -32,7 +31,7 @@ void Robot::AwakeFromPool(std::string account)
 
         return nullptr;
     };
-    pMsgCallBack->RegisterFunctionWithObj(Proto::MsgId::C2L_AccountCheckRs, BindFunP2(this, &Robot::HandleAccountCheckRs));
+    pMsgCallBack->RegisterFunctionWithObj(Proto::MsgId::L2C_AccountCheckRs, BindFunP2(this, &Robot::HandleAccountCheckRs));
     pMsgCallBack->RegisterFunctionWithObj(Proto::MsgId::L2C_PlayerList, BindFunP2(this, &Robot::HandlePlayerList));
 
     // update
@@ -107,13 +106,13 @@ void Robot::HandlePlayerList(Robot* pRobot, Packet* pPacket)
         // create
         Proto::CreatePlayer protoCreate;
 
-        // 闅忔満涓�涓鑹插悕瀛楀悗缂�
+        // 随机一个角色名字后缀
         std::uniform_int_distribution<int> disName(1000, 10000 - 1);
         const int nNameRandom = disName(randomEngine);
         std::string playerName = strutil::format("%s-%d", _account.c_str(), nNameRandom);
         protoCreate.set_name(playerName.c_str());
 
-        // 闅忔満鎬у埆
+        // 随机性别
         std::uniform_int_distribution<int> disGender(0, 1);
         const int nGender = disGender(randomEngine);
         if (nGender == 1)

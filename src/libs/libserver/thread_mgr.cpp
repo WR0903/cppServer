@@ -1,6 +1,11 @@
 #include "thread_mgr.h"
 #include "common.h"
 #include "message_system.h"
+#include "yaml.h"
+#include "packet.h"
+
+#include "log4_help.h"
+#include "thread_collector_exclusive.h"
 
 #include <iostream>
 
@@ -8,15 +13,57 @@ ThreadMgr::ThreadMgr()
 {
 }
 
-void ThreadMgr::StartAllThread()
+void ThreadMgr::InitializeThread()
 {
-    for (auto iter = _threads.begin(); iter != _threads.end(); ++iter)
+    const auto pConfig = Yaml::GetInstance()->GetConfig(Global::GetInstance()->GetCurAppType());
+    auto pAppCofig = dynamic_cast<AppConfig*>(pConfig);
+
+    // Ïß³Ì³ÌÉÏµÄ»ù±¾×é¼þ
+    InitComponent(ThreadType::MainThread);
+
+    if (pAppCofig->LogicThreadNum > 0)
     {
-        (*iter)->Start();
+        CreateThread(LogicThread, pAppCofig->LogicThreadNum);
+    }
+
+    if (pAppCofig->MysqlThreadNum > 0)
+    {
+        CreateThread(MysqlThread, pAppCofig->MysqlThreadNum);
+    }
+}
+
+void ThreadMgr::CreateThread(ThreadType iType, int num)
+{
+    // ²»ÐèÒª´´½¨Ïß³Ì£¬µ¥Ïß³Ì
+    const auto pConfig = Yaml::GetInstance()->GetConfig(Global::GetInstance()->GetCurAppType());
+    auto pAppCofig = dynamic_cast<AppConfig*>(pConfig);
+    if (pAppCofig->LogicThreadNum == 0 && pAppCofig->MysqlThreadNum == 0)
+        return;
+
+    LOG_DEBUG("Initialize thread:" << GetThreadTypeName(iType) << " thread num:" << num);
+
+    auto iter = _threads.find(iType);
+    if (iter == _threads.end())
+    {
+        if (iType == MysqlThread)
+            _threads[iType] = new ThreadCollectorExclusive(iType, num);
+        else
+            _threads[iType] = new ThreadCollector(iType, num);
+    }
+    else
+    {
+        _threads[iType]->CreateThread(num);
     }
 }
 
 void ThreadMgr::Update()
+{
+    UpdateCreatePacket();
+    UpdateDispatchPacket();
+    SystemManager::Update();
+}
+
+void ThreadMgr::UpdateCreatePacket()
 {
     _create_lock.lock();
     if (_createPackets.CanSwap()) {
@@ -27,36 +74,59 @@ void ThreadMgr::Update()
     auto pList = _createPackets.GetReaderCache();
     for (auto iter = pList->begin(); iter != pList->end(); ++iter)
     {
-        const auto packet = (*iter);
+        auto packet = (*iter);
         if (_threads.size() > 0)
         {
-            if (_threadIndex >= _threads.size())
-                _threadIndex = 0;
+            auto pCreateProto = packet->ParseToProto<Proto::CreateComponent>();
+            auto threadType = (ThreadType)(pCreateProto.thread_type());
+            if (_threads.find(threadType) == _threads.end())
+            {
+                LOG_ERROR("can't find threadtype:" << GetThreadTypeName(threadType));
+                continue;
+            }
 
-            _threads[_threadIndex]->GetMessageSystem()->AddPacketToList(packet);
-            _threadIndex++;
+            auto pThreadCollector = _threads[threadType];
+            pThreadCollector->HandlerCreateMessage(packet);
         }
         else
         {
-            // å•çº¿ç¨‹
+            // µ¥Ïß³Ì
             GetMessageSystem()->AddPacketToList(packet);
         }
     }
     pList->clear();
-
-    SystemManager::Update();
 }
 
-void ThreadMgr::CreateThread()
+void ThreadMgr::UpdateDispatchPacket()
 {
-    _threads.emplace_back(new Thread());
+    _packet_lock.lock();
+    if (_packets.CanSwap()) {
+        _packets.Swap();
+    }
+    _packet_lock.unlock();
+
+    auto pList = _packets.GetReaderCache();
+    for (auto iter = pList->begin(); iter != pList->end(); ++iter)
+    {
+        auto pPacket = (*iter);
+
+        // Ö÷Ïß³Ì
+        GetMessageSystem()->AddPacketToList(pPacket);
+
+        // ×ÓÏß³Ì
+        for (auto iter = _threads.begin(); iter != _threads.end(); ++iter)
+        {
+            iter->second->HandlerMessage(pPacket);
+        }
+    }
+    pList->clear();
 }
 
 bool ThreadMgr::IsStopAll()
 {
     for (auto iter = _threads.begin(); iter != _threads.end(); ++iter)
     {
-        if (!(*iter)->IsStop())
+        if (!iter->second->IsStopAll())
         {
             return false;
         }
@@ -68,7 +138,7 @@ bool ThreadMgr::IsDisposeAll()
 {
     for (auto iter = _threads.begin(); iter != _threads.end(); ++iter)
     {
-        if (!(*iter)->IsDispose())
+        if (!iter->second->IsDisposeAll())
         {
             return false;
         }
@@ -80,25 +150,17 @@ void ThreadMgr::Dispose()
 {
     SystemManager::Dispose();
 
-    auto iter = _threads.begin();
-    while (iter != _threads.end())
+    for (auto iter = _threads.begin(); iter != _threads.end(); ++iter)
     {
-        Thread* pThread = *iter;
-        delete pThread;
-        ++iter;
+        auto pCollector = iter->second;
+        delete pCollector;
     }
+
     _threads.clear();
 }
 
 void ThreadMgr::DispatchPacket(Packet* pPacket)
 {
-    // ä¸»çº¿ç¨‹
-    GetMessageSystem()->AddPacketToList(pPacket);
-
-    // å­çº¿ç¨‹
-    for (auto iter = _threads.begin(); iter != _threads.end(); ++iter)
-    {
-        (*iter)->GetMessageSystem()->AddPacketToList(pPacket);
-    }
+    std::lock_guard<std::mutex> guard(_packet_lock);
+    _packets.GetWriterCache()->emplace_back(pPacket);
 }
-

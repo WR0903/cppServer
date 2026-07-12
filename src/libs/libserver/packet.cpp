@@ -1,11 +1,8 @@
 #include "packet.h"
 
-Packet::Packet(const Proto::MsgId msgId, SOCKET socket)
+Packet::Packet()
 {
-    _socket = socket;
-    _msgId = msgId;
     CleanBuffer();
-
     _bufferSize = DEFAULT_PACKET_BUFFER_SIZE;
     _beginIndex = 0;
     _endIndex = 0;
@@ -15,6 +12,14 @@ Packet::Packet(const Proto::MsgId msgId, SOCKET socket)
 Packet::~Packet()
 {
     CleanBuffer();
+}
+
+void Packet::AwakeFromPool(Proto::MsgId msgId, SOCKET socket)
+{
+    _socket = socket;
+    _msgId = msgId;
+    _beginIndex = 0;
+    _endIndex = 0;
 }
 
 void Packet::BackToPool()
@@ -68,3 +73,5 @@ void Packet::SetSocket(SOCKET socket)
 {
     _socket = socket;
 }
+
+

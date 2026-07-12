@@ -76,19 +76,19 @@ bool HttpRequest::ProcessSend()
 
     curl_easy_setopt(_pCurl, CURLOPT_URL, _url.c_str());
     curl_easy_setopt(_pCurl, CURLOPT_READFUNCTION, NULL);
-    curl_easy_setopt(_pCurl, CURLOPT_WRITEFUNCTION, WriteFunction);  // è®¾ç½®serverçš„è¿”å›çš„æ•°æ®çš„æ¥æ”¶æ–¹å¼
+    curl_easy_setopt(_pCurl, CURLOPT_WRITEFUNCTION, WriteFunction);  // ÉèÖÃserverµÄ·µ»ØµÄÊı¾İµÄ½ÓÊÕ·½Ê½
     curl_easy_setopt(_pCurl, CURLOPT_WRITEDATA, static_cast<void*>(&_responseBuffer));
 
     curl_easy_setopt(_pCurl, CURLOPT_NOSIGNAL, 1);
-    curl_easy_setopt(_pCurl, CURLOPT_VERBOSE, 0); //æ‰“å°è°ƒè¯•ä¿¡æ¯  
-    curl_easy_setopt(_pCurl, CURLOPT_HEADER, 0); //å°†å“åº”å¤´ä¿¡æ¯å’Œç›¸åº”ä½“ä¸€èµ·ä¼ ç»™write_data  
+    curl_easy_setopt(_pCurl, CURLOPT_VERBOSE, 0); //´òÓ¡µ÷ÊÔĞÅÏ¢  
+    curl_easy_setopt(_pCurl, CURLOPT_HEADER, 0); //½«ÏìÓ¦Í·ĞÅÏ¢ºÍÏàÓ¦ÌåÒ»Æğ´«¸øwrite_data  
                                                  //curl_easy_setopt( _pCurl, CURLOPT_CONNECTTIMEOUT, 3 );
                                                  //curl_easy_setopt( _pCurl, CURLOPT_TIMEOUT, 3 );
 
     if (_method == HttpResquestMethod::HRM_Post)
     {
-        curl_easy_setopt(_pCurl, CURLOPT_POST, true); //è®¾ç½®é—®é0è¡¨ç¤ºæœ¬æ¬¡æ“ä½œä¸ºpost 
-        curl_easy_setopt(_pCurl, CURLOPT_POSTFIELDS, _params.c_str()); //postå‚æ•°
+        curl_easy_setopt(_pCurl, CURLOPT_POST, true); //ÉèÖÃÎÊ·Ç0±íÊ¾±¾´Î²Ù×÷Îªpost 
+        curl_easy_setopt(_pCurl, CURLOPT_POSTFIELDS, _params.c_str()); //post²ÎÊı
     }
 
     curl_multi_add_handle(_pMultiHandle, _pCurl);
@@ -126,7 +126,7 @@ bool HttpRequest::Process()
     if (CURLM_CALL_MULTI_PERFORM == curlMcode)
         return false;
 
-    // å‡ºé”™ï¼Œç»“æŸ
+    // ³ö´í£¬½áÊø
     if (curlMcode != CURLMcode::CURLM_OK)
     {
         _curlRs = CRS_CURLMError;
@@ -134,7 +134,7 @@ bool HttpRequest::Process()
         return true;
     }
 
-    // å¤„ç†å®Œäº†ï¼Œä¸å†å¤„ç†
+    // ´¦ÀíÍêÁË£¬²»ÔÙ´¦Àí
     if (running_handle_count == 0)
     {
         ProcessMsg();
@@ -149,7 +149,7 @@ bool HttpRequest::Process()
         return false;
     }
 
-    // ä¸‹ä¸€Frameç»§ç»­æ‰§è¡Œ
+    // ÏÂÒ»Frame¼ÌĞøÖ´ĞĞ
     return false;
 }
 

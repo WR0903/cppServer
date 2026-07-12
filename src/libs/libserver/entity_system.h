@@ -14,6 +14,7 @@ class Packet;
 class EntitySystem : public IDisposable
 {
 public:
+    friend class ConsoleThreadComponent;
     EntitySystem(SystemManager* pMgr);
     virtual ~EntitySystem();
 
@@ -38,7 +39,7 @@ private:
     template <class T>
     void AddComponent(T* pComponent);
 
-    // æ‰€æœ‰å¯¹è±¡
+    // ËùÓÐ¶ÔÏó
     // <class mask sn, std::map<Component>*>
     std::map<uint64, ComponentCollections*> _objSystems;
 

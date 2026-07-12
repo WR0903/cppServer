@@ -1,3 +1,0 @@
-/home/ubuntu/GameServer/src/apps/login/build/CMakeFiles/logind.dir
-/home/ubuntu/GameServer/src/apps/login/build/CMakeFiles/edit_cache.dir
-/home/ubuntu/GameServer/src/apps/login/build/CMakeFiles/rebuild_cache.dir

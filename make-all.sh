@@ -14,13 +14,11 @@ build(){
     for i in `ls -d */`;do 
         cd $i
         if ${clean};then
-            rm -rf build
+            rm CMakeCache.txt
+            make clean 
         else
-            mkdir -p build
-            cd build
-            cmake -DCMAKE_BUILD_TYPE=${buildType} ../
+            cmake3 -DCMAKE_BUILD_TYPE=${buildType} ./ 
             make
-            cd ..
         fi
         cd ..
     done

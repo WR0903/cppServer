@@ -1,3 +1,0 @@
-/home/ubuntu/GameServer/src/apps/dbmgr/build/CMakeFiles/dbmgrd.dir
-/home/ubuntu/GameServer/src/apps/dbmgr/build/CMakeFiles/edit_cache.dir
-/home/ubuntu/GameServer/src/apps/dbmgr/build/CMakeFiles/rebuild_cache.dir

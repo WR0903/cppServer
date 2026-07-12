@@ -56,7 +56,7 @@ void MysqlConnector::QueryPlayerList(std::string account, SOCKET socket)
     //LOG_DEBUG("player list. account:" << account.c_str() << " player list size:" << protoRs.player_size() << " socket:" << socket);
 
     // 没有找到也需要返回pResultPacket
-    MessageSystemHelp::SendPacket(Proto::MsgId::L2DB_QueryPlayerListRs, socket, protoRs);
+    MessageSystemHelp::SendPacket(Proto::MsgId::DB2L_QueryPlayerListRs, socket, protoRs);
 }
 
 void MysqlConnector::HandleQueryPlayer(Packet* pPacket)
@@ -92,7 +92,7 @@ void MysqlConnector::HandleQueryPlayer(Packet* pPacket)
     }
 
     //LOG_DEBUG("player  account:" << protoQuery.account().c_str() << " player list size:" << protoRs.player_size() << " socket:" << pPacket->GetSocket());
-    MessageSystemHelp::SendPacket(Proto::MsgId::G2DB_QueryPlayerRs, pPacket->GetSocket(), protoRs);
+    MessageSystemHelp::SendPacket(Proto::MsgId::DB2G_QueryPlayerRs, pPacket->GetSocket(), protoRs);
 }
 
 void MysqlConnector::HandleCreatePlayer(Packet* pPacket)
@@ -106,7 +106,7 @@ void MysqlConnector::HandleCreatePlayer(Packet* pPacket)
     if (stmt == nullptr)
         return;
 
-    LOG_INFO("HandlePlayerCreate sn:" << protoPlayer.sn() << " account:" << protoCreate.account().c_str() << " name:" << protoPlayer.name().c_str());
+    //LOG_INFO("HandlePlayerCreate sn:" << protoPlayer.sn() << " account:" << protoCreate.account().c_str() << " name:" << protoPlayer.name().c_str());
 
     // create
     ClearStmtParam(stmt);
@@ -131,7 +131,7 @@ void MysqlConnector::HandleCreatePlayer(Packet* pPacket)
     }
     else
     {
-        MessageSystemHelp::SendPacket(Proto::MsgId::L2DB_CreatePlayerRs, pPacket->GetSocket(), protoRs);
+        MessageSystemHelp::SendPacket(Proto::MsgId::DB2L_CreatePlayerRs, pPacket->GetSocket(), protoRs);
     }
 }
 

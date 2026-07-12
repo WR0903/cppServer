@@ -11,7 +11,7 @@ public:
 	std::vector<T*>* GetRemoveCache();
 	std::vector<T*>* GetReaderCache();
 
-	// 杩斿洖鍒犻櫎鐨凮bj锛屽悗缁槸鍚︽湁鍐呭瓨鍥炴敹澶勭悊
+	// 返回删除的Obj，后续是否有内存回收处理
 	std::list<T*> Swap();
 	bool CanSwap();
     void BackToPool();

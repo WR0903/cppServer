@@ -4,6 +4,8 @@
 
 #include "console.h"
 #include "console_cmd_pool.h"
+#include "console_cmd_thread.h"
+
 #include "network_locator.h"
 #include "res_path.h"
 #include "app_type_mgr.h"
@@ -32,7 +34,7 @@ void ServerApp::Initialize()
     signal(SIGINT, Signalhandler);
     Global::Instance(_appType, 1);
 
-    // å…¨å±€æ•°æ®
+    // È«¾ÖÊı¾İ
     AppTypeMgr::Instance();
     DynamicObjectPoolMgr::Instance();
     ResPath::Instance();
@@ -43,20 +45,14 @@ void ServerApp::Initialize()
     _pThreadMgr = ThreadMgr::GetInstance();
     UpdateTime();
 
-    // å…¨å±€ Component
+    // È«¾Ö Component
     _pThreadMgr->GetEntitySystem()->AddComponent<NetworkLocator>();
     auto pConsole = _pThreadMgr->GetEntitySystem()->AddComponent<Console>();
     pConsole->Register<ConsoleCmdPool>("pool");
+    pConsole->Register<ConsoleCmdThread>("thread");
 
-    // åˆ›å»ºçº¿ç¨‹
-    const auto pLoginConfig = dynamic_cast<AppConfig*>(Yaml::GetInstance()->GetConfig(_appType));
-    for (int i = 0; i < pLoginConfig->ThreadNum; i++)
-    {
-        _pThreadMgr->CreateThread();
-    }
-
-    _pThreadMgr->InitComponent();
-    _pThreadMgr->StartAllThread();
+    // ´´½¨Ïß³Ì
+    _pThreadMgr->InitializeThread();
 }
 
 void ServerApp::Signalhandler(const int signalValue)
@@ -87,27 +83,27 @@ void ServerApp::Run()
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    // åœæ­¢æ‰€æœ‰çº¿ç¨‹
+    // Í£Ö¹ËùÓĞÏß³Ì
     std::cout << "stoping all threads..." << std::endl;
     bool isStop;
     do
     {
         isStop = _pThreadMgr->IsStopAll();
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     } while (!isStop);
 
-    // é‡Šæ”¾æ‰€æœ‰çº¿ç¨‹èµ„æº
+    // ÊÍ·ÅËùÓĞÏß³Ì×ÊÔ´
     std::cout << "disposing all threads..." << std::endl;
 
-    // 1.å­çº¿ç¨‹èµ„æº
+    // 1.×ÓÏß³Ì×ÊÔ´
     bool isDispose;
     do
     {
         isDispose = _pThreadMgr->IsDisposeAll();
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     } while (!isDispose);
 
-    // 2.ä¸»çº¿ç¨‹èµ„æº
+    // 2.Ö÷Ïß³Ì×ÊÔ´
     _pThreadMgr->Dispose();
 
     std::cout << "disposing all pool..." << std::endl;

@@ -5,16 +5,21 @@
 
 #include <iterator>
 
-Thread::Thread()
+Thread::Thread(ThreadType threadType)
 {
     _state = ThreadState_Init;
+    _threadType = threadType;
+}
+
+void Thread::BackToPool()
+{
 }
 
 void Thread::Start()
 {
     _thread = std::thread([this]()
-        {            
-            InitComponent();
+        {
+            InitComponent(_threadType);
             _state = ThreadState_Run;
             while (!Global::GetInstance()->IsStop)
             {

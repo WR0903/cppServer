@@ -1,13 +1,14 @@
 #include "entity.h"
 #include "entity_system.h"
 
-void IEntity::BackToPool() {
+void IEntity::BackToPool()
+{
+    auto pSystemManager = GetSystemManager();
     for (auto pair : _components)
     {
-        // ç”± EntitySystem åŽ»é”€æ¯
-        const auto pEntitySystem = GetSystemManager()->GetEntitySystem();
-        if (pEntitySystem != nullptr)
-            pEntitySystem->RemoveComponent(pair.second);
+        // ÓÉ EntitySystem È¥Ïú»Ù
+        if (pSystemManager != nullptr)
+            pSystemManager->GetEntitySystem()->RemoveComponent(pair.second);
         else
             pair.second->ComponentBackToPool();
     }
@@ -15,19 +16,24 @@ void IEntity::BackToPool() {
     _components.clear();
 }
 
+void IEntity::AddComponent(IComponent* pComponent)
+{
+    pComponent->SetParent(this);
+    _components.insert(std::make_pair(pComponent->GetSN(), pComponent));
+}
+
 void IEntity::RemoveComponent(IComponent* pComponent)
 {
     const auto typeHashCode = pComponent->GetTypeHashCode();
     _components.erase(typeHashCode);
-
-    const auto pEntitySystem = GetSystemManager()->GetEntitySystem();
-    if (pEntitySystem == nullptr)
+    auto pSystemManager = GetSystemManager();
+    if (pSystemManager == nullptr)
     {
         pComponent->ComponentBackToPool();
     }
     else
     {
-        // ç”± EntitySystem åŽ»é”€æ¯
-        pEntitySystem->RemoveComponent(pComponent);
+        // ÓÉ EntitySystem È¥Ïú»Ù
+        pSystemManager->GetEntitySystem()->RemoveComponent(pComponent);
     }
 }

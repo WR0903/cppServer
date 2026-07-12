@@ -4,7 +4,7 @@
 #include "robot.h"
 #include "libserver/thread_mgr.h"
 
-// æ£€æµ‹æ˜¯å¦å·²æ–­çº¿
+// ¼ì²âÊÇ·ñÒÑ¶ÏÏß
 RobotStateType RobotState::Update()
 {
     const auto state = GetState();
@@ -21,13 +21,13 @@ RobotStateType RobotState::Update()
 
 void RobotState::EnterState()
 {
-    // æ¯è¿›å…¥ä¸€ä¸ªçŠ¶æ€ï¼Œé€šçŸ¥ robot mgr
+    // Ã¿½øÈëÒ»¸ö×´Ì¬£¬Í¨Öª robot mgr
     Proto::RobotSyncState protoState;
     auto pState = protoState.add_states();
     pState->set_account(_pParentObj->GetAccount());
     pState->set_state(GetState());
 
-    // åªå‘é€ç»™ä¸»çº¿ç¨‹
+    // Ö»·¢ËÍ¸øÖ÷Ïß³Ì
     auto pPacket = MessageSystemHelp::CreatePacket(Proto::MsgId::MI_RobotSyncState, 0);
     pPacket->SerializeToBuffer(protoState);
     ThreadMgr::GetInstance()->GetMessageSystem()->AddPacketToList(pPacket);

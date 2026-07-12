@@ -3,6 +3,7 @@
 #include "disposable.h"
 #include "system.h"
 #include "common.h"
+#include "thread_type.h"
 
 #include <list>
 #include <random>
@@ -14,7 +15,7 @@ class SystemManager : virtual public IDisposable
 {
 public:
     SystemManager();
-    void InitComponent();
+    void InitComponent(ThreadType threadType);
 
     virtual void Update();
     void Dispose() override;

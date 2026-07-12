@@ -18,6 +18,7 @@ public:
 
     template <class T, typename... TArgs>
     T* AddComponent(TArgs... args);
+    void AddComponent(IComponent* pComponent);
 
     template<class T>
     T* GetComponent();
@@ -34,9 +35,17 @@ protected:
 template <class T, typename... TArgs>
 inline T* IEntity::AddComponent(TArgs... args)
 {
-    auto pComponent = GetSystemManager()->GetEntitySystem()->AddComponent<T>(std::forward<TArgs>(args)...);
-    pComponent->SetParent(this);
-    _components.insert(std::make_pair(pComponent->GetSN(), pComponent));
+    auto pSystemManager = GetSystemManager();
+    T* pComponent;
+    if (pSystemManager != nullptr) 
+    {
+        pComponent = GetSystemManager()->GetEntitySystem()->AddComponent<T>(std::forward<TArgs>(args)...);
+    }
+    else {
+        pComponent = DynamicObjectPool<T>::GetInstance()->MallocObject(nullptr, std::forward<TArgs>(args)...);
+    }
+
+    AddComponent(pComponent);
     return pComponent;
 }
 
@@ -60,7 +69,7 @@ T* IEntity::GetComponent()
 template<class T>
 void IEntity::RemoveComponent()
 {
-    // å…ˆåˆ é™¤æœ¬åœ°ç»„ä»¶æ•°æ®
+    // ÏÈÉ¾³ı±¾µØ×é¼şÊı¾İ
     const auto typeHashCode = typeid(T).hash_code();
     const auto iter = _components.find(typeHashCode);
     if (iter == _components.end())

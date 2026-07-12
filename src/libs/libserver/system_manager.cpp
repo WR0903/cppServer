@@ -6,8 +6,7 @@
 #include "entity_system.h"
 #include "update_system.h"
 
-//#include "start_system.h"
-//#include "dependence_system.h"
+#include "console_thread_component.h"
 
 #include <thread>
 
@@ -20,7 +19,7 @@ SystemManager::SystemManager()
     //_systems.emplace_back(new StartSystem());
     _systems.emplace_back(new UpdateSystem());
 
-    // gen random seed 鏍规嵁绾跨▼ID鐢熸垚闅忔満绉嶅瓙
+    // gen random seed 根据线程ID生成随机种子
     std::stringstream strStream;
     strStream << std::this_thread::get_id();
     std::string idstr = strStream.str();
@@ -29,9 +28,10 @@ SystemManager::SystemManager()
     _pRandomEngine = new std::default_random_engine(generator());
 }
 
-void SystemManager::InitComponent()
+void SystemManager::InitComponent(ThreadType threadType)
 {
     _pEntitySystem->AddComponent<CreateComponentC>();
+    _pEntitySystem->AddComponent<ConsoleThreadComponent>(threadType);
 }
 
 void SystemManager::Update()

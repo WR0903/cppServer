@@ -160,6 +160,21 @@
     <ClInclude Include="update_system.h">
       <Filter>ecs\system\update</Filter>
     </ClInclude>
+    <ClInclude Include="thread_collector.h">
+      <Filter>thread\collector</Filter>
+    </ClInclude>
+    <ClInclude Include="thread_type.h">
+      <Filter>thread\collector</Filter>
+    </ClInclude>
+    <ClInclude Include="console_cmd_thread.h">
+      <Filter>entity\console\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="console_thread_component.h">
+      <Filter>entity\console\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="thread_collector_exclusive.h">
+      <Filter>thread\collector</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="network.cpp">
@@ -270,6 +285,18 @@
     <ClCompile Include="update_system.cpp">
       <Filter>ecs\system\update</Filter>
     </ClCompile>
+    <ClCompile Include="thread_collector.cpp">
+      <Filter>thread\collector</Filter>
+    </ClCompile>
+    <ClCompile Include="console_cmd_thread.cpp">
+      <Filter>entity\console\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="console_thread_component.cpp">
+      <Filter>entity\console\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="thread_collector_exclusive.cpp">
+      <Filter>thread\collector</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
@@ -358,6 +385,12 @@
     </Filter>
     <Filter Include="ecs\system\update">
       <UniqueIdentifier>{d16fb338-775e-42b3-9e6f-2bb45967a7ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thread\collector">
+      <UniqueIdentifier>{2a938f27-7286-45d9-86bb-7b5c0973c109}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\console\thread">
+      <UniqueIdentifier>{2222be98-7c6d-485d-987a-36985ce5396e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

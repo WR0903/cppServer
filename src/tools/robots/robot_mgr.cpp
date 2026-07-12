@@ -1,6 +1,5 @@
 #include "robot_mgr.h"
 #include "libserver/common.h"
-#include "libserver/packet.h"
 #include "libserver/global.h"
 #include "libserver/yaml.h"
 #include "libserver/entity_system.h"
