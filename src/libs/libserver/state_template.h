@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include "log4_help.h"
 
 #define DynamicStateCreate(classname, enumType) \
     static void* CreateState() { return new classname; } \
@@ -9,12 +10,12 @@
 #define DynamicStateBind(classname) \
     reinterpret_cast<CreateIstancePt>( &( classname::CreateState ) )
 
-// T Îª¹ÜÀí×´Ì¬µÄÀà
+// T ä¸ºç®¡ç†çŠ¶æ€çš„ç±»
 template<typename enumType, class T>
 class StateTemplate {
 public:
     StateTemplate() {
-
+        _pParentObj = nullptr;
     }
 
     void SetParentObj(T* pObj) {
@@ -29,7 +30,7 @@ public:
     virtual void LeaveState() = 0;
 
 protected:
-    T* _pParentObj;
+    T* _pParentObj{ nullptr };
 };
 
 template<typename enumType, class StateClass, class T>
@@ -47,6 +48,14 @@ public:
     }
 
     void ChangeState(enumType stateType) {
+
+        // çŠ¶æ€ç›¸åŒï¼Œä¸å¤„ç†
+        if (_pState != nullptr && _pState->GetState() == stateType)
+        {
+            LOG_ERROR("ChangeState: same state type:" << GetRobotStateTypeShortName(stateType));
+            return;
+        }
+
         StateClass* pNewState = CreateStateObj(stateType);
         if (pNewState == nullptr) {
             //LOG_ERROR( "ChangeState:" << stateType << " == nullptr" );
@@ -78,7 +87,7 @@ protected:
     virtual void RegisterState() = 0;
 
     ///////////////////////////////////////////////////////////////////////////////////
-    // ´´½¨×´Ì¬Àà
+    // åˆ›å»ºçŠ¶æ€ç±»
 public:
     typedef StateClass* (*CreateIstancePt)();
 
@@ -86,7 +95,6 @@ public:
         auto iter = _dynCreateMap.find(enumValue);
         if (iter == _dynCreateMap.end())
             return nullptr;
-
 
         CreateIstancePt np = iter->second;
         StateClass* pState = np();

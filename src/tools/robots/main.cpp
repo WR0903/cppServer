@@ -4,8 +4,13 @@
 #include "robot_mgr.h"
 #include "robot_console_login.h"
 #include "global_robots.h"
+#include "robot_console_http.h"
+#include "libserver/network_connector.h"
+#include "robot_locator.h"
+#include "robot_console_world.h"
+#include "libresource/resource_manager.h"
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     GlobalRobots::Instance();
 
@@ -13,13 +18,25 @@ int main(int argc, char *argv[])
     ServerApp app(curAppType, argc, argv);
     app.Initialize();
 
-    auto pThreadMgr = ThreadMgr::GetInstance();
+    const auto pThreadMgr = ThreadMgr::GetInstance();
+
+    // å…¨å±€
+    pThreadMgr->GetEntitySystem()->AddComponent<ResourceManager>();
 
     auto pConsole = pThreadMgr->GetEntitySystem()->GetComponent<Console>();
     pConsole->Register<RobotConsoleLogin>("login");
+    pConsole->Register<RobotConsoleHttp>("http");
+    pConsole->Register<RobotConsoleWorld>("world");
 
-    // RobotMgrÔö¼Óµ½Ö÷Ïß³ÌÖÐ
+    // RobotMgrå¢žåŠ åˆ°ä¸»çº¿ç¨‹ä¸­
     pThreadMgr->GetEntitySystem()->AddComponent<RobotMgr>();
+
+    // connector
+    pThreadMgr->CreateComponent<NetworkConnector>(ConnectThread, false, (int)NetworkType::TcpConnector, (int)0);
+    pThreadMgr->CreateComponent<NetworkConnector>(ConnectThread, false, (int)NetworkType::HttpConnector, (int)0);
+
+    // 
+    pThreadMgr->GetEntitySystem()->AddComponent<RobotLocator>();
 
     app.Run();
     app.Dispose();

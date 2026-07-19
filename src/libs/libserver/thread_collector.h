@@ -21,7 +21,7 @@ public:
     void Dispose() override;
 
     virtual void HandlerMessage(Packet* pPacket);
-    virtual void HandlerCreateMessage(Packet* pPacket);
+    virtual void HandlerCreateMessage(Packet* pPacket, bool isToAllThread);
 
 protected:
     ThreadType _threadType;

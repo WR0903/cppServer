@@ -1,21 +1,20 @@
 #pragma once
 
 #include "libserver/common.h"
-#include "libserver/yaml.h"
-#include "libserver/util_time.h"
 #include "libserver/entity.h"
 #include "libserver/system.h"
+#include "libserver/socket_object.h"
+
 #include "mysql_base.h"
 
 #include <mysql/mysql.h>
-#include <vector>
 
 class Packet;
 
-enum DatabaseStmtKey
+enum class DatabaseStmtKey
 {
-	StmtCreate,
-	StmtSave,
+	Create,
+	Save,
 };
 
 struct DatabaseStmt
@@ -66,7 +65,7 @@ private:
 
 	void CheckPing();
 
-#pragma region Ô¤´¦Àí
+#pragma region é¢„å¤„ç†
 
 	void InitStmts();
 	void CleanStmts();
@@ -83,9 +82,9 @@ private:
 
 #pragma endregion 
 
-	// Ğ­Òé´¦Àí
+	// åè®®å¤„ç†
 	void HandleQueryPlayerList(Packet* pPacket);
-    void QueryPlayerList(std::string account, SOCKET socket);
+    void QueryPlayerList(std::string account, NetIdentify* pIdentify);
 
 	void HandleQueryPlayer(Packet* pPacket);
 

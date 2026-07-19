@@ -9,7 +9,8 @@ Packet::Packet()
 
     _ref = 0;
     _isRefOpen = false;
-    _socket = INVALID_SOCKET;
+    _socketKey.Clear();
+    _tagKey.Clear();
 }
 
 Packet::~Packet()
@@ -17,10 +18,24 @@ Packet::~Packet()
     delete[] _buffer;
 }
 
-void Packet::Awake(Proto::MsgId msgId, SOCKET socket)
+void Packet::Awake(Proto::MsgId msgId, NetIdentify* pIdentify)
 {
-    _socket = socket;
+    if (pIdentify != nullptr)
+    {
+        _socketKey.Clear();
+        _tagKey.Clear();
+
+        _socketKey.CopyFrom(pIdentify->GetSocketKey());
+        _tagKey.CopyFrom(pIdentify->GetTagKey());
+    }
+    else
+    {
+        _socketKey.Clear();
+        _tagKey.Clear();
+    }
+
     _msgId = msgId;
+
     _beginIndex = 0;
     _endIndex = 0;
     _ref = 0;
@@ -30,10 +45,26 @@ void Packet::Awake(Proto::MsgId msgId, SOCKET socket)
 void Packet::BackToPool()
 {
     _msgId = Proto::MsgId::None;
+    _socketKey.Clear();
+    _tagKey.Clear();
+
     _beginIndex = 0;
     _endIndex = 0;
     _ref = 0;
     _isRefOpen = false;
+}
+
+void Packet::CopyFrom(Packet* pPacket)
+{
+    const auto total = pPacket->GetDataLength();
+    while (GetEmptySize() < total)
+    {
+        ReAllocBuffer();
+    }
+
+    _beginIndex = 0;
+    _endIndex = total;
+    memcpy(_buffer, pPacket->GetBuffer(), _endIndex);
 }
 
 char* Packet::GetBuffer() const
@@ -61,24 +92,20 @@ void Packet::ReAllocBuffer()
     Buffer::ReAllocBuffer(_endIndex - _beginIndex);
 }
 
-SOCKET Packet::GetSocket() const
-{
-    return _socket;
-}
-
-void Packet::SetSocket(SOCKET socket)
-{
-    _socket = socket;
-}
-
 void Packet::AddRef()
 {
-    _ref++;
+    ++_ref;
 }
 
 void Packet::RemoveRef()
 {
-    _ref--;
+    --_ref;
+    if (_ref < 0)
+    {
+        const google::protobuf::EnumDescriptor* descriptor = Proto::MsgId_descriptor();
+        const auto name = descriptor->FindValueByNumber(_msgId)->name();
+        LOG_ERROR("packet ref < 0. ref:" << _ref << " msgId:" << name.c_str());
+    }
 }
 
 void Packet::OpenRef()
@@ -86,7 +113,7 @@ void Packet::OpenRef()
     _isRefOpen = true;
 }
 
-bool Packet::CanBack2Pool()
+bool Packet::CanBack2Pool() const
 {
     if (!_isRefOpen)
         return false;

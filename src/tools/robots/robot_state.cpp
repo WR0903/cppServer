@@ -1,18 +1,20 @@
 #include "robot_state.h"
 #include "libserver/packet.h"
-#include "libserver/network_connector.h"
 #include "robot.h"
 #include "libserver/thread_mgr.h"
+#include "libserver/message_system.h"
+#include "libserver/component_help.h"
 
-// ¼ì²âÊÇ·ñÒÑ¶ÏÏß
+// æ£€æµ‹æ˜¯å¦å·²æ–­çº¿
 RobotStateType RobotState::Update()
 {
     const auto state = GetState();
-    if (state > RobotState_Login_Connecting && state != RobotState_Game_Connecting)
+    if (state > RobotStateType::Login_Connecting&& state != RobotStateType::Game_Connecting)
     {
-        if (!_pParentObj->IsConnected())
+        const auto socketKey = _pParentObj->GetSocketKey();
+        if (socketKey->Socket == INVALID_SOCKET)
         {
-            return RobotState_Login_Connecting;
+            return RobotStateType::Login_Connecting;
         }
     }
 
@@ -21,18 +23,26 @@ RobotStateType RobotState::Update()
 
 void RobotState::EnterState()
 {
-    // Ã¿½øÈëÒ»¸ö×´Ì¬£¬Í¨Öª robot mgr
+    // æ¯è¿›å…¥ä¸€ä¸ªçŠ¶æ€ï¼Œé€šçŸ¥ robot mgr
     Proto::RobotSyncState protoState;
     auto pState = protoState.add_states();
     pState->set_account(_pParentObj->GetAccount());
-    pState->set_state(GetState());
+    pState->set_state((int)GetState());
 
-    // Ö»·¢ËÍ¸øÖ÷Ïß³Ì
-    auto pPacket = MessageSystemHelp::CreatePacket(Proto::MsgId::MI_RobotSyncState, 0);
+#ifdef LOG_TRACE_COMPONENT_OPEN
+    if (_pParentObj->GetSocketKey()->Socket != INVALID_SOCKET) {
+        std::stringstream os;
+        os << "enter state:" << GetRobotStateTypeShortName(GetState());
+        ComponentHelp::GetTraceComponent()->Trace(TraceType::Player, _pParentObj->GetSocketKey()->Socket, os.str());
+    }
+#endif
+
+    // åªå‘é€ç»™ä¸»çº¿ç¨‹
+    auto pPacket = MessageSystemHelp::CreatePacket(Proto::MsgId::MI_RobotSyncState, nullptr);
     pPacket->SerializeToBuffer(protoState);
     ThreadMgr::GetInstance()->GetMessageSystem()->AddPacketToList(pPacket);
     
-    // ·Ç³£¹æÍ¾¾¶£¬ÊÖ¶¯´ò¿ªRef
+    // éžå¸¸è§„é€”å¾„ï¼Œæ‰‹åŠ¨æ‰“å¼€Ref
     pPacket->OpenRef();
 
     OnEnterState();

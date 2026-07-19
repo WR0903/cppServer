@@ -7,12 +7,14 @@
 
 #include <list>
 #include <random>
+#include "check_time_component.h"
+#include "update_system.h"
 
 class EntitySystem;
 class MessageSystem;
 class DynamicObjectPoolCollector;
 
-class SystemManager : virtual public IDisposable
+class SystemManager : virtual public IDisposable, public CheckTimeComponent
 {
 public:
     SystemManager();
@@ -23,15 +25,20 @@ public:
 
     MessageSystem* GetMessageSystem() const;
     EntitySystem* GetEntitySystem() const;
+    UpdateSystem* GetUpdateSystem() const;
+
     DynamicObjectPoolCollector* GetPoolCollector() const;
 
     std::default_random_engine* GetRandomEngine() const;
 
+    void AddSystem(const std::string& name);
+
 protected:
     MessageSystem* _pMessageSystem;
     EntitySystem* _pEntitySystem;
+    UpdateSystem* _pUpdateSystem;
 
-    std::list<ISystem*> _systems;
+    std::list<System*> _systems;
 
     std::default_random_engine* _pRandomEngine;
 

@@ -11,9 +11,5 @@ public:
 private:
 	void HandleLogin(std::vector<std::string>& params);
 	void HandleLoginEx(std::vector<std::string>& params) const;
-	void HandleLoginClean(std::vector<std::string>& params);
-
-private:
-	std::list<uint64> _threads;
 };
 

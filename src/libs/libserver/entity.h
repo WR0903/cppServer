@@ -18,6 +18,9 @@ public:
     template <class T, typename... TArgs>
     T* AddComponent(TArgs... args);
 
+    template <class T, typename... TArgs>
+    T* AddComponentWithSn(uint64 sn, TArgs... args);
+    
     template<class T>
     T* GetComponent();
 
@@ -34,10 +37,21 @@ protected:
 template <class T, typename... TArgs>
 inline T* IEntity::AddComponent(TArgs... args)
 {
-    auto pSystemManager = GetSystemManager();
-    T* pComponent = pSystemManager->GetEntitySystem()->AddComponent<T>(std::forward<TArgs>(args)...);
-    pComponent->SetParent(this);
-    _components.insert(std::make_pair(pComponent->GetTypeHashCode(), pComponent));
+    return AddComponentWithSn<T>(0, std::forward<TArgs>(args)...);
+}
+
+template <class T, typename ... TArgs>
+T* IEntity::AddComponentWithSn(uint64 sn, TArgs... args)
+{
+    const auto typeHashCode = typeid(T).hash_code();
+    if (_components.find(typeHashCode) != _components.end())
+    {
+        LOG_ERROR("Add same component. type:" << typeid(T).name());
+        return nullptr;
+    }
+
+    T* pComponent = _pSystemManager->GetEntitySystem()->AddComponentWithParent<T>(this, sn, std::forward<TArgs>(args)...);
+    _components.insert(std::make_pair(typeHashCode, pComponent));
     return pComponent;
 }
 
@@ -55,7 +69,7 @@ T* IEntity::GetComponent()
 template<class T>
 void IEntity::RemoveComponent()
 {
-    // ÏÈÉ¾³ı±¾µØ×é¼şÊı¾İ
+    // å…ˆåˆ é™¤æœ¬åœ°ç»„ä»¶æ•°æ®
     const auto typeHashCode = typeid(T).hash_code();
     const auto iter = _components.find(typeHashCode);
     if (iter == _components.end())
@@ -69,7 +83,7 @@ void IEntity::RemoveComponent()
 }
 
 template<class T>
-class Entity :public IEntity
+class Entity :virtual public IEntity
 {
 public:
     const char* GetTypeName() override;

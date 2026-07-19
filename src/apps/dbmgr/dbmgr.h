@@ -5,5 +5,5 @@
 
 inline void InitializeComponentDBMgr(ThreadMgr* pThreadMgr)
 {
-    pThreadMgr->CreateComponent<MysqlConnector>(MysqlThread);
+    pThreadMgr->CreateComponent<MysqlConnector>(MysqlThread, true);
 }

@@ -16,12 +16,15 @@ struct AppConfig :public YamlConfig
 {
     int LogicThreadNum{ 0 };
     int MysqlThreadNum{ 0 };
+    int ListenThreadNum{ 1 };
+    int ConnectThreadNum{ 1 };
 };;
 
 struct CommonConfig : public AppConfig
 {
     std::string Ip{ "127.0.0.1" };
     int Port{ 6661 };
+    int HttpPort{ 5051 };
 };
 
 struct AppListForOneConfig : public CommonConfig
@@ -45,9 +48,20 @@ struct AppListConfig : public AppConfig
     }
 };
 
-struct LoginConfig : public CommonConfig
+struct LoginConfig : public AppListConfig
 {
     std::string UrlLogin;
+    std::string UrlMethod;
+};
+
+struct GameConfig : public AppListConfig
+{
+
+};
+
+struct SpaceConfig :public AppListConfig
+{
+
 };
 
 struct DBConfig
@@ -82,6 +96,7 @@ struct DBMgrConfig : public CommonConfig
         return nullptr;
     }
 };
+
 struct RobotConfig : public AppConfig
 {
 
@@ -90,8 +105,8 @@ struct RobotConfig : public AppConfig
 class Yaml : public Component<Yaml>, public IAwakeSystem<>
 {
 public:
-    void Awake();
-    void BackToPool();
+    void Awake() override;
+    void BackToPool() override;
 
     YamlConfig* GetConfig(APP_TYPE appType);
     CommonConfig* GetIPEndPoint(APP_TYPE appType, int appId = 0);
@@ -99,6 +114,7 @@ public:
 private:
     void LoadConfig(APP_TYPE appType, YAML::Node& config);
     DBConfig LoadDbConfig(YAML::Node node) const;
+    void LoadAppList(AppListConfig* pConfig, YAML::Node node) const;
 
 private:
     std::map<APP_TYPE, YamlConfig*> _configs;

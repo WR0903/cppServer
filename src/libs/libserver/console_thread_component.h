@@ -15,6 +15,7 @@ private:
     void HandleCmdThread(Packet* pPacket);
     void HandleCmdThreadEntites(Packet* pPacket);
     void HandleCmdThreadPool(Packet* pPacket);
+    void HandleCmdThreadConnect(Packet* pPacket);
 
 private:
     ThreadType _threadType;

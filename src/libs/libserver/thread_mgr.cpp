@@ -12,8 +12,13 @@
 #include "console_cmd_thread.h"
 
 #include "thread_collector_exclusive.h"
-
-#include <iostream>
+#include "global.h"
+#include "trace_component.h"
+#include "console_cmd_trace.h"
+#include "component_help.h"
+#include "console_cmd_app.h"
+#include "console_efficiency_component.h"
+#include "console_cmd_efficiency.h"
 
 ThreadMgr::ThreadMgr()
 {
@@ -21,25 +26,35 @@ ThreadMgr::ThreadMgr()
 
 void ThreadMgr::InitializeThread()
 {
-    auto pGlobal = Global::GetInstance();
+    const auto pGlobal = Global::GetInstance();
     auto pYaml = GetEntitySystem()->GetComponent<Yaml>();
     const auto pConfig = pYaml->GetConfig(pGlobal->GetCurAppType());
-    auto pAppCofig = dynamic_cast<AppConfig*>(pConfig);
+    const auto pAppConfig = dynamic_cast<AppConfig*>(pConfig);
 
-    if (pAppCofig->LogicThreadNum > 0)
+    if (pAppConfig->LogicThreadNum > 0)
     {
-        CreateThread(LogicThread, pAppCofig->LogicThreadNum);
+        CreateThread(LogicThread, pAppConfig->LogicThreadNum);
     }
 
-    if (pAppCofig->MysqlThreadNum > 0)
+    if (pAppConfig->MysqlThreadNum > 0)
     {
-        CreateThread(MysqlThread, pAppCofig->MysqlThreadNum);
+        CreateThread(MysqlThread, pAppConfig->MysqlThreadNum);
+    }
+
+    if (pAppConfig->LogicThreadNum > 0 || pAppConfig->MysqlThreadNum > 0)
+    {
+        // å¦‚æžœæ˜¯å¤šçº¿ç¨‹ï¼Œè‡ªåŠ¨åˆ›å»ºç›‘å¬å’Œè¿žæŽ¥è¿›ç¨‹
+        if (pAppConfig->ListenThreadNum > 0)
+            CreateThread(ListenThread, pAppConfig->ListenThreadNum);
+
+        if (pAppConfig->ConnectThreadNum > 0)
+            CreateThread(ConnectThread, pAppConfig->ConnectThreadNum);
     }
 }
 
 void ThreadMgr::CreateThread(ThreadType iType, int num)
 {
-    // ²»ÐèÒª´´½¨Ïß³Ì£¬µ¥Ïß³Ì
+    // ä¸éœ€è¦åˆ›å»ºçº¿ç¨‹ï¼Œå•çº¿ç¨‹
     auto pGlobal = Global::GetInstance();
     auto pYaml = GetEntitySystem()->GetComponent<Yaml>();
     const auto pConfig = pYaml->GetConfig(pGlobal->GetCurAppType());
@@ -63,18 +78,31 @@ void ThreadMgr::CreateThread(ThreadType iType, int num)
     }
 }
 
-void ThreadMgr::InitializeGlobalComponent(APP_TYPE ppType, int appId)
+void ThreadMgr::InitializeGlobalComponent(APP_TYPE appType, int appId)
 {
-    // È«¾Ö Component
+    // å…¨å±€ Component
     GetEntitySystem()->AddComponent<ResPath>();
-    GetEntitySystem()->AddComponent<Log4>(ppType);
+    GetEntitySystem()->AddComponent<Log4>(appType);
     GetEntitySystem()->AddComponent<Yaml>();
     GetEntitySystem()->AddComponent<NetworkLocator>();
 
     auto pConsole = GetEntitySystem()->AddComponent<Console>();
     pConsole->Register<ConsoleCmdThread>("thread");
 
-    // Ïß³Ì³ÌÉÏµÄ»ù±¾×é¼þ
+#if LOG_EFFICIENCY_COMPONENT_OPEN
+    pConsole->Register<ConsoleCmdEfficiency>("efficiency");
+    GetEntitySystem()->AddComponent<ConsoleEfficiencyComponent>();
+#endif
+
+    if ((appType & APP_TYPE::APP_APPMGR) != 0 || (appType & APP_TYPE::APP_GAME) != 0)
+        pConsole->Register<ConsoleCmdApp>("app");
+
+#if LOG_TRACE_COMPONENT_OPEN
+    GetEntitySystem()->AddComponent<TraceComponent>();
+    pConsole->Register<ConsoleCmdTrace>("trace");
+#endif
+
+    // çº¿ç¨‹ç¨‹ä¸Šçš„åŸºæœ¬ç»„ä»¶
     InitComponent(ThreadType::MainThread);
 }
 
@@ -97,7 +125,7 @@ void ThreadMgr::UpdateCreatePacket()
     for (auto iter = pList->begin(); iter != pList->end(); ++iter)
     {
         auto pPacket = (*iter);
-        if (_threads.size() > 0)
+        if (!_threads.empty())
         {
             auto pCreateProto = pPacket->ParseToProto<Proto::CreateComponent>();
             auto threadType = (ThreadType)(pCreateProto.thread_type());
@@ -108,11 +136,11 @@ void ThreadMgr::UpdateCreatePacket()
             }
 
             auto pThreadCollector = _threads[threadType];
-            pThreadCollector->HandlerCreateMessage(pPacket);
+            pThreadCollector->HandlerCreateMessage(pPacket, pCreateProto.is_to_all_thread());
         }
         else
         {
-            // µ¥Ïß³Ì
+            // å•çº¿ç¨‹
             GetMessageSystem()->AddPacketToList(pPacket);
         }
 
@@ -134,10 +162,10 @@ void ThreadMgr::UpdateDispatchPacket()
     {
         auto pPacket = (*iter);
 
-        // Ö÷Ïß³Ì
+        // ä¸»çº¿ç¨‹
         GetMessageSystem()->AddPacketToList(pPacket);
 
-        // ×ÓÏß³Ì
+        // å­çº¿ç¨‹
         for (auto iter = _threads.begin(); iter != _threads.end(); ++iter)
         {
             iter->second->HandlerMessage(pPacket);
@@ -199,4 +227,3 @@ void ThreadMgr::DispatchPacket(Packet* pPacket)
     std::lock_guard<std::mutex> guard(_packet_lock);
     _packets.GetWriterCache()->emplace_back(pPacket);
 }
-

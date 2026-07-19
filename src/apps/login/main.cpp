@@ -2,9 +2,10 @@
 #include "libserver/server_app.h"
 #include "libserver/network_listen.h"
 #include "libserver/network_connector.h"
-#include "libserver/component_help.h"
 
 #include "login.h"
+#include "libserver/global.h"
+#include "libresource/resource_manager.h"
 
 int main(int argc, char* argv[])
 {
@@ -12,17 +13,21 @@ int main(int argc, char* argv[])
     ServerApp app(curAppType, argc, argv);
     app.Initialize();
 
+    auto pGlobal = Global::GetInstance();
+
     auto pThreadMgr = ThreadMgr::GetInstance();
+
+    // 全局
+    pThreadMgr->GetEntitySystem()->AddComponent<ResourceManager>();
+
     InitializeComponentLogin(pThreadMgr);
-       
-    auto pYaml = ComponentHelp::GetYaml();
-    auto pCommonConfig = pYaml->GetIPEndPoint(curAppType);
 
-    pThreadMgr->CreateThread(ListenThread, 1);
-    pThreadMgr->CreateComponent<NetworkListen>(ListenThread, pCommonConfig->Ip, pCommonConfig->Port);
+    // listen
+    pThreadMgr->CreateComponent<NetworkListen>(ListenThread, false, (int)pGlobal->GetCurAppType(), (int)pGlobal->GetCurAppId());
 
-    pThreadMgr->CreateThread(ConnectThread, 1);
-    pThreadMgr->CreateComponent<NetworkConnector>(ConnectThread, (int)APP_TYPE::APP_DB_MGR, 0);
+    // connector
+    pThreadMgr->CreateComponent<NetworkConnector>(ConnectThread, false, (int)NetworkType::TcpConnector, (int)(APP_APPMGR|APP_DB_MGR));
+    pThreadMgr->CreateComponent<NetworkConnector>(ConnectThread, false, (int)NetworkType::HttpConnector, (int)0);
 
     app.Run();
     app.Dispose();

@@ -1,8 +1,6 @@
 #pragma once
 #include "component.h"
 
-#include "global.h"
-#include "cache_swap.h"
 #include "disposable.h"
 #include "component_factory.h"
 #include "object_pool.h"
@@ -23,8 +21,11 @@ public:
     template <class T, typename... TArgs>
     T* AddComponent(TArgs... args);
 
+    template <class T, typename... TArgs>
+    T* AddComponentWithParent(IEntity* pParent, uint64 sn, TArgs... args);
+
     template <typename... TArgs>
-    IComponent* AddComponentByName(std::string className, TArgs... args);
+    IComponent* AddComponentByName(std::string className, uint64 sn, TArgs... args);
 
     template <class T>
     T* GetComponent();
@@ -41,7 +42,7 @@ private:
     template <class T>
     void AddComponent(T* pComponent);
 
-    // ËùÓÐ¶ÔÏó
+    // æ‰€æœ‰å¯¹è±¡
     // <class mask sn, std::map<Component>*>
     std::map<uint64, ComponentCollections*> _objSystems;
 
@@ -72,9 +73,15 @@ inline void EntitySystem::AddComponent(T* pComponent)
 template <class T, typename ... TArgs>
 T* EntitySystem::AddComponent(TArgs... args)
 {
+    return AddComponentWithParent<T>(nullptr, 0, std::forward<TArgs>(args)...);
+}
+
+template <class T, typename ... TArgs>
+T* EntitySystem::AddComponentWithParent(IEntity* pParent, uint64 sn, TArgs... args)
+{
     auto pCollector = _systemManager->GetPoolCollector();
-    auto pPool = (DynamicObjectPool<T>*)pCollector->GetPool<T>();
-    T* pComponent = pPool->MallocObject(_systemManager, std::forward<TArgs>(args)...);
+    auto pPool = dynamic_cast<DynamicObjectPool<T>*>(pCollector->GetPool<T>());
+    T* pComponent = pPool->MallocObject(_systemManager, pParent, sn, std::forward<TArgs>(args)...);
     if (pComponent == nullptr)
         return nullptr;
 
@@ -83,12 +90,13 @@ T* EntitySystem::AddComponent(TArgs... args)
 }
 
 template<typename ...TArgs>
-inline IComponent* EntitySystem::AddComponentByName(std::string className, TArgs ...args)
+inline IComponent* EntitySystem::AddComponentByName(std::string className, uint64 sn, TArgs ...args)
 {
-    auto pComponent = ComponentFactory<TArgs...>::GetInstance()->Create(_systemManager, className, std::forward<TArgs>(args)...);
-    if (pComponent == nullptr)
+    auto pObj = ComponentFactory<TArgs...>::GetInstance()->Create(_systemManager, className, sn, std::forward<TArgs>(args)...);
+    if (pObj == nullptr)
         return nullptr;
 
+    IComponent* pComponent = static_cast<IComponent*>(pObj);
     AddComponent(pComponent);
     return pComponent;
 }

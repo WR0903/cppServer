@@ -1,12 +1,12 @@
 #include "common.h"
 #include "server_app.h"
 
-#include "res_path.h"
 #include "app_type.h"
 #include "yaml.h"
 
 #include "object_pool_packet.h"
 #include "component_help.h"
+#include "global.h"
 
 ServerApp::ServerApp(APP_TYPE appType, int argc, char* argv[])
 {
@@ -25,18 +25,35 @@ void ServerApp::Dispose()
 
 void ServerApp::Initialize()
 {
+    std::cout << "\ncommand arguments:" << std::endl;
+    for (auto count = 0; count < _argc; count++)
+        std::cout << "  argv[" << count << "]   " << _argv[count] << std::endl;
+
+    for (int argIdx = 1; argIdx < _argc; ++argIdx)
+    {
+        std::string cmd = _argv[argIdx];
+        std::string findcmd = "-sid=";
+        std::string::size_type fi1 = cmd.find(findcmd);
+        if (fi1 != std::string::npos)
+        {
+            cmd.erase(fi1, findcmd.size());
+            _appId = std::stoi(cmd);
+            break;
+        }
+    }
+
     signal(SIGINT, Signalhandler);
 
-    Global::Instance(_appType, 0);
+    Global::Instance(_appType, _appId);
 
-    // Packet¶ÔÏó³Ø
+    // Packetå¯¹è±¡æ± 
     DynamicPacketPool::Instance();
 
-    // È«¾Ö»ù´¡×é¼ş
+    // å…¨å±€åŸºç¡€ç»„ä»¶
     _pThreadMgr = ThreadMgr::Instance();
-    _pThreadMgr->InitializeGlobalComponent(_appType, 0);
+    _pThreadMgr->InitializeGlobalComponent(_appType, _appId);
 
-    // ´´½¨Ïß³Ì
+    // åˆ›å»ºçº¿ç¨‹
     _pThreadMgr->InitializeThread();
 }
 
@@ -72,7 +89,7 @@ void ServerApp::Run()
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    // Í£Ö¹ËùÓĞÏß³Ì
+    // åœæ­¢æ‰€æœ‰çº¿ç¨‹
     std::cout << "stoping all threads..." << std::endl;
     bool isStop;
     do
@@ -81,7 +98,7 @@ void ServerApp::Run()
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     } while (!isStop);
 
-    // Ïú»ÙÏß³Ì
+    // é”€æ¯çº¿ç¨‹
     std::cout << "destroy all threads..." << std::endl;
     _pThreadMgr->DestroyThread();
     bool isDestroy;

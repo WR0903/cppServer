@@ -1,17 +1,23 @@
 #pragma once
 
 #include <map>
+#include <list>
+#include <functional>
 
 #include "common.h"
 #include "system.h"
 #include "cache_swap.h"
+#include "socket_object.h"
+#include "component_help.h"
+#include "packet.h"
+#include "message_callback.h"
 
 class IComponent;
 class SystemManager;
 class Packet;
 class EntitySystem;
 
-class MessageSystem :virtual public ISystem
+class MessageSystem :virtual public ISystem<MessageSystem>
 {
 public:
     MessageSystem(SystemManager* pMgr);
@@ -20,13 +26,43 @@ public:
     void Update(EntitySystem* pEntities) override;
     void AddPacketToList(Packet* pPacket);
 
-private:
-    static void Process(Packet* pPacket, std::map<uint64, IComponent*>& lists);
+    void RegisterFunction(IEntity* obj, int msgId, MsgCallbackFun cbfun);
+    void RegisterDefaultFunction(IEntity* obj, MsgCallbackFun cbfun);
+    void RemoveFunction(IComponent* obj);
+
+    template<typename T>
+    void RegisterFunctionFilter(IEntity* obj, int msgId, std::function<T * (NetIdentify*)> getObj, std::function<void(T*, Packet*)> fun);
 
 private:
-    // ±¾Ïß³ÌÖĞµÄËùÓĞ´ı´¦Àí°ü
+    // æœ¬çº¿ç¨‹ä¸­çš„æ‰€æœ‰å¾…å¤„ç†åŒ…
     std::mutex _packet_lock;
-    CacheSwap<Packet> _cachePackets;
+    CacheSwap<Packet> _cachePackets; 
 
     SystemManager* _systemMgr{ nullptr };
+
+    // message
+    // <msgid, <objsn, callback>>
+    std::map<int, std::map<uint64, IMessageCallBack*>*> _callbacks;
+
+    // é»˜è®¤å¤„ç†å‡½æ•°
+    // <objsn, callback>
+    std::map<uint64, IMessageCallBack*> _defaultCallbacks;
 };
+
+template <typename T>
+void MessageSystem::RegisterFunctionFilter(IEntity* obj, int msgId, std::function<T * (NetIdentify*)> getObj, std::function<void(T*, Packet*)> fun)
+{
+    auto iter = _callbacks.find(msgId);
+    if (iter == _callbacks.end())
+    {
+        _callbacks.insert(std::make_pair(msgId, new std::map<uint64, IMessageCallBack*>()));
+    }
+
+    auto pCallback = _systemMgr->GetEntitySystem()->AddComponent<MessageCallBackFilter<T>>();
+    pCallback->GetFilterObj = std::move(getObj);
+    pCallback->HandleFunction = std::move(fun);
+
+    pCallback->SetParent(obj);
+
+    _callbacks[msgId]->insert(std::make_pair(obj->GetSN(), pCallback));
+}

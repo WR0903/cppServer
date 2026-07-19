@@ -1,30 +1,42 @@
 #pragma once
 #include "network.h"
 #include "system.h"
+#include "app_type.h"
+#include "socket_object.h"
 
-class NetworkLocator : public Component<NetworkLocator>, public IAwakeSystem<>
+class NetworkLocator : public Entity<NetworkLocator>, public IAwakeSystem<>
 {
 public:
-	void Awake() override {};
-	void BackToPool() override;
-	void AddConnectorLocator(INetwork* pNetwork, APP_TYPE appType, int appId);
-	void AddListenLocator(INetwork* pNetwork, NetworkType networkType);
+    void Awake() override;;
+    void BackToPool() override;
 
-	INetwork* GetListen(NetworkType networkType);
-	INetwork* GetNetworkConnector(const SOCKET socket);
-	INetwork* GetNetworkConnector(const APP_TYPE appType, const int appId);
-	std::tuple<APP_TYPE, int> GetNetworkConnectorInfo(const SOCKET socket);
+    // connect
+    void AddConnectorLocator(INetwork* pNetwork, NetworkType networkType);
+    void AddNetworkIdentify(SocketKey* pSocket, uint64 appKey);
+    std::list<NetIdentify> GetAppNetworks(const APP_TYPE appType);
 
-	std::list<INetwork*> GetNetworks(const APP_TYPE appType);
+    NetIdentify GetNetworkIdentify(const APP_TYPE appType, const int appId);
 
-	APP_TYPE GetNetworkAppType(const int socket);
-	int GetNetworkAppId(const SOCKET socket);
+    // listen
+    void AddListenLocator(INetwork* pNetwork, NetworkType networkType);
+
+    //
+    INetwork* GetNetwork(NetworkType networkType);
+
+protected:
+    void HandleAppRegister(Packet* pPacket);
+    void HandleNetworkDisconnect(Packet* pPacket);
 
 private:
-	std::mutex _lock;
-	std::map<APP_TYPE, std::map<int, INetwork*>> _connectors;
+    std::mutex _lock;
 
-	// ø…ƒ‹¥Ê‘⁄¡Ω∏ˆlisten, tcp ∫Õ http Õ¨ ±¥Ê‘⁄
-	std::map<NetworkType, INetwork*> _listens;
+    // <apptype + appId, NetIdentify>
+    std::map<uint64, NetIdentify> _netIdentify;
+
+    // connector
+    std::map<NetworkType, INetwork*> _connectors;
+
+    // ÂèØËÉΩÂ≠òÂú®‰∏§‰∏™listen, tcp Âíå http ÂêåÊó∂Â≠òÂú®
+    std::map<NetworkType, INetwork*> _listens;
 };
 

@@ -34,9 +34,6 @@
     <ClInclude Include="console.h">
       <Filter>entity\console</Filter>
     </ClInclude>
-    <ClInclude Include="robot_test.h">
-      <Filter>server\robots</Filter>
-    </ClInclude>
     <ClInclude Include="base_buffer.h">
       <Filter>entity\network\buffer</Filter>
     </ClInclude>
@@ -76,9 +73,6 @@
     <ClInclude Include="message_system.h">
       <Filter>ecs\system\message</Filter>
     </ClInclude>
-    <ClInclude Include="network_interface.h">
-      <Filter>entity\network</Filter>
-    </ClInclude>
     <ClInclude Include="regist_to_factory.h">
       <Filter>ecs\factory</Filter>
     </ClInclude>
@@ -112,9 +106,6 @@
     <ClInclude Include="sn_object.h">
       <Filter>common\base</Filter>
     </ClInclude>
-    <ClInclude Include="socket_object.h">
-      <Filter>common\base</Filter>
-    </ClInclude>
     <ClInclude Include="state_template.h">
       <Filter>common\base</Filter>
     </ClInclude>
@@ -134,12 +125,6 @@
       <Filter>ecs\system</Filter>
     </ClInclude>
     <ClInclude Include="message_system_help.h">
-      <Filter>ecs\system\message</Filter>
-    </ClInclude>
-    <ClInclude Include="message_component.h">
-      <Filter>ecs\system\message</Filter>
-    </ClInclude>
-    <ClInclude Include="message_callback.h">
       <Filter>ecs\system\message</Filter>
     </ClInclude>
     <ClInclude Include="update_component.h">
@@ -181,6 +166,57 @@
     <ClInclude Include="timer_component.h">
       <Filter>ecs\timer</Filter>
     </ClInclude>
+    <ClInclude Include="sync_component.h">
+      <Filter>server\app</Filter>
+    </ClInclude>
+    <ClInclude Include="mongoose\mongoose.h">
+      <Filter>entity\network\mongoose</Filter>
+    </ClInclude>
+    <ClInclude Include="trace_component.h">
+      <Filter>entity\console\trace</Filter>
+    </ClInclude>
+    <ClInclude Include="console_cmd_trace.h">
+      <Filter>entity\console\trace</Filter>
+    </ClInclude>
+    <ClInclude Include="network_type.h">
+      <Filter>entity\network</Filter>
+    </ClInclude>
+    <ClInclude Include="network_help.h">
+      <Filter>entity\network</Filter>
+    </ClInclude>
+    <ClInclude Include="socket_object.h">
+      <Filter>entity\network\identify</Filter>
+    </ClInclude>
+    <ClInclude Include="check_time_component.h">
+      <Filter>server\robots</Filter>
+    </ClInclude>
+    <ClInclude Include="message_callback.h">
+      <Filter>ecs\system\message</Filter>
+    </ClInclude>
+    <ClInclude Include="redis_connector.h">
+      <Filter>entity\redis</Filter>
+    </ClInclude>
+    <ClInclude Include="redis_constants.h">
+      <Filter>entity\redis</Filter>
+    </ClInclude>
+    <ClInclude Include="vector3.h">
+      <Filter>common\math</Filter>
+    </ClInclude>
+    <ClInclude Include="console_cmd_app.h">
+      <Filter>entity\console</Filter>
+    </ClInclude>
+    <ClInclude Include="console_cmd_efficiency.h">
+      <Filter>entity\console\efficienty</Filter>
+    </ClInclude>
+    <ClInclude Include="console_efficiency_component.h">
+      <Filter>entity\console\efficienty</Filter>
+    </ClInclude>
+    <ClInclude Include="efficiency_thread_component.h">
+      <Filter>entity\console\efficienty</Filter>
+    </ClInclude>
+    <ClInclude Include="socket_locator.h">
+      <Filter>entity\network\locator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="network.cpp">
@@ -212,9 +248,6 @@
     </ClCompile>
     <ClCompile Include="console.cpp">
       <Filter>entity\console</Filter>
-    </ClCompile>
-    <ClCompile Include="robot_test.cpp">
-      <Filter>server\robots</Filter>
     </ClCompile>
     <ClCompile Include="base_buffer.cpp">
       <Filter>entity\network\buffer</Filter>
@@ -267,12 +300,6 @@
     <ClCompile Include="message_system_help.cpp">
       <Filter>ecs\system\message</Filter>
     </ClCompile>
-    <ClCompile Include="message_component.cpp">
-      <Filter>ecs\system\message</Filter>
-    </ClCompile>
-    <ClCompile Include="message_callback.cpp">
-      <Filter>ecs\system\message</Filter>
-    </ClCompile>
     <ClCompile Include="update_component.cpp">
       <Filter>ecs\system\update</Filter>
     </ClCompile>
@@ -308,6 +335,51 @@
     </ClCompile>
     <ClCompile Include="timer_component.cpp">
       <Filter>ecs\timer</Filter>
+    </ClCompile>
+    <ClCompile Include="sync_component.cpp">
+      <Filter>server\app</Filter>
+    </ClCompile>
+    <ClCompile Include="mongoose\mongoose.c">
+      <Filter>entity\network\mongoose</Filter>
+    </ClCompile>
+    <ClCompile Include="util_string.cpp">
+      <Filter>common\base</Filter>
+    </ClCompile>
+    <ClCompile Include="trace_component.cpp">
+      <Filter>entity\console\trace</Filter>
+    </ClCompile>
+    <ClCompile Include="console_cmd_trace.cpp">
+      <Filter>entity\console\trace</Filter>
+    </ClCompile>
+    <ClCompile Include="socket_object.cpp">
+      <Filter>entity\network\identify</Filter>
+    </ClCompile>
+    <ClCompile Include="check_time_component.cpp">
+      <Filter>server\robots</Filter>
+    </ClCompile>
+    <ClCompile Include="message_callback.cpp">
+      <Filter>ecs\system\message</Filter>
+    </ClCompile>
+    <ClCompile Include="redis_connector.cpp">
+      <Filter>entity\redis</Filter>
+    </ClCompile>
+    <ClCompile Include="vector3.cpp">
+      <Filter>common\math</Filter>
+    </ClCompile>
+    <ClCompile Include="console_cmd_app.cpp">
+      <Filter>entity\console</Filter>
+    </ClCompile>
+    <ClCompile Include="console_cmd_efficiency.cpp">
+      <Filter>entity\console\efficienty</Filter>
+    </ClCompile>
+    <ClCompile Include="console_efficiency_component.cpp">
+      <Filter>entity\console\efficienty</Filter>
+    </ClCompile>
+    <ClCompile Include="efficiency_thread_component.cpp">
+      <Filter>entity\console\efficienty</Filter>
+    </ClCompile>
+    <ClCompile Include="socket_locator.cpp">
+      <Filter>entity\network\locator</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -406,6 +478,24 @@
     </Filter>
     <Filter Include="ecs\timer">
       <UniqueIdentifier>{5c68a91c-06df-44e3-b5d0-fccd004293aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\network\mongoose">
+      <UniqueIdentifier>{dbe5797e-7e1b-41bf-a1a4-30533b4d5918}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\console\trace">
+      <UniqueIdentifier>{5e1486bd-00e0-4334-bc9f-db2000b96097}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\network\identify">
+      <UniqueIdentifier>{e9b762e2-5d1f-4bb9-a7e0-a5266f9b8d4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\redis">
+      <UniqueIdentifier>{ec71c0d6-2d4f-4009-b94f-383cfc0a3d90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common\math">
+      <UniqueIdentifier>{831d3610-3e6d-42b1-b68b-36acaaaff84a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity\console\efficienty">
+      <UniqueIdentifier>{75f57b0b-2bc9-41d3-b7ab-8c24bb8c728f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

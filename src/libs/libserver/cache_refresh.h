@@ -19,7 +19,7 @@ public:
     void RemoveObj(uint64 sn);
     int Count();
 
-    // 返回删除的Obj，后续是否有内存回收处理
+    // 杩斿洖鍒犻櫎鐨凮bj锛屽悗缁槸鍚︽湁鍐呭瓨鍥炴敹澶勭悊
     void Swap(std::queue<T*>* pRecycleList);
     bool CanSwap();
     void BackToPool();
@@ -75,7 +75,14 @@ void CacheRefresh<T>::Swap(std::queue<T*>* pRecycleList)
             else
             {
                 if (pRecycleList != nullptr)
+                {
+                    iter->second->SetSN(0);
                     pRecycleList->emplace(iter->second);
+                } 
+                else
+                {
+                    delete iter->second;
+                }
 
                 _objs.erase(iter);
             }

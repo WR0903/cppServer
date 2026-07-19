@@ -3,12 +3,15 @@
 #include "system.h"
 #include <functional>
 
-class UpdateComponent :public Component<UpdateComponent>, public IAwakeFromPoolSystem<>
+using UpdateCallBackFun = std::function<void()>;
+class UpdateComponent :public Component<UpdateComponent>, public IAwakeFromPoolSystem<UpdateCallBackFun>
 {
 public:
-	void Awake() override;
+	void Awake(UpdateCallBackFun fun) override;
     void BackToPool() override;
+    void Update() const;
 
-	std::function<void()> UpdataFunction{ nullptr };	
+private:
+    UpdateCallBackFun _function{ nullptr };
 };
 

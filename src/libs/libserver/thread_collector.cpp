@@ -81,19 +81,29 @@ void ThreadCollector::HandlerMessage(Packet* pPacket)
     }
 }
 
-void ThreadCollector::HandlerCreateMessage(Packet* pPacket)
+void ThreadCollector::HandlerCreateMessage(Packet* pPacket, bool isToAllThread)
 {
-    auto objs = _threads.GetReaderCache();
-    auto iter = objs->find(_nextThreadSn);
-    if (iter == objs->end()) {
-        iter = objs->begin();
+    if (isToAllThread) {
+        auto pList = _threads.GetReaderCache();
+        for (auto iter = pList->begin(); iter != pList->end(); ++iter)
+        {
+            iter->second->GetMessageSystem()->AddPacketToList(pPacket);
+        }
     }
+    else 
+    {
+        auto objs = _threads.GetReaderCache();
+        auto iter = objs->find(_nextThreadSn);
+        if (iter == objs->end()) {
+            iter = objs->begin();
+        }
 
-    iter->second->GetMessageSystem()->AddPacketToList(pPacket);
-    ++iter;
-    if (iter == objs->end()) {
-        iter = objs->begin();
+        iter->second->GetMessageSystem()->AddPacketToList(pPacket);
+        ++iter;
+        if (iter == objs->end()) {
+            iter = objs->begin();
+        }
+
+        _nextThreadSn = iter->first;
     }
-
-    _nextThreadSn = iter->first;
 }

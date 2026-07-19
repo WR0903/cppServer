@@ -8,7 +8,7 @@
 class DynamicPacketPool :public DynamicObjectPool<Packet>, public Singleton<DynamicPacketPool>
 {
 public:
-    Packet* MallocPacket(Proto::MsgId msgId, SOCKET socket);
+    Packet* MallocPacket(Proto::MsgId msgId, NetIdentify* pIdentify);
     virtual void Update() override;
     virtual void FreeObject(IComponent* pObj) override;
     virtual void Show() override;

@@ -6,6 +6,7 @@
 
 #include "dbmgr.h"
 #include "mysql_table_update.h"
+#include "libserver/global.h"
 
 int main(int argc, char* argv[])
 {
@@ -22,10 +23,8 @@ int main(int argc, char* argv[])
     auto pThreadMgr = ThreadMgr::GetInstance();
     InitializeComponentDBMgr(pThreadMgr);
 
-    auto pYaml = ComponentHelp::GetYaml();
-    auto pCommonConfig = pYaml->GetIPEndPoint(curAppType, 0);
-    pThreadMgr->CreateThread(ListenThread, 1);
-    pThreadMgr->CreateComponent<NetworkListen>(ListenThread, pCommonConfig->Ip, pCommonConfig->Port);
+    const auto pGlobal = Global::GetInstance();
+    pThreadMgr->CreateComponent<NetworkListen>(ListenThread, false, (int)pGlobal->GetCurAppType(), (int)pGlobal->GetCurAppId());
     
     app.Run();
     app.Dispose();

@@ -5,45 +5,79 @@
 #include "network_connector.h"
 #include "network_locator.h"
 #include "log4_help.h"
-#include "app_type.h"
 #include "yaml.h"
 #include "thread_mgr.h"
 #include "update_component.h"
 #include "component_help.h"
+#include "message_system.h"
 
-void NetworkConnector::Awake(std::string ip, int port)
+void NetworkConnector::Awake(int iType, int mixConnectAppType)
 {
-    // update
-    auto pUpdateComponent = AddComponent<UpdateComponent>();
-    pUpdateComponent->UpdataFunction = BindFunP0(this, &NetworkConnector::Update);
+    _networkType = (NetworkType)iType;
 
     // 
-    Connect(ip, port);
-}
-
-void NetworkConnector::Awake(int appType, int appId)
-{
-    // update
-    auto pUpdateComponent = AddComponent<UpdateComponent>();
-    pUpdateComponent->UpdataFunction = BindFunP0(this, &NetworkConnector::Update);
-
-    // yaml
-    auto pYaml = ComponentHelp::GetYaml();
-    auto pComponent = pYaml->GetIPEndPoint((APP_TYPE)appType, appId);
-    if (pComponent == nullptr) {
-        LOG_ERROR("can't find yaml config. app type:" << GetAppName((APP_TYPE)appType) << " app id:" << appId);
-        return;
-    }
-
-    Connect(pComponent->Ip, pComponent->Port);
-
     auto pNetworkLocator = ThreadMgr::GetInstance()->GetEntitySystem()->GetComponent<NetworkLocator>();
-    pNetworkLocator->AddConnectorLocator(this, (APP_TYPE)appType, appId);
+    pNetworkLocator->AddConnectorLocator(this, _networkType);
+
+    // update
+    AddComponent<UpdateComponent>(BindFunP0(this, &NetworkConnector::Update));
+
+    // message
+    auto pMsgSystem = GetSystemManager()->GetMessageSystem();
+
+    pMsgSystem->RegisterFunction(this, Proto::MsgId::MI_NetworkConnect, BindFunP1(this, &NetworkConnector::HandleNetworkConnect));
+    pMsgSystem->RegisterFunction(this, Proto::MsgId::MI_NetworkRequestDisconnect, BindFunP1(this, &NetworkConnector::HandleDisconnect));
+
+#ifdef EPOLL
+    std::cout << "epoll model. connector:" << GetNetworkTypeName(_networkType) << std::endl;
+    InitEpoll();
+#else
+    std::cout << "select model. connector:" << GetNetworkTypeName(_networkType) << std::endl;
+#endif
+
+    if (_networkType == NetworkType::TcpConnector && mixConnectAppType > 0)
+    {
+        const auto pYaml = ComponentHelp::GetYaml();
+        APP_TYPE appType;
+        if ((mixConnectAppType & APP_APPMGR) != 0)
+        {
+            appType = APP_APPMGR;
+            const auto pCommonConfig = pYaml->GetIPEndPoint(appType, 0);
+            CreateConnector(appType, 0, pCommonConfig->Ip, pCommonConfig->Port);
+        }
+
+        if ((mixConnectAppType & APP_DB_MGR) != 0)
+        {
+            appType = APP_DB_MGR;
+            const auto pCommonConfig = pYaml->GetIPEndPoint(appType, 0);
+            CreateConnector(appType, 0, pCommonConfig->Ip, pCommonConfig->Port);
+        }
+
+        if ((mixConnectAppType & APP_LOGIN) != 0)
+        {
+            appType = APP_LOGIN;
+            auto pLoginConfig = dynamic_cast<LoginConfig*>(pYaml->GetConfig(appType));
+            for (auto one : pLoginConfig->Apps)
+            {
+                CreateConnector(appType, one.Id, one.Ip, one.Port);
+            }
+        }
+
+        if ((mixConnectAppType & APP_SPACE) != 0)
+        {
+            appType = APP_SPACE;
+            auto pLoginConfig = dynamic_cast<SpaceConfig*>(pYaml->GetConfig(appType));
+            for (auto one : pLoginConfig->Apps)
+            {
+                CreateConnector(appType, one.Id, one.Ip, one.Port);
+            }
+        }
+    }
 }
 
-bool NetworkConnector::IsConnected() const
+void NetworkConnector::CreateConnector(APP_TYPE appType, int appId, std::string ip, int port)
 {
-    return _connects.size() > 0;
+    _connecting.AddObj(new ConnectDetail(TagType::App, TagValue{ "", GetAppKey(appType, appId) }, ip, port));
 }
 
 const char* NetworkConnector::GetTypeName()
@@ -51,127 +85,126 @@ const char* NetworkConnector::GetTypeName()
     return typeid(NetworkConnector).name();
 }
 
-bool NetworkConnector::Connect(std::string ip, int port)
+uint64 NetworkConnector::GetTypeHashCode()
 {
-    _ip = ip;
-    _port = port;
+    return typeid(NetworkConnector).hash_code();
+}
 
-    if (_port == 0 || _ip == "")
+bool NetworkConnector::Connect(ConnectDetail* pDetail)
+{
+    const int socket = CreateSocket();
+    if (socket == INVALID_SOCKET)
         return false;
-
-    _masterSocket = CreateSocket();
-    if (_masterSocket == INVALID_SOCKET)
-        return false;
-
-#ifdef EPOLL
-    //std::cout << "epoll model" << std::endl;
-    InitEpoll();
-#else
-    //std::cout << "select model" << std::endl;
-#endif
 
     sockaddr_in addr;
     memset(&addr, 0, sizeof(sockaddr_in));
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(_port);
-    ::inet_pton(AF_INET, _ip.c_str(), &addr.sin_addr.s_addr);
+    addr.sin_port = htons(pDetail->Port);
+    ::inet_pton(AF_INET, pDetail->Ip.c_str(), &addr.sin_addr.s_addr);
 
-    int rs = ::connect(_masterSocket, (struct sockaddr*) & addr, sizeof(sockaddr));
+    const int rs = ::connect(socket, (struct sockaddr*) & addr, sizeof(sockaddr));
     if (rs == 0)
     {
-        // ≥…π¶
-        CreateConnectObj(_masterSocket);
-    }
-
-    return true;
-}
-
-void NetworkConnector::TryCreateConnectObj()
-{
-    int optval = -1;
-    socklen_t optlen = sizeof(optval);
-    int rs = ::getsockopt(_masterSocket, SOL_SOCKET, SO_ERROR, (char*)(&optval), &optlen);
-    if (rs == 0 && optval == 0)
-    {
-        //LOG_DEBUG("network connected. ip:" << _ip.c_str() << " port:" << _port);
-        CreateConnectObj(_masterSocket);
+        return CreateConnectObj(socket, pDetail->TType, pDetail->TValue, ConnectStateType::Connected);
     }
     else
     {
-        std::cout << "connect failed. socket:" << _masterSocket << std::endl;
-        Clean();
+        const auto socketError = _sock_err();
+        if (!NetworkHelp::IsError(socketError))
+        {
+            // Êú™ËøûÊé•‰∏äÔºåÁ≠âÂæÖ
+#ifdef LOG_TRACE_COMPONENT_OPEN
+            std::stringstream traceMsg;
+            traceMsg << "create connect != 0 waiting, err=" << socketError;
+            traceMsg << " network type:" << GetNetworkTypeName(_networkType);
+            ComponentHelp::GetTraceComponent()->Trace(TraceType::Connector, socket, traceMsg.str());
+#endif
+
+            return CreateConnectObj(socket, pDetail->TType, pDetail->TValue, ConnectStateType::Connecting);
+        }
+        else
+        {
+            // Êú™ËøûÊé•‰∏äÔºåÂá∫ÈîôÔºåÈáçÊù•
+            LOG_WARN("failed to connect 2. ip:" << pDetail->Ip.c_str() << " port:" << pDetail->Port << " network sn:" << _sn << " socket:" << socket << " err:" << socketError);
+            _sock_close(socket);
+            return false;
+        }
     }
+}
+
+void NetworkConnector::HandleNetworkConnect(Packet* pPacket)
+{
+    auto proto = pPacket->ParseToProto<Proto::NetworkConnect>();
+    if (proto.network_type() != (int)_networkType)
+        return;
+
+    const auto protoTag = proto.tag();
+    const auto tagValue = protoTag.tag_value();
+    auto tagObj = TagValue{ tagValue.value_str().c_str(), tagValue.value_int64() };
+    const auto pObj = new ConnectDetail((TagType)protoTag.tag_type(), tagObj, proto.ip(), proto.port());
+    _connecting.AddObj(pObj);
 }
 
 #ifdef EPOLL
 
 void NetworkConnector::Update()
 {
-    // »Áπ˚∂œœﬂ£¨÷ÿ–¬¡¨Ω”
-    if (_masterSocket == INVALID_SOCKET)
+    // ÊúâÊñ∞ÁöÑËøûÊé•ËØ∑Ê±Ç
+    if (_connecting.CanSwap())
+        _connecting.Swap(nullptr);
+
+    if (!_connecting.GetReaderCache()->empty())
     {
-        if (!Connect(_ip, _port))
-            return;
-
-        std::cout << "re connect. socket:" << _masterSocket << std::endl;
-    }
-
-    Epoll();
-
-    if (!IsConnected())
-    {
-        if (_mainSocketEventIndex >= 0)
+        auto pReader = _connecting.GetReaderCache();
+        for (auto iter = pReader->begin(); iter != pReader->end(); ++iter)
         {
-            int fd = _events[_mainSocketEventIndex].data.fd;
-            if (fd != _masterSocket)
-                return;
-
-            // connect≥…π¶£¨ª·¥•∑¢IN ¬º˛
-            if (_events[_mainSocketEventIndex].events & EPOLLIN || _events[_mainSocketEventIndex].events & EPOLLOUT)
+            if (Connect(iter->second))
             {
-                TryCreateConnectObj();
+                _connecting.RemoveObj(iter->first);
             }
-
         }
     }
 
-    Network::OnNetworkUpdate();
+    Epoll();
+    OnNetworkUpdate();
 }
 
 #else
 
 void NetworkConnector::Update()
 {
-    // »Áπ˚∂œœﬂ£¨÷ÿ–¬¡¨Ω”
-    if (_masterSocket == INVALID_SOCKET)
-    {
-        if (!Connect(_ip, _port))
-            return;
+#if LOG_TRACE_COMPONENT_OPEN
+    CheckBegin();
+#endif
 
-        std::cout << "re connect. socket:" << _masterSocket << std::endl;
+    // ÊúâÊñ∞ÁöÑËøûÊé•ËØ∑Ê±Ç
+    if (_connecting.CanSwap())
+        _connecting.Swap(nullptr);
+
+    if (!_connecting.GetReaderCache()->empty())
+    {
+        auto pReader = _connecting.GetReaderCache();
+        for (auto iter = pReader->begin(); iter != pReader->end(); ++iter)
+        {
+            if (Connect(iter->second))
+            {
+                _connecting.RemoveObj(iter->first);
+            }
+        }
     }
+
+    FD_ZERO(&readfds);
+    FD_ZERO(&writefds);
+    FD_ZERO(&exceptfds);
+
+    _fdMax = 0;
 
     Select();
+    OnNetworkUpdate();
 
-    if (!IsConnected())
-    {
-        // ”–“Ï≥£≥ˆœ÷
-        if (FD_ISSET(_masterSocket, &exceptfds))
-        {
-            std::cout << "connect except. socket:" << _masterSocket << " re connect." << std::endl;
-
-            // πÿ±’µ±«∞socket£¨÷ÿ–¬connect
-            Clean();
-            return;
-        }
-
-        if (FD_ISSET(_masterSocket, &readfds) || FD_ISSET(_masterSocket, &writefds))
-        {
-            TryCreateConnectObj();
-        }
-    }
-
-    Network::OnNetworkUpdate();
+#if LOG_TRACE_COMPONENT_OPEN
+    CheckPoint(GetNetworkTypeName(_networkType));
+#endif
 }
 
 #endif

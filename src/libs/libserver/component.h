@@ -11,7 +11,7 @@ class SystemManager;
 
 using TimerHandleFunction = std::function<void(void)>;
 
-class IComponent : virtual public SnObject
+class IComponent : public SnObject
 {
 public:
     friend class EntitySystem;
@@ -38,7 +38,6 @@ protected:
     void AddTimer(const int total, const int durations, const bool immediateDo, const int immediateDoDelaySecond, TimerHandleFunction handler);
     std::list<uint64> _timers;
 
-private:
     IEntity* _parent{ nullptr };
     SystemManager* _pSystemManager{ nullptr };
     IDynamicObjectPool* _pPool{ nullptr };

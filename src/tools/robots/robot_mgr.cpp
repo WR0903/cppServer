@@ -3,31 +3,27 @@
 #include "libserver/global.h"
 #include "libserver/yaml.h"
 #include "libserver/entity_system.h"
-#include "libserver/message_component.h"
+#include "libserver/message_system.h"
 #include "libserver/message_system_help.h"
-#include "libserver/update_component.h"
-#include "libserver/component_help.h"
 
 #include "global_robots.h"
 #include <sstream>
 
 void RobotMgr::Awake()
 {
-    // update
-    auto pUpdateComponent = AddComponent<UpdateComponent>();
-    pUpdateComponent->UpdataFunction = BindFunP0(this, &RobotMgr::Update);
+    _curType = RobotStateType::Http_Connecting;
 
     // message
-    auto pMsgCallBack = new MessageCallBackFunction();
-    AddComponent<MessageComponent>(pMsgCallBack);
-    pMsgCallBack->RegisterFunction(Proto::MsgId::MI_RobotSyncState, BindFunP1(this, &RobotMgr::HandleRobotState));
+    auto pMsgSystem = GetSystemManager()->GetMessageSystem();
 
-    // yaml
-    auto pYaml = ComponentHelp::GetYaml();
-    const auto pLoginConfig = dynamic_cast<LoginConfig*>(pYaml->GetConfig(APP_LOGIN));
-    this->Connect(pLoginConfig->Ip, pLoginConfig->Port);
+    pMsgSystem->RegisterFunction(this, Proto::MsgId::MI_RobotSyncState, BindFunP1(this, &RobotMgr::HandleRobotState));
 
     AddTimer(0, 2, false, 0, BindFunP0(this, &RobotMgr::ShowInfo));
+}
+
+void RobotMgr::BackToPool()
+{
+
 }
 
 void RobotMgr::HandleRobotState(Packet* pPacket)
@@ -37,49 +33,45 @@ void RobotMgr::HandleRobotState(Packet* pPacket)
     if (_robots.empty() && protoState.states_size() > 0)
     {
         std::cout << "test begin" << std::endl;
-        Packet* pPacketBegin = MessageSystemHelp::CreatePacket(Proto::MsgId::MI_RobotTestBegin, GetSocket());
-        SendPacket(pPacketBegin);
+        _start = std::chrono::system_clock::now();
     }
 
-    RobotStateType iType = RobotState_Space_EnterWorld;
     for (int index = 0; index < protoState.states_size(); index++)
     {
         auto proto = protoState.states(index);
         const auto account = proto.account();
         _robots[account] = RobotStateType(proto.state());
-        if (_robots[account] < iType)
-        {
-            iType = _robots[account];
-        }
     }
 
     _isChange = true;
-    NofityServer(iType);
+    NotifyServer();
 }
 
-void RobotMgr::NofityServer(RobotStateType iType)
+void RobotMgr::NotifyServer()
 {
     if (_robots.size() != GlobalRobots::GetInstance()->GetRobotsCount())
         return;
 
-    auto iter = std::find_if(_robots.begin(), _robots.end(), [&iType](auto pair)
+    auto iter = std::find_if(_robots.begin(), _robots.end(), [this](auto pair)
         {
-            return pair.second < iType;
+            return pair.second < this->_curType;
         });
 
     if (iter == _robots.end())
     {
-        std::cout << "test over " << GetRobotStateTypeShortName(iType) << std::endl;;
-        Packet* pPacketEnd = MessageSystemHelp::CreatePacket(Proto::MsgId::MI_RobotTestEnd, GetSocket());
-        Proto::RobotTestEnd protoEnd;
-        protoEnd.set_state(iType);
-        pPacketEnd->SerializeToBuffer(protoEnd);
-        SendPacket(pPacketEnd);
+        auto end = std::chrono::system_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - _start);
+        auto stateName = GetRobotStateTypeShortName(_curType);
+        std::cout << stateName << " over. time:" << double(duration.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds::period::den << "s" << std::endl;
+        _curType = (RobotStateType)((int)_curType + 1);
     }
 }
 
 void RobotMgr::ShowInfo()
 {
+    if (_curType != RobotStateType::End)
+        return;
+
     if (!_isChange)
         return;
 
@@ -98,10 +90,10 @@ void RobotMgr::ShowInfo()
         });
 
     std::stringstream show;
-    auto curTime = timeutil::NowToString();
+    auto curTime = timeutil::ToString(Global::GetInstance()->TimeTick);
     show << "++++++++++++++++++++++++++++ " << std::endl << curTime.c_str() << std::endl;
 
-    for (RobotStateType rss = RobotState_HttpRequest; rss < RobotState_End; rss = static_cast<RobotStateType>(rss + 1))
+    for (RobotStateType rss = RobotStateType::Http_Connecting; rss < RobotStateType::End; rss = static_cast<RobotStateType>((int)rss + 1))
     {
         if (statData.find(rss) == statData.end())
         {

@@ -9,6 +9,8 @@
 #define PATH_MAX 1024  
 #endif  
 
+#define INVALID_ID (-1)
+
 #define PLATFORM_WIN32			0
 #define PLATFORM_UNIX			1
 
@@ -57,3 +59,14 @@ typedef unsigned __int32	uint32;
 #define BindFunP2(_self, _f) std::bind ( _f, _self, std::placeholders::_1, std::placeholders::_2 )
 #define BindFunP1(_self, _f) std::bind ( _f, _self, std::placeholders::_1 )
 #define BindFunP0(_self, _f) std::bind ( _f, _self)
+
+
+// 打开跟踪数据
+#if false
+#define LOG_TRACE_COMPONENT_OPEN 1
+#endif
+
+// 打开效率测试
+#if true
+#define LOG_EFFICIENCY_COMPONENT_OPEN 1
+#endif

@@ -1,96 +1,57 @@
 #pragma once
-#include <mutex>
-#include <map>
-#include <list>
-#include <functional>
-
-#include "common.h"
 #include "packet.h"
 
-class IMessageCallBackFunction
+class IMessageCallBack : public Component<IMessageCallBack>
 {
 public:
-    virtual ~IMessageCallBackFunction() = default;
-    virtual bool IsFollowMsgId(Packet* packet) = 0;
-    virtual void ProcessPacket(Packet* packet) = 0;
+    virtual ~IMessageCallBack() = default;
+    virtual bool ProcessPacket(Packet* packet) = 0;
 };
 
-class MessageCallBackFunction :public IMessageCallBackFunction
+using MsgCallbackFun = std::function<void(Packet*)>;
+class MessageCallBack :public IMessageCallBack, public IAwakeFromPoolSystem<MsgCallbackFun>
 {
 public:
-    using HandleFunction = std::function<void(Packet*)>;
-    void RegisterFunction(int msgId, HandleFunction function);
-    bool IsFollowMsgId(Packet* packet) override;
-    void ProcessPacket(Packet* packet) override;
+    void Awake(MsgCallbackFun fun) override;
+    void BackToPool() override;
+    virtual bool ProcessPacket(Packet* pPacket) override;
 
-    std::map<int, HandleFunction>& GetCallBackHandler() { return _callbackHandle; }
-
-protected:
-    std::map<int, HandleFunction> _callbackHandle;
+private:
+    MsgCallbackFun _handleFunction;
 };
 
 template<class T>
-class MessageCallBackFunctionFilterObj :public MessageCallBackFunction
+class MessageCallBackFilter :public IMessageCallBack, public IAwakeFromPoolSystem<>
 {
 public:
-    using HandleFunctionWithObj = std::function<void(T*, Packet*)>;
-    using HandleGetObject = std::function<T*(SOCKET)>;
+    void Awake() override {}
+    void BackToPool() override
+    {
+        HandleFunction = nullptr;
+        GetFilterObj = nullptr;
+    }
 
-    void RegisterFunctionWithObj(int msgId, HandleFunctionWithObj function);
-    bool IsFollowMsgId(Packet* packet) override;
-    void ProcessPacket(Packet* packet) override;
+    std::function<void(T*, Packet*)> HandleFunction{ nullptr };
+    std::function<T * (NetIdentify*)> GetFilterObj{ nullptr };
 
-    HandleGetObject GetPacketObject{ nullptr };
+    virtual bool ProcessPacket(Packet* pPacket) override
+    {
+        auto pObj = GetFilterObj(pPacket);
+        if (pObj == nullptr)
+            return false;
 
-private:
-    std::map<int, HandleFunctionWithObj> _callbackHandleWithObj;
+#ifdef LOG_TRACE_COMPONENT_OPEN
+        const google::protobuf::EnumDescriptor* descriptor = Proto::MsgId_descriptor();
+        const auto name = descriptor->FindValueByNumber(pPacket->GetMsgId())->name();
+
+        const auto traceMsg = std::string("process. ")
+            .append(" sn:").append(std::to_string(pPacket->GetSN()))
+            .append(" msgId:").append(name);
+        ComponentHelp::GetTraceComponent()->Trace(TraceType::Packet, pPacket->GetSocketKey()->Socket, traceMsg);
+#endif
+
+        HandleFunction(pObj, pPacket);
+        return true;
+    }
 };
 
-template <class T>
-void MessageCallBackFunctionFilterObj<T>::RegisterFunctionWithObj(const int msgId, HandleFunctionWithObj function)
-{
-    _callbackHandleWithObj[msgId] = function;
-}
-
-template <class T>
-bool MessageCallBackFunctionFilterObj<T>::IsFollowMsgId(Packet* packet)
-{
-    if (MessageCallBackFunction::IsFollowMsgId(packet))
-        return true;
-
-    if (_callbackHandleWithObj.find(packet->GetMsgId()) != _callbackHandleWithObj.end())
-    {
-        if (GetPacketObject != nullptr)
-        {
-            T* pObj = GetPacketObject(packet->GetSocket());
-            if (pObj != nullptr)
-                return true;
-        }
-    }
-
-    return false;
-}
-
-template <class T>
-void MessageCallBackFunctionFilterObj<T>::ProcessPacket(Packet* packet)
-{
-    const auto handleIter = _callbackHandle.find(packet->GetMsgId());
-    if (handleIter != _callbackHandle.end())
-    {
-        handleIter->second(packet);
-        return;
-    }
-
-    auto iter = _callbackHandleWithObj.find(packet->GetMsgId());
-    if (iter != _callbackHandleWithObj.end())
-    {
-        if (GetPacketObject != nullptr)
-        {
-            T* pObj = GetPacketObject(packet->GetSocket());
-            if (pObj != nullptr)
-            {
-                iter->second(pObj, packet);
-            }
-        }
-    }
-}

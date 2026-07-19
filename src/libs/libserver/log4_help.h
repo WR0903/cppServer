@@ -40,7 +40,7 @@
 
 #define LogColorGrey	90	// dark grey
 
-#define LogColorRedEx		91 // ÁÁÉ«
+#define LogColorRedEx		91 // äº®è‰²
 #define LogColorGreenEx		92
 #define LogColorYellowEx	93
 #define LogColorBlueEx		94
@@ -68,31 +68,31 @@ void SetColor(int colorEx);
 #if ENGINE_PLATFORM == PLATFORM_WIN32
 
 #define LOG_WARN(...)  { \
-    SetColor( LogColorGreen ); \
-    LOG4CPLUS_WARN( log4cplus::Logger::getRoot( ), "[" <<  __func__ << "]" __VA_ARGS__ );\
+    SetColor( LogColorGreenEx ); \
+    LOG4CPLUS_WARN( log4cplus::Logger::getRoot( ), "[" <<  __func__ << "]" << __VA_ARGS__ );\
     SetColor( LogColorNormal ); \
 }
 
 #define LOG_ERROR(...)  { \
-    SetColor( LogColorRed ); \
-    LOG4CPLUS_ERROR( log4cplus::Logger::getRoot( ), "[" <<  __func__ << "]" __VA_ARGS__ );\
+    SetColor( LogColorRedEx ); \
+    LOG4CPLUS_ERROR( log4cplus::Logger::getRoot( ), "[" <<  __FILE__ << ":" << __LINE__ << "]" << __VA_ARGS__ );\
     SetColor( LogColorNormal ); \
 }
 
 #define LOG_COLOR( colorEx, ...)  { \
     SetColor( colorEx ); \
-    LOG4CPLUS_DEBUG( log4cplus::Logger::getRoot( ), "[" <<  __func__ << "]" __VA_ARGS__ );\
+    LOG4CPLUS_DEBUG( log4cplus::Logger::getRoot( ), __VA_ARGS__ );\
     SetColor( LogColorNormal ); \
 }
 
 #else
 
 #define LOG_WARN(...)  { \
-    LOG4CPLUS_WARN( log4cplus::Logger::getRoot( ),  "\33[0;" << LogColorGreen << "m" <<  __VA_ARGS__ << "\33[0m" );\
+    LOG4CPLUS_WARN( log4cplus::Logger::getRoot( ),  "\33[0;" << LogColorGreenEx << "m" <<  __VA_ARGS__ << "\33[0m" );\
 }
 
 #define LOG_ERROR(...)  { \
-    LOG4CPLUS_ERROR( log4cplus::Logger::getRoot( ),  "\33[0;" << LogColorRed << "m" <<  __VA_ARGS__ << "\33[0m" );\
+    LOG4CPLUS_ERROR( log4cplus::Logger::getRoot( ),  "\33[0;" << LogColorRedEx << "m" <<  __VA_ARGS__ << "\33[0m" );\
 }
 
 #define LOG_COLOR( colorEx, msg )  { \
@@ -125,11 +125,14 @@ bool IsLogShowMsg(int msgId);
 #if false
 #define LOG_REDIS_OPEN 1
 #define LOG_REDIS(...)  { LOG_COLOR( LogColorGreenEx, __VA_ARGS__ ) }
-#else
-#define LOG_REDIS(...)
 #endif
 
 #if false
 #define LOG_NETWORK_OPEN 1
 #define LOG_NETWORK(...)  { LOG_COLOR( LogColorYellowEx, __VA_ARGS__ ) }
 #endif
+
+namespace Log4Help {
+    std::string GetMsgIdName(Proto::MsgId msgId);
+    std::string GetMsgIdName(int msgId);
+}

@@ -4,6 +4,7 @@
 #include "thread_mgr.h"
 #include "object_pool.h"
 #include "timer_component.h"
+#include "message_system.h"
 
 void IComponent::SetParent(IEntity* pObj)
 {
@@ -47,6 +48,12 @@ void IComponent::ComponentBackToPool()
     {
         _pPool->FreeObject(this);
         _pPool = nullptr;
+    }
+
+    // 从 messageSystem中移除
+    if (_pSystemManager != nullptr && _pSystemManager->GetMessageSystem() != nullptr)
+    {
+        _pSystemManager->GetMessageSystem()->RemoveFunction(this);
     }
 
     _sn = 0;

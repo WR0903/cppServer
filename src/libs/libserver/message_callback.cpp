@@ -1,28 +1,27 @@
 #include "message_callback.h"
-#include <iterator>
 
-#include "packet.h"
-#include "thread_mgr.h"
-
-void MessageCallBackFunction::RegisterFunction(int msgId, HandleFunction function)
+void MessageCallBack::Awake(MsgCallbackFun fun)
 {
-     _callbackHandle[msgId] = function;
+    _handleFunction = fun;
 }
 
-bool MessageCallBackFunction::IsFollowMsgId(Packet* packet)
+void MessageCallBack::BackToPool()
 {
-    return _callbackHandle.find(packet->GetMsgId()) != _callbackHandle.end();
+    _handleFunction = nullptr;
 }
 
-void MessageCallBackFunction::ProcessPacket(Packet* packet)
+bool MessageCallBack::ProcessPacket(Packet* pPacket)
 {
-    const auto handleIter = _callbackHandle.find(packet->GetMsgId());
-    if (handleIter == _callbackHandle.end())
-    {
-        std::cout << "packet is not hander. msg id;" << packet->GetMsgId() << std::endl;
-    }
-    else
-    {
-        handleIter->second(packet);
-    }
+#ifdef LOG_TRACE_COMPONENT_OPEN
+    const google::protobuf::EnumDescriptor* descriptor = Proto::MsgId_descriptor();
+    const auto name = descriptor->FindValueByNumber(pPacket->GetMsgId())->name();
+
+    const auto traceMsg = std::string("process. ")
+        .append(" sn:").append(std::to_string(pPacket->GetSN()))
+        .append(" msgId:").append(name);
+    ComponentHelp::GetTraceComponent()->Trace(TraceType::Packet, pPacket->GetSocketKey()->Socket, traceMsg);
+#endif
+
+    _handleFunction(pPacket);
+    return true;
 }

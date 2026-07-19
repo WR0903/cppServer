@@ -25,7 +25,8 @@ public:
 
 protected:
     ThreadMgr* _pThreadMgr{ nullptr };
-    APP_TYPE _appType;
+    APP_TYPE _appType{ APP_TYPE::APP_None };
+    int _appId{ 0 };
 
     int _argc;
     char** _argv;

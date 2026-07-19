@@ -3,11 +3,11 @@
 enum ThreadType
 {
     MainThread = 1 << 0,
-    ListenThread = 1 << 1,	// ¼àÌıÏß³Ì
+    ListenThread = 1 << 1,	// ç›‘å¬çº¿ç¨‹
     ConnectThread = 1 << 2,
 
-    LogicThread = 1 << 3,	// Âß¼­Ïß³Ì
-    MysqlThread = 1 << 4,	// Êı¾İ¿âÏß³Ì
+    LogicThread = 1 << 3,	// é€»è¾‘çº¿ç¨‹
+    MysqlThread = 1 << 4,	// æ•°æ®åº“çº¿ç¨‹
 
     AllThreadType = MainThread | LogicThread | ListenThread | ConnectThread | MysqlThread
 };

@@ -6,57 +6,72 @@
 
 #include <iostream>
 #include "global_robots.h"
+#include "libserver/yaml.h"
+#include "libserver/global.h"
+#include "robot_collection.h"
 
 void RobotConsoleLogin::RegisterHandler()
 {
-	OnRegisterHandler("-a", BindFunP1(this, &RobotConsoleLogin::HandleLogin));
-	OnRegisterHandler("-ex", BindFunP1(this, &RobotConsoleLogin::HandleLoginEx));
-	OnRegisterHandler("-clean", BindFunP1(this, &RobotConsoleLogin::HandleLoginClean));
+    OnRegisterHandler("-a", BindFunP1(this, &RobotConsoleLogin::HandleLogin));
+    OnRegisterHandler("-ex", BindFunP1(this, &RobotConsoleLogin::HandleLoginEx));
 }
 
 void RobotConsoleLogin::HandleHelp()
 {
-	std::cout << "\t-a account.\t\tlogin by account" << std::endl;
-	std::cout << "\t-ex account count.\tbatch login, account is prefix, count as number" << std::endl;
-	std::cout << "\t-clean.\t\tclean all logined account." << std::endl;
+    std::cout << "\t-a account.\t\tlogin by account" << std::endl;
+    std::cout << "\t-ex account count.\tbatch login, account is prefix, count as number" << std::endl;
+    std::cout << "\t-clean.\t\tclean all logined account." << std::endl;
 }
 
 void RobotConsoleLogin::HandleLogin(std::vector<std::string>& params)
 {
-	if (!CheckParamCnt(params, 1))
-		return;
+    if (!CheckParamCnt(params, 1))
+        return;
 
-	// µ¥¶ÀµÇÂ¼Ê±£¬µÇÂ¼µ½Ö÷Ïß³Ì£¬·½±ãÊäÈëcmd
-	ThreadMgr::GetInstance()->GetEntitySystem()->AddComponent<Robot>(params[0]);
-	GlobalRobots::GetInstance()->SetRobotsCount(1);
+    // å•ç‹¬ç™»å½•æ—¶ï¼Œç™»å½•åˆ°ä¸»çº¿ç¨‹ï¼Œæ–¹ä¾¿è¾“å…¥cmd
+    Proto::RobotCreate proto;
+    const auto pThreadMgr = ThreadMgr::GetInstance();
+    pThreadMgr->CreateComponent<RobotCollection>(params[0], 0, 0);
+    GlobalRobots::GetInstance()->SetRobotsCount(1);
 }
 
 void RobotConsoleLogin::HandleLoginEx(std::vector<std::string>& params) const
 {
-	if (!CheckParamCnt(params, 2))
-		return;
+    if (!CheckParamCnt(params, 2))
+        return;
 
-	auto pThreadMgr = ThreadMgr::GetInstance();
+    auto pThreadMgr = ThreadMgr::GetInstance();
 
-	const int count = std::atoi(params[1].c_str());
-	if (count == 0)
-	{
-		std::cout << "input is error. see: -help" << std::endl;
-		return;
-	}
-
-	for (int i = 1; i <= count; i++)
-	{
-		std::string account = params[0] + std::to_string(i);
-        pThreadMgr->CreateComponent<Robot>(account);
+    const int count = std::atoi(params[1].c_str());
+    if (count == 0)
+    {
+        std::cout << "input is error. see: -help" << std::endl;
+        return;
     }
 
-	GlobalRobots::GetInstance()->SetRobotsCount(count);
-}
+    const auto pGlobal = Global::GetInstance();
+    auto pYaml = pThreadMgr->GetEntitySystem()->GetComponent<Yaml>();
+    const auto pConfig = pYaml->GetConfig(pGlobal->GetCurAppType());
+    const auto pAppConfig = dynamic_cast<AppConfig*>(pConfig);
 
-void RobotConsoleLogin::HandleLoginClean(std::vector<std::string>& params)
-{
-	std::cout << "close all." << std::endl;
-	_threads.clear();
-	GlobalRobots::GetInstance()->CleanRobotsCount();
+    // çº¿ç¨‹æ•°é‡
+    auto threadCnt = pAppConfig->LogicThreadNum;
+    threadCnt = threadCnt <= 0 ? 1 : threadCnt;
+
+    // æ¯ä¸ªçº¿ç¨‹ä¸­robotæ•°é‡
+    int perThreadRobotCnt = static_cast<int>(std::ceil(count / threadCnt));
+    perThreadRobotCnt = perThreadRobotCnt < 1 ? 1 : perThreadRobotCnt;
+
+    for (int i = 0; i < threadCnt; i++)
+    {
+        const int min = i * perThreadRobotCnt;
+        int max = min + perThreadRobotCnt;
+        max = max > count ? count : max;
+        pThreadMgr->CreateComponent<RobotCollection>(LogicThread, false, params[0], min, max);
+
+        if (max >= count)
+            break;
+    }
+
+    GlobalRobots::GetInstance()->SetRobotsCount(count);
 }

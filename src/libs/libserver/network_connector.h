@@ -1,29 +1,52 @@
 #pragma once
-#include <memory>
-#include "network.h"
 
-class ConnectObj;
+#include <utility>
+#include "network.h"
+#include "connect_obj.h"
+#include "app_type.h"
+#include "socket_object.h"
+
 class Packet;
 
-class NetworkConnector : public Network, virtual public IAwakeSystem<std::string, int>, public virtual IAwakeSystem<int, int>
+struct ConnectDetail :public SnObject, public IDisposable
 {
 public:
-    void Awake(std::string ip, int port);
-    void Awake(int appType, int appId);
+    ConnectDetail(TagType tagType, TagValue tagValue, std::string ip, int port)
+    {
+        TType = tagType;
+        TValue = tagValue;
+        Ip = std::move(ip);
+        Port = port;
+    };
+
+    void Dispose() override { }
+
+    std::string Ip{ "" };
+    int Port{ 0 };
+
+    TagType TType;
+    TagValue TValue;
+};
+
+class NetworkConnector :
+    public Network,
+    public IAwakeSystem<int, int>
+{
+public:
+    void Awake(int iType, int mixConnectAppType) override;
+
     virtual void Update();
-    bool IsConnected() const;
+
     const char* GetTypeName() override;
-
-    static bool IsSingle() { return true; }
-
-protected:
-    bool Connect(std::string ip, int port);
+    uint64 GetTypeHashCode() override;
+    bool Connect(ConnectDetail* pDetail);
 
 private:
-    void TryCreateConnectObj();
+    void HandleNetworkConnect(Packet* pPacket);  // 请求一个connector
+    void CreateConnector(APP_TYPE appType, int appId, std::string ip, int port);
 
-protected:
-    std::string _ip{ "" };
-    int _port{ 0 };
+private:
+    // waiting for connect to net
+    CacheRefresh<ConnectDetail> _connecting;
 };
 

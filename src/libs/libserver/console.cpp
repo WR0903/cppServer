@@ -7,6 +7,7 @@
 #include "log4_help.h"
 #include "update_component.h"
 #include "component_help.h"
+#include "global.h"
 
 void ConsoleCmd::OnRegisterHandler(std::string key, HandleConsole handler)
 {
@@ -77,8 +78,7 @@ void Console::Awake()
             } while (_isRun);
         });
 
-    auto pUpdateComponent = AddComponent<UpdateComponent>();
-    pUpdateComponent->UpdataFunction = BindFunP0(this, &Console::Update);
+    AddComponent<UpdateComponent>(BindFunP0(this, &Console::Update));
 }
 
 void Console::BackToPool()

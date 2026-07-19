@@ -9,6 +9,7 @@
 #include "cache_refresh.h"
 #include "log4_help.h"
 #include "system_manager.h"
+#include "global.h"
 
 template <typename T>
 class DynamicObjectPool :public IDynamicObjectPool
@@ -17,7 +18,7 @@ public:
     void Dispose() override;
 
     template<typename ...Targs>
-    T* MallocObject(SystemManager* pSys, Targs... args);
+    T* MallocObject(SystemManager* pSys, IEntity* pParent, uint64 sn, Targs... args);
 
     virtual void Update() override;
     virtual void FreeObject(IComponent* pObj) override;
@@ -36,11 +37,11 @@ protected:
 template <typename T>
 void DynamicObjectPool<T>::Dispose()
 {
-    std::cout << "delete pool. " << typeid(T).name() << std::endl;
+    //std::cout << "delete pool. " << typeid(T).name() << std::endl;
 
     if (_objInUse.Count() > 0)
     {
-        std::cout << " type:" << typeid(T).name() << " count:" << _objInUse.Count() << std::endl;
+        std::cout << "delete pool. " << typeid(T).name() << " count:" << _objInUse.Count() << std::endl;
     }
 
     while (!_free.empty())
@@ -53,13 +54,14 @@ void DynamicObjectPool<T>::Dispose()
 
 template <typename T>
 template <typename ... Targs>
-T* DynamicObjectPool<T>::MallocObject(SystemManager* pSys, Targs... args)
+T* DynamicObjectPool<T>::MallocObject(SystemManager* pSys, IEntity* pParent, uint64 sn, Targs... args)
 {
     if (_free.empty())
     {
         if (T::IsSingle())
         {
             T* pObj = new T();
+            pObj->SetSN(0);
             pObj->SetPool(this);
             _free.push(pObj);
         }
@@ -68,6 +70,7 @@ T* DynamicObjectPool<T>::MallocObject(SystemManager* pSys, Targs... args)
             for (int index = 0; index < 50; index++)
             {
                 T* pObj = new T();
+                pObj->SetSN(0);
                 pObj->SetPool(this);
                 _free.push(pObj);
             }
@@ -81,8 +84,17 @@ T* DynamicObjectPool<T>::MallocObject(SystemManager* pSys, Targs... args)
     auto pObj = _free.front();
     _free.pop();
 
-    pObj->ResetSN();
+    if (pObj->GetSN() != 0)
+    {
+        LOG_ERROR("failed to create type:" << typeid(T).name() << " sn != 0. sn:" << pObj->GetSN());
+    }
+
+    if (sn == 0)
+        sn = Global::GetInstance()->GenerateSN();
+
+    pObj->SetSN(sn);
     pObj->SetPool(this);
+    pObj->SetParent(pParent);
     pObj->SetSystemManager(pSys);
     pObj->Awake(std::forward<Targs>(args)...);
 
@@ -124,13 +136,13 @@ void DynamicObjectPool<T>::Show()
 {
     std::stringstream log;
     log << " total:" << std::setw(5) << std::setfill(' ') << _free.size() + _objInUse.Count()
-        << "    free:" << std::setw(5) << std::setfill(' ') << _free.size()
-        << "    use:" << std::setw(5) << std::setfill(' ') << _objInUse.Count()
 
 #if _DEBUG
         << "    call:" << std::setw(5) << std::setfill(' ') << _totalCall
 #endif
 
+        << "    free:" << std::setw(5) << std::setfill(' ') << _free.size()
+        << "    use:" << std::setw(5) << std::setfill(' ') << _objInUse.Count()
         << "    " << typeid(T).name();
 
     LOG_DEBUG(log.str().c_str());

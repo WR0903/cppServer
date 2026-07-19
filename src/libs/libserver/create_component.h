@@ -14,5 +14,6 @@ public:
 private:
     void HandleCreateComponent(Packet* pPacket) const;
     void HandleRemoveComponent(Packet* pPacket);
+    void HandleCreateSystem(Packet* pPacket);
 };
 

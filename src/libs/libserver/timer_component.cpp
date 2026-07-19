@@ -29,8 +29,8 @@ void TimerComponent::Add(Timer& data)
 
 void TimerComponent::Awake()
 {
-    auto pUpdateComponent = AddComponent<UpdateComponent>();
-    pUpdateComponent->UpdataFunction = BindFunP0(this, &TimerComponent::Update);
+    // update
+    AddComponent<UpdateComponent>(BindFunP0(this, &TimerComponent::Update));
 }
 
 void TimerComponent::BackToPool()
@@ -40,9 +40,9 @@ void TimerComponent::BackToPool()
 
 uint64 TimerComponent::Add(const int total, const int durations, const bool immediateDo, const int immediateDoDelaySecond, TimerHandleFunction handler)
 {
-    // durations Ö´ÐÐ¼ä¸ôÃë
-    // immediateDo ÊÇ·ñÂíÉÏÖ´ÐÐ
-    // immediateDoDelaySecond Ê×´ÎÖ´ÐÐÓëµ±Ç°Ê±¼äµÄ¼ä¸ôÊ±¼ä
+    // durations æ‰§è¡Œé—´éš”ç§’
+    // immediateDo æ˜¯å¦é©¬ä¸Šæ‰§è¡Œ
+    // immediateDoDelaySecond é¦–æ¬¡æ‰§è¡Œä¸Žå½“å‰æ—¶é—´çš„é—´éš”æ—¶é—´
 
     Timer data;
     data.SN = Global::GetInstance()->GenerateSN();
@@ -76,7 +76,7 @@ void TimerComponent::Remove(std::list<uint64>& timers)
         _heap.erase(iter);
     }
 
-    // ÖØÐÂ½¨Á¢heapÊý¾Ý
+    // é‡æ–°å»ºç«‹heapæ•°æ®
     make_heap(_heap.begin(), _heap.end(), CompareTimer());
 }
 
@@ -91,7 +91,7 @@ bool TimerComponent::CheckTime()
 
 Timer TimerComponent::PopTimeHeap()
 {
-    // µ¯³öheap¶¥ÔªËØ, ½«Æä·ÅÖÃÓÚÇø¼äÄ©Î²
+    // å¼¹å‡ºheapé¡¶å…ƒç´ , å°†å…¶æ”¾ç½®äºŽåŒºé—´æœ«å°¾
     pop_heap(_heap.begin(), _heap.end(), CompareTimer());
 
     Timer data = _heap.back();
@@ -112,11 +112,11 @@ void TimerComponent::Update()
 
         if (data.CallCountTotal != 0 && data.CallCountCur >= data.CallCountTotal)
         {
-            //delete pNode; È¡³öÖ®ºó£¬²»ÔÙ¼ÓÈë¶ÑÖÐ
+            //delete pNode; å–å‡ºä¹‹åŽï¼Œä¸å†åŠ å…¥å †ä¸­
         }
         else
         {
-            // ÖØÐÂ¼ÓÈë¶ÑÖÐ
+            // é‡æ–°åŠ å…¥å †ä¸­
             data.NextTime = timeutil::AddSeconds(Global::GetInstance()->TimeTick, data.DurationSecond);
             Add(data);
         }

@@ -5,46 +5,56 @@
 
 #include "thread_mgr.h"
 
-#include "object_pool_interface.h"
 #include "system_manager.h"
 #include "message_system.h"
 #include "message_system_help.h"
 #include "component_help.h"
 
 #include "object_pool_packet.h"
+#include "network_locator.h"
+#include "socket_locator.h"
 
 ConnectObj::ConnectObj()
 {
-    _socket = INVALID_SOCKET;
+    _state = ConnectStateType::None;
     _recvBuffer = new RecvNetworkBuffer(DEFAULT_RECV_BUFFER_SIZE, this);
     _sendBuffer = new SendNetworkBuffer(DEFAULT_SEND_BUFFER_SIZE, this);
 }
 
 ConnectObj::~ConnectObj()
 {
-    if (_recvBuffer != nullptr)
-        delete _recvBuffer;
-
-    if (_sendBuffer != nullptr)
-        delete _sendBuffer;
+    delete _recvBuffer;
+    delete _sendBuffer;
 }
 
-void ConnectObj::Awake(SOCKET socket)
+void ConnectObj::Awake(SOCKET socket, NetworkType networkType, TagType tagType, TagValue tagValue, ConnectStateType state)
 {
-    _socket = socket;
+    _socketKey = SocketKey(socket, networkType);
+
+    _tagKey.Clear();
+    if (tagType != TagType::None)
+        _tagKey.AddTag(tagType, tagValue);
+
+    _state = state;
 }
 
 void ConnectObj::BackToPool()
 {
-    //std::cout << "close socket:" << _socket << std::endl;
+#ifdef LOG_TRACE_COMPONENT_OPEN
+    const auto traceMsg = std::string("close.  network type:").append(GetNetworkTypeName(_socketKey.NetType));
+    ComponentHelp::GetTraceComponent()->Trace(TraceType::Connector, _socketKey.Socket, traceMsg);
+#endif
 
-    if (!Global::GetInstance()->IsStop)
-    {
-        // Í¨ÖªÆäËû¶ÔÏó£¬ÓĞSocketÖĞ¶ÏÁË
-        MessageSystemHelp::DispatchPacket(Proto::MsgId::MI_NetworkDisconnect, _socket);
-    }
+    // é€šçŸ¥é€»è¾‘å±‚ï¼Œæœ‰è¿æ¥å…³é—­äº†
+    MessageSystemHelp::DispatchPacket(Proto::MsgId::MI_NetworkDisconnect, this);    
 
-    _socket = INVALID_SOCKET;
+    if (_socketKey.Socket != INVALID_SOCKET)
+        _sock_close(_socketKey.Socket);
+
+    _state = ConnectStateType::None;
+    _socketKey.Clear();
+    _tagKey.Clear();
+
     _recvBuffer->BackToPool();
     _sendBuffer->BackToPool();
 }
@@ -56,77 +66,110 @@ bool ConnectObj::HasRecvData() const
 
 bool ConnectObj::Recv()
 {
+    if (_state == ConnectStateType::Connecting)
+    {
+        ChangeStateToConnected();
+        return true;
+    }
+
     bool isRs = false;
     char* pBuffer = nullptr;
     while (true)
     {
-        // ×Ü¿Õ¼äÊı¾İ²»×ãÒ»¸öÍ·µÄ´óĞ¡£¬À©Èİ
-        if (_recvBuffer->GetEmptySize() < (sizeof(PacketHead) + sizeof(TotalSizeType)))
+        // æ€»ç©ºé—´æ•°æ®ä¸è¶³ä¸€ä¸ªå¤´çš„å¤§å°ï¼Œæ‰©å®¹
+        if (_recvBuffer->GetEmptySize() < (sizeof(PacketHeadS2S) + sizeof(TotalSizeType) * 2))
         {
             _recvBuffer->ReAllocBuffer();
         }
 
         const int emptySize = _recvBuffer->GetBuffer(pBuffer);
-        const int dataSize = ::recv(_socket, pBuffer, emptySize, 0);
+        const int dataSize = ::recv(_socketKey.Socket, pBuffer, emptySize, 0);
         if (dataSize > 0)
         {
-            //std::cout << "recv size:" << size << std::endl;
             _recvBuffer->FillDate(dataSize);
+            isRs = true;
         }
         else if (dataSize == 0)
         {
-            //std::cout << "recv size:" << dataSize << " error:" << _sock_err() << std::endl;
             break;
         }
         else
         {
             const auto socketError = _sock_err();
-#if ENGINE_PLATFORM != PLATFORM_WIN32
-            if (socketError == EINTR || socketError == EWOULDBLOCK || socketError == EAGAIN)
+            isRs = socketError != 0;
+            if (!NetworkHelp::IsError(socketError))
             {
                 isRs = true;
             }
-#else
-            if (socketError == WSAEINTR || socketError == WSAEWOULDBLOCK)
-            {
-                isRs = true;
-            }
-#endif
 
-            //std::cout << "recv size:" << dataSize << " error:" << socketError << std::endl;
+            if (!isRs)
+                LOG_WARN("recv size:" << dataSize << " error:" << socketError);
+
             break;
         }
     }
 
     if (isRs)
     {
+        const auto pNetwork = this->GetParent<Network>();
+        const auto iNetworkType = pNetwork->GetNetworkType();
         while (true)
         {
             const auto pPacket = _recvBuffer->GetPacket();
             if (pPacket == nullptr)
                 break;
 
+            const auto pTagAccount = this->_tagKey.GetTagValue(TagType::Account);
+            if (pTagAccount != nullptr)
+            {
+                auto pSocketLocator = ComponentHelp::GetGlobalEntitySystem()->GetComponent<SocketLocator>();
+                if (pSocketLocator != nullptr)
+                {
+                    const auto targetEntitySn = pSocketLocator->GetTargetEntitySn(pPacket->GetSocketKey()->Socket);
+                    if (targetEntitySn > 0)
+                    {
+                        pPacket->GetTagKey()->AddTag(TagType::Entity, targetEntitySn);
+                    }
+                }
+            }
+
             //const google::protobuf::EnumDescriptor* descriptor = Proto::MsgId_descriptor();
             //auto name = descriptor->FindValueByNumber(pPacket->GetMsgId())->name();
             //std::cout << "recv msg:" << name.c_str() << std::endl;
 
-            if (pPacket->GetMsgId() == Proto::MsgId::MI_Ping)
+            const auto msgId = pPacket->GetMsgId();
+            const bool isTcp = NetworkHelp::IsTcp(iNetworkType);
+            if (!isTcp)
             {
-                //RecvPing();
+                if (msgId == Proto::MsgId::MI_HttpRequestBad)
+                {
+                    // 404
+                    MessageSystemHelp::SendHttpResponse404(pPacket);
+                    DynamicPacketPool::GetInstance()->FreeObject(pPacket);
+                    continue;
+                }
             }
             else
             {
-                auto pNetwork = this->GetParent<Network>();
-                if (pNetwork->IsBroadcast())
+                if (msgId == Proto::MsgId::MI_Ping)
                 {
-                    ThreadMgr::GetInstance()->DispatchPacket(pPacket);
-                }
-                else
-                {
-                    GetSystemManager()->GetMessageSystem()->AddPacketToList(pPacket);
-                    pPacket->OpenRef();
+                    //RecvPing();
+                    continue;
                 }
             }
+
+            if (!isTcp)
+            {
+                if ((msgId <= Proto::MsgId::MI_HttpBegin || msgId >= Proto::MsgId::MI_HttpEnd) && msgId != Proto::MsgId::MI_HttpOuterResponse)
+                {
+                    // æ£€æŸ¥ä¸€ä¸‹httpåè®®ç¼–å·ï¼Œéæ³•
+                    LOG_WARN("http connect recv. tcp proto");
+                    DynamicPacketPool::GetInstance()->FreeObject(pPacket);
+                    continue;
+                }
+            }
+
+            ThreadMgr::GetInstance()->DispatchPacket(pPacket);
         }
     }
 
@@ -135,6 +178,9 @@ bool ConnectObj::Recv()
 
 bool ConnectObj::HasSendData() const
 {
+    if (_state == ConnectStateType::Connecting)
+        return true;
+
     return _sendBuffer->HasData();
 }
 
@@ -148,24 +194,30 @@ void ConnectObj::SendPacket(Packet* pPacket) const
     DynamicPacketPool::GetInstance()->FreeObject(pPacket);
 }
 
-bool ConnectObj::Send() const
+bool ConnectObj::Send()
 {
+    if (_state == ConnectStateType::Connecting)
+    {
+        ChangeStateToConnected();
+        return true;
+    }
+
     while (true) {
         char* pBuffer = nullptr;
         const int needSendSize = _sendBuffer->GetBuffer(pBuffer);
 
-        // Ã»ÓĞÊı¾İ¿É·¢ËÍ
+        // æ²¡æœ‰æ•°æ®å¯å‘é€
         if (needSendSize <= 0)
         {
             return true;
         }
 
-        const int size = ::send(_socket, pBuffer, needSendSize, 0);
+        const int size = ::send(_socketKey.Socket, pBuffer, needSendSize, 0);
         if (size > 0)
         {
             _sendBuffer->RemoveDate(size);
 
-            // ÏÂÒ»Ö¡ÔÙ·¢ËÍ
+            // ä¸‹ä¸€å¸§å†å‘é€
             if (size < needSendSize)
             {
                 return true;
@@ -183,8 +235,29 @@ bool ConnectObj::Send() const
 
 void ConnectObj::Close()
 {
-    // ConnectoObj Ò»¶¨ºÍNetworkÔÚÍ¬Ò»¸öÏß³ÌÖĞµÄ£¬ÕâÀï£¬Ö»ĞèÒªÒª±¾Ïß³Ì·¢ËÍÊı¾İ¼´¿É
-    const auto pPacketDis = MessageSystemHelp::CreatePacket(Proto::MsgId::MI_NetworkRequestDisconnect, GetSocket());
+    // ConnectoObj ä¸€å®šå’ŒNetworkåœ¨åŒä¸€ä¸ªçº¿ç¨‹ä¸­çš„ï¼Œè¿™é‡Œï¼Œåªéœ€è¦è¦æœ¬çº¿ç¨‹å‘é€æ•°æ®å³å¯
+    const auto pPacketDis = MessageSystemHelp::CreatePacket(Proto::MsgId::MI_NetworkRequestDisconnect, this);
     GetSystemManager()->GetMessageSystem()->AddPacketToList(pPacketDis);
     pPacketDis->OpenRef();
+}
+
+ConnectStateType ConnectObj::GetState() const
+{
+    return _state;
+}
+
+void ConnectObj::ChangeStateToConnected()
+{
+    _state = ConnectStateType::Connected;
+    const auto pTagValue = _tagKey.GetTagValue(TagType::App);
+    if (pTagValue != nullptr)
+    {
+        auto pLocator = ThreadMgr::GetInstance()->GetEntitySystem()->GetComponent<NetworkLocator>();
+        pLocator->AddNetworkIdentify(&_socketKey, pTagValue->KeyInt64);
+    }
+    else
+    {
+        // é€šçŸ¥é€»è¾‘å±‚ï¼Œæœ‰è¿æ¥è¿æ¥æˆåŠŸäº†
+        MessageSystemHelp::DispatchPacket(Proto::MsgId::MI_NetworkConnected, this);
+    }
 }

@@ -1,20 +1,21 @@
 #include "update_system.h"
-#include "entity.h"
 #include "update_component.h"
+#include "entity_system.h"
 
 void UpdateSystem::Update(EntitySystem* pEntities)
 {
-	auto pCollections = pEntities->GetComponentCollections<UpdateComponent>();
-	if (pCollections == nullptr)
-		return;
+    if (_pCollections == nullptr)
+    {
+        _pCollections = pEntities->GetComponentCollections<UpdateComponent>();
+        if (_pCollections == nullptr)
+            return;
+    }
 
-	pCollections->Swap();
-
-	auto lists = pCollections->GetAll();
-	for (const auto one : lists)
-	{
-		const auto pComponent = one.second;
-		const auto pUpdateComponent = static_cast<UpdateComponent*>(pComponent);
-		pUpdateComponent->UpdataFunction();
-	}
+    _pCollections->Swap();
+    const auto plists = _pCollections->GetAll();
+    for (auto iter = plists->begin(); iter != plists->end(); ++iter)
+    {
+        const auto pUpdateComponent = dynamic_cast<UpdateComponent*>(iter->second);
+        pUpdateComponent->Update();
+    }
 }

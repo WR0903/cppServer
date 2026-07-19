@@ -92,13 +92,13 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;libserver.lib;libprotobufd.lib;libcurl_a.lib;jsoncpp.lib;libyaml-cppmdd.lib;log4cplusSD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;libserver.lib;libprotobufd.lib;jsoncpp.lib;libyaml-cppmdd.lib;log4cplusSD.lib;libplayer.lib;hiredis.lib;Win32_Interop.lib;libresource.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
@@ -155,19 +155,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="account.cpp" />
-    <ClCompile Include="http_request.cpp" />
-    <ClCompile Include="http_request_account.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="login_obj.cpp" />
-    <ClCompile Include="login_obj_mgr.cpp" />
+    <ClCompile Include="player_component_account.cpp" />
+    <ClCompile Include="player_component_onlineinlogin.cpp" />
+    <ClCompile Include="redis_login.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="account.h" />
-    <ClInclude Include="http_request.h" />
-    <ClInclude Include="http_request_account.h" />
     <ClInclude Include="login.h" />
-    <ClInclude Include="login_obj.h" />
-    <ClInclude Include="login_obj_mgr.h" />
+    <ClInclude Include="player_component_account.h" />
+    <ClInclude Include="player_component_onlineinlogin.h" />
+    <ClInclude Include="redis_login.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />

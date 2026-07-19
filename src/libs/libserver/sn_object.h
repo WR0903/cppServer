@@ -5,9 +5,8 @@
 class SnObject {
 public:
     SnObject();
-    SnObject(uint64 sn);
     uint64 GetSN() const;
-    void ResetSN();
+    void SetSN(uint64 sn);
 
 protected:
     uint64 _sn;

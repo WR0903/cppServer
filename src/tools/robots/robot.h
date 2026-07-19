@@ -1,31 +1,25 @@
 #pragma once
 
-#include "libserver/network_connector.h"
 #include "libserver/state_template.h"
 #include "libserver/robot_state_type.h"
 
+#include "libplayer/player.h"
+
 #include "robot_state.h"
 
-class Robot : public NetworkConnector, public StateTemplateMgr<RobotStateType, RobotState, Robot>, public IAwakeFromPoolSystem<std::string>
+class Robot : public Player, public StateTemplateMgr<RobotStateType, RobotState, Robot>, virtual public IAwakeFromPoolSystem<std::string>
 {
 public:
-	void Awake(std::string account);
-	void Update() override;
-
-	std::string GetAccount() const;
-	void SendMsgAccountCheck();
-
-    static bool IsSingle() { return false; }
+    void Awake(std::string account) override;
+    void BackToPool() override;
+    void Update();
+    void NetworkDisconnect();
+    void EnterWorld(int worldId);
 
 protected:
-	void RegisterState() override;
+    void RegisterState() override;
 
 private:
-	void HandleAccountCheckRs(Robot* pRobot, Packet* pPacket);
-    void HandlePlayerList(Robot* pRobot, Packet* pPacket);
-
-private:
-	std::string _account;
-
+    int _worldId{ 0 };
 };
 

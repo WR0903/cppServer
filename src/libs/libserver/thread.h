@@ -28,6 +28,8 @@ public:
     bool IsStop() const;    
     bool IsDestroy()const;
 
+    ThreadType GetThreadType() const { return _threadType; }
+
 private:
     ThreadType _threadType;
 

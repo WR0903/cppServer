@@ -4,6 +4,7 @@
 #include "common.h"
 #include "entity.h"
 #include "system.h"
+#include "socket_object.h"
 
 #pragma pack(push)
 #pragma pack(4)
@@ -12,10 +13,10 @@ struct PacketHead {
     unsigned short MsgId;
 };
 
-struct PacketInnerHead :public PacketHead
+struct PacketHeadS2S :public PacketHead
 {
-    unsigned int ThreadType;
-    unsigned short ChooseType;
+    uint64 EntitySn;
+    uint64 PlayerSn;
 };
 
 #pragma pack(pop)
@@ -23,16 +24,16 @@ struct PacketInnerHead :public PacketHead
 #if TestNetwork
 #define DEFAULT_PACKET_BUFFER_SIZE	10
 #else
-// Ĭ�ϴ�С 10KB
+// 默认大小 10KB
 #define DEFAULT_PACKET_BUFFER_SIZE	1024 * 10
 #endif
 
-class Packet : public Entity<Packet>, public Buffer, public IAwakeFromPoolSystem<Proto::MsgId, SOCKET>
+class Packet : public Entity<Packet>, public Buffer, public NetIdentify, public IAwakeFromPoolSystem<Proto::MsgId, NetIdentify*>
 {
 public:
     Packet();
     ~Packet();
-    void Awake(Proto::MsgId msgId, SOCKET socket) override;
+    void Awake(Proto::MsgId msgId, NetIdentify* pIdentify) override;
 
     template<class ProtoClass>
     ProtoClass ParseToProto()
@@ -55,25 +56,34 @@ public:
         FillData(total);
     }
 
+    void SerializeToBuffer(const char* s, unsigned int len)
+    {
+        while (GetEmptySize() < len)
+        {
+            ReAllocBuffer();
+        }
+
+        ::memcpy(_buffer + _endIndex, s, len);
+        FillData(len);
+    }
+
     void BackToPool() override;
+    void CopyFrom(Packet* pPacket);
 
     char* GetBuffer() const;
     unsigned short GetDataLength() const;
     int GetMsgId() const;
     void FillData(unsigned int size);
     void ReAllocBuffer();
-    SOCKET GetSocket() const;
-    void SetSocket(SOCKET socket);
 
     // ref
     void AddRef();
     void RemoveRef();
     void OpenRef();
-    bool CanBack2Pool();
+    bool CanBack2Pool() const;
 
 private:
     Proto::MsgId _msgId;
-    SOCKET _socket;
 
 private:
     std::atomic<int> _ref{ 0 };
