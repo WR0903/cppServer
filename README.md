@@ -1,4 +1,4 @@
-# C++ 多进程多线程网络服务器
+# C++ 多进程多线程网络游戏服务器
 
 > 源码地址：[https://github.com/WR0903/cppServer](https://github.com/WR0903/cppServer)
 
