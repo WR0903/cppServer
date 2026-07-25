@@ -61,6 +61,7 @@ void Robot::RegisterState()
     RegisterStateClass(RobotStateType::Game_Logined, DynamicStateBind(RobotStateGameLogined));
 
     RegisterStateClass(RobotStateType::Space_EnterWorld, DynamicStateBind(RobotStateSpaceEnterWorld));
+    RegisterStateClass(RobotStateType::Space_Roaming, DynamicStateBind(RobotStateSpaceRoaming));
 }
 
 void Robot::EnterWorld(int worldId)
@@ -70,4 +71,14 @@ void Robot::EnterWorld(int worldId)
         return;
 
     ChangeState(RobotStateType::Space_EnterWorld);
+}
+
+Vector3 Robot::GetPosition() const
+{
+    return _currentPos;
+}
+
+void Robot::SetPosition(const Vector3& pos)
+{
+    _currentPos = pos;
 }

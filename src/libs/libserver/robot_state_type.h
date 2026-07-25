@@ -19,6 +19,7 @@ enum class RobotStateType
     Game_Logined,           // 登录成功
 
     Space_EnterWorld,       // 进入地图
+    Space_Roaming,          // 随机移动
 
     End,
 };
@@ -39,6 +40,7 @@ const char RobotStateTypeName[][255] = {
     "[Game ] Logined     :",
 
     "[Space] EnterWorld  :",
+    "[Space] Roaming     :",
 };
 
 const char RobotStateTypeShortName[][255] = {
@@ -56,6 +58,7 @@ const char RobotStateTypeShortName[][255] = {
     "Game-Logined",
 
     "Space-EnterWorld",
+    "Space-Roaming",
 };
 
 inline const char* GetRobotStateTypeShortName(RobotStateType stateType)

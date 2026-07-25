@@ -221,8 +221,14 @@ void RobotCollection::HandleLoginByTokenRs(Robot* pRobot, Packet* pPacket)
 void RobotCollection::HandleEnterWorld(Robot* pRobot, Packet* pPacket)
 {
     auto proto = pPacket->ParseToProto<Proto::EnterWorld>();
+
+    // 存储初始位置，供随机移动使用
+    const auto& pos = proto.position();
+    pRobot->SetPosition(Vector3(pos.x(), pos.y(), pos.z()));
+
     pRobot->EnterWorld(proto.world_id());
 
     if (GlobalRobots::GetInstance()->GetRobotsCount() == 1)
-        LOG_DEBUG("account:" << pRobot->GetAccount().c_str() << " enter world. id:" << proto.world_id());
+        LOG_DEBUG("account:" << pRobot->GetAccount().c_str() << " enter world. id:" << proto.world_id()
+            << " pos:(" << pos.x() << ", " << pos.y() << ", " << pos.z() << ")");
 }

@@ -2,6 +2,7 @@
 
 #include "libserver/state_template.h"
 #include "libserver/robot_state_type.h"
+#include "libserver/vector3.h"
 
 #include "libplayer/player.h"
 
@@ -16,10 +17,14 @@ public:
     void NetworkDisconnect();
     void EnterWorld(int worldId);
 
+    Vector3 GetPosition() const;
+    void SetPosition(const Vector3& pos);
+
 protected:
     void RegisterState() override;
 
 private:
     int _worldId{ 0 };
+    Vector3 _currentPos{ 0, 0, 0 };
 };
 
