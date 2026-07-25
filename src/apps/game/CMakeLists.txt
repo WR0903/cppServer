@@ -21,7 +21,7 @@ aux_source_directory(../../libs/libplayer SRCS)
 aux_source_directory(../../libs/libresource SRCS)
 
 include_directories(../../libs)
-include_directories(../../../../include/common)
+include_directories(${PROJECT_SOURCE_DIR}/src/libs)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin)
 
@@ -29,8 +29,5 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++14 -pthread -DEPOLL")
 set(CMAKE_CXX_FLAGS_DEBUG "-D_DEBUG -O0 -g -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
-link_directories(${CMAKE_SOURCE_DIR}/../../../libs)
-link_directories(${CMAKE_SOURCE_DIR}/../../../../libs/linux)
-
 add_executable(${MyProjectName} ${SRCS})
-target_link_libraries(${MyProjectName} protobuf yaml-cpp log4cplus hiredis uuid)
+target_link_libraries(${MyProjectName} jsoncpp yaml-cpp log4cplusS libprotobuf libcurl_static hiredis zlibstatic uuid)

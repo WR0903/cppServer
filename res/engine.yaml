@@ -3,7 +3,7 @@ allinone:
   thread_mysql: 2
   thread_listen: 2
   thread_connector: 1
-  ip: 114.132.58.120
+  ip: 0.0.0.0
   port: 5401
   http_port: 7071
 
