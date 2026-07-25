@@ -43,7 +43,10 @@ void NetworkListen::Awake(std::string ip, int port, NetworkType iType)
     memset(&addr, 0, sizeof(sockaddr_in));
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
-    ::inet_pton(AF_INET, ip.c_str(), &addr.sin_addr.s_addr);
+
+    // 如果配置的IP不是127.0.0.1，则绑定0.0.0.0以便监听所有网卡
+    std::string bindIp = (ip != "127.0.0.1") ? "0.0.0.0" : ip;
+    ::inet_pton(AF_INET, bindIp.c_str(), &addr.sin_addr.s_addr);
 
     if (::bind(_masterSocket, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0)
     {
@@ -59,11 +62,11 @@ void NetworkListen::Awake(std::string ip, int port, NetworkType iType)
     }
 
 #ifdef EPOLL
-    LOG_INFO("epoll model. listen " << ip.c_str() << ":" << port << " SOMAXCONN:" << maxConn);
+    LOG_INFO("epoll model. listen " << ip << "(" << bindIp << ")" << ":" << port << " SOMAXCONN:" << maxConn);
     InitEpoll();
     AddEvent(_epfd, _masterSocket, EPOLLIN | EPOLLET | EPOLLOUT | EPOLLRDHUP);
 #else
-    LOG_INFO("select model. listen " << ip.c_str() << ":" << port << " SOMAXCONN:" << maxConn);
+    LOG_INFO("select model. listen " << ip << "(" << bindIp << ")" << ":" << port << " SOMAXCONN:" << maxConn);
 #endif
 
     return;
