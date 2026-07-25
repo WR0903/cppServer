@@ -92,6 +92,26 @@ make -j4
 
 编译完成后，可执行文件输出到 `bin/` 目录。
 
+---
+
+## 运行指南
+
+前置条件：安装 Python3 + PyYAML（`pip3 install pyyaml`），确保 MySQL、redis 服务已启动。
+
+```bash
+cd bin
+./start.sh       # 启动（自动识别 Debug/Release，按依赖顺序启动：appmgr → dbmgr → login → game → space）
+./stop.sh        # 停止（按依赖逆序优雅退出：space → game → login → dbmgr → appmgr）
+./allinoned      # 一体化模式（单进程运行所有服务，Debug）
+./allinone       # 一体化模式（Release）
+```
+
+### 运行效果
+
+Unity 客户端登录并进入游戏：
+
+![Unity 登录效果](game.png)
+
 ### 编译产物
 
 | Debug 模式 | Release 模式 | 说明 |
