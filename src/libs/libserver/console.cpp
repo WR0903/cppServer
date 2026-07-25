@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <thread>
+#include <chrono>
 
 #include "util_string.h"
 #include "log4_help.h"
@@ -62,6 +63,14 @@ void Console::Awake()
             do
             {
                 std::cin.getline(_buffer, ConsoleMaxBuffer);
+
+                // stdin 已关闭（如从 /dev/null 或后台脚本启动），清错误状态并休眠避免忙循环
+                if (std::cin.eof() || std::cin.fail())
+                {
+                    std::cin.clear();
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                    continue;
+                }
 
                 _lock.lock();
                 _commands.push(std::string(_buffer));
