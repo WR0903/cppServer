@@ -116,12 +116,12 @@ Unity 客户端登录并进入游戏：
 
 | Debug 模式 | Release 模式 | 说明 |
 |---|---|---|
-| appmgrd | appmgr | 应用管理器 |
-| logind | login | 登录服务 |
-| dbmgrd | dbmgr | 数据库管理 |
-| gamed | game | 游戏逻辑 |
-| spaced | space | 场景服务 |
-| allinoned | allinone | 一体化服务 |
+| appmgrd | appmgr | 应用管理server |
+| logind | login | 登录server |
+| dbmgrd | dbmgr | 数据库管理server |
+| gamed | game | 游戏逻辑server |
+| spaced | space | 场景server |
+| allinoned | allinone | 一体化server |
 | robotsd | robots | 测试机器人 |
 
 ### 清理
@@ -151,11 +151,11 @@ cppServer/
 │   │   └── libresource/     # 资源管理库（CSV 配置加载）
 │   ├── apps/
 │   │   ├── allinone/        # 全合一进程
-│   │   ├── appmgr/          # 应用管理器（GameMgr + SpaceMgr）
-│   │   ├── login/           # 登录服务器
-│   │   ├── game/            # 游戏服务器
-│   │   ├── space/           # 场景服务器
-│   │   └── dbmgr/           # 数据库管理
+│   │   ├── appmgr/          # 应用管理server（GameMgr + SpaceMgr）
+│   │   ├── login/           # 登录server
+│   │   ├── game/            # 游戏server
+│   │   ├── space/           # 场景server
+│   │   └── dbmgr/           # 数据库管理server
 │   └── tools/robots/        # 压测机器人
 ├── res/engine.yaml           # 服务器配置
 └── make-all.sh              # 编译入口
@@ -173,7 +173,7 @@ cppServer/
 | `APP_LOGIN` | `1<<3` | 客户端登录验证 + HTTP 接口 |
 | `APP_GAME` | `1<<4` | 游戏逻辑（大厅、世界代理） |
 | `APP_SPACE` | `1<<5` | 场景/地图管理、移动系统 |
-| `APP_APPMGR` | `GAME_MGR\|SPACE_MGR` | 应用管理器（世界创建与进程同步） |
+| `APP_APPMGR` | `GAME_MGR\|SPACE_MGR` | 应用管理server（世界创建与进程同步） |
 | `APP_ALLINONE` | 全部按位或 | 单进程运行所有服务 |
 | `APP_ROBOT` | `1<<6` | 压力测试 |
 
