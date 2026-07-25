@@ -138,7 +138,7 @@ cppServer/
 │   │   └── dbmgr/           # 数据库管理
 │   └── tools/robots/        # 压测机器人
 ├── res/engine.yaml           # 服务器配置
-└── engine.sln / make-all.sh  # 编译入口
+└── make-all.sh              # 编译入口
 ```
 
 ---
