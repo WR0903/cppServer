@@ -76,7 +76,7 @@ void MysqlConnector::HandleQueryPlayer(Packet* pPacket)
     auto protoQuery = pPacket->ParseToProto<Proto::QueryPlayer>();
 
     my_ulonglong affected_rows;
-    std::string sql = strutil::format("select sn, name, account, base, item, misc from player where sn = %llu", protoQuery.player_sn());
+    std::string sql = strutil::format("select sn, name, account, base, item, misc, bag from player where sn = %llu", protoQuery.player_sn());
     if (!Query(sql.c_str(), affected_rows))
     {
         LOG_ERROR("!!! Failed. MysqlConnector::HandleQueryPlayer. sql:" << sql.c_str());
@@ -100,6 +100,12 @@ void MysqlConnector::HandleQueryPlayer(Packet* pPacket)
 
             GetBlob(row, 5, tempStr);
             pProtoPlayer->mutable_misc()->ParseFromString(tempStr);
+
+            GetBlob(row, 6, tempStr);
+            if (!tempStr.empty())
+            {
+                pProtoPlayer->mutable_bag()->ParseFromString(tempStr);
+            }
         }
     }
 
@@ -177,6 +183,10 @@ bool MysqlConnector::OnSavePlayer(DatabaseStmt* stmtSave, Proto::Player& protoPl
     std::string miscStr;
     protoPlayer.misc().SerializeToString(&miscStr);
     AddParamBlob(stmtSave, (void*)miscStr.c_str(), (int)miscStr.size());
+
+    std::string bagStr;
+    protoPlayer.bag().SerializeToString(&bagStr);
+    AddParamBlob(stmtSave, (void*)bagStr.c_str(), (int)bagStr.size());
 
     AddParamUint64(stmtSave, protoPlayer.sn());
 

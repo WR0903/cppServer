@@ -17,5 +17,5 @@ else
     mkdir -p ${BUILD_DIR}
     cd ${BUILD_DIR}
     cmake -DCMAKE_BUILD_TYPE=${buildType} ..
-    make -j4
+    make -j1
 fi

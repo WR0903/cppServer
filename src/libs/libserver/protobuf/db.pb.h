@@ -46,6 +46,12 @@ struct TableStruct_db_2eproto {
 };
 extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_db_2eproto;
 namespace Proto {
+class Bag;
+struct BagDefaultTypeInternal;
+extern BagDefaultTypeInternal _Bag_default_instance_;
+class BagItem;
+struct BagItemDefaultTypeInternal;
+extern BagItemDefaultTypeInternal _BagItem_default_instance_;
 class LastWorld;
 struct LastWorldDefaultTypeInternal;
 extern LastWorldDefaultTypeInternal _LastWorld_default_instance_;
@@ -63,6 +69,8 @@ struct Vector3DefaultTypeInternal;
 extern Vector3DefaultTypeInternal _Vector3_default_instance_;
 }  // namespace Proto
 PROTOBUF_NAMESPACE_OPEN
+template<> ::Proto::Bag* Arena::CreateMaybeMessage<::Proto::Bag>(Arena*);
+template<> ::Proto::BagItem* Arena::CreateMaybeMessage<::Proto::BagItem>(Arena*);
 template<> ::Proto::LastWorld* Arena::CreateMaybeMessage<::Proto::LastWorld>(Arena*);
 template<> ::Proto::Player* Arena::CreateMaybeMessage<::Proto::Player>(Arena*);
 template<> ::Proto::PlayerBase* Arena::CreateMaybeMessage<::Proto::PlayerBase>(Arena*);
@@ -795,6 +803,344 @@ class PlayerMisc final :
 };
 // -------------------------------------------------------------------
 
+class BagItem final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Proto.BagItem) */ {
+ public:
+  inline BagItem() : BagItem(nullptr) {}
+  ~BagItem() override;
+  explicit PROTOBUF_CONSTEXPR BagItem(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  BagItem(const BagItem& from);
+  BagItem(BagItem&& from) noexcept
+    : BagItem() {
+    *this = ::std::move(from);
+  }
+
+  inline BagItem& operator=(const BagItem& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline BagItem& operator=(BagItem&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const BagItem& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const BagItem* internal_default_instance() {
+    return reinterpret_cast<const BagItem*>(
+               &_BagItem_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    4;
+
+  friend void swap(BagItem& a, BagItem& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(BagItem* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(BagItem* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  BagItem* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<BagItem>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const BagItem& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const BagItem& from) {
+    BagItem::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(BagItem* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Proto.BagItem";
+  }
+  protected:
+  explicit BagItem(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kItemIdFieldNumber = 1,
+    kCountFieldNumber = 2,
+    kSlotFieldNumber = 3,
+  };
+  // uint64 item_id = 1;
+  void clear_item_id();
+  uint64_t item_id() const;
+  void set_item_id(uint64_t value);
+  private:
+  uint64_t _internal_item_id() const;
+  void _internal_set_item_id(uint64_t value);
+  public:
+
+  // int32 count = 2;
+  void clear_count();
+  int32_t count() const;
+  void set_count(int32_t value);
+  private:
+  int32_t _internal_count() const;
+  void _internal_set_count(int32_t value);
+  public:
+
+  // int32 slot = 3;
+  void clear_slot();
+  int32_t slot() const;
+  void set_slot(int32_t value);
+  private:
+  int32_t _internal_slot() const;
+  void _internal_set_slot(int32_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Proto.BagItem)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    uint64_t item_id_;
+    int32_t count_;
+    int32_t slot_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_db_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Bag final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Proto.Bag) */ {
+ public:
+  inline Bag() : Bag(nullptr) {}
+  ~Bag() override;
+  explicit PROTOBUF_CONSTEXPR Bag(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  Bag(const Bag& from);
+  Bag(Bag&& from) noexcept
+    : Bag() {
+    *this = ::std::move(from);
+  }
+
+  inline Bag& operator=(const Bag& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Bag& operator=(Bag&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const Bag& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const Bag* internal_default_instance() {
+    return reinterpret_cast<const Bag*>(
+               &_Bag_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    5;
+
+  friend void swap(Bag& a, Bag& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Bag* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Bag* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  Bag* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<Bag>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const Bag& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const Bag& from) {
+    Bag::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Bag* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Proto.Bag";
+  }
+  protected:
+  explicit Bag(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kItemsFieldNumber = 2,
+    kCapacityFieldNumber = 1,
+  };
+  // repeated .Proto.BagItem items = 2;
+  int items_size() const;
+  private:
+  int _internal_items_size() const;
+  public:
+  void clear_items();
+  ::Proto::BagItem* mutable_items(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Proto::BagItem >*
+      mutable_items();
+  private:
+  const ::Proto::BagItem& _internal_items(int index) const;
+  ::Proto::BagItem* _internal_add_items();
+  public:
+  const ::Proto::BagItem& items(int index) const;
+  ::Proto::BagItem* add_items();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Proto::BagItem >&
+      items() const;
+
+  // int32 capacity = 1;
+  void clear_capacity();
+  int32_t capacity() const;
+  void set_capacity(int32_t value);
+  private:
+  int32_t _internal_capacity() const;
+  void _internal_set_capacity(int32_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Proto.Bag)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Proto::BagItem > items_;
+    int32_t capacity_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_db_2eproto;
+};
+// -------------------------------------------------------------------
+
 class Player final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Proto.Player) */ {
  public:
@@ -843,7 +1189,7 @@ class Player final :
                &_Player_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    6;
 
   friend void swap(Player& a, Player& b) {
     a.Swap(&b);
@@ -919,6 +1265,7 @@ class Player final :
     kNameFieldNumber = 2,
     kBaseFieldNumber = 3,
     kMiscFieldNumber = 4,
+    kBagFieldNumber = 5,
     kSnFieldNumber = 1,
   };
   // string name = 2;
@@ -971,6 +1318,24 @@ class Player final :
       ::Proto::PlayerMisc* misc);
   ::Proto::PlayerMisc* unsafe_arena_release_misc();
 
+  // .Proto.Bag bag = 5;
+  bool has_bag() const;
+  private:
+  bool _internal_has_bag() const;
+  public:
+  void clear_bag();
+  const ::Proto::Bag& bag() const;
+  PROTOBUF_NODISCARD ::Proto::Bag* release_bag();
+  ::Proto::Bag* mutable_bag();
+  void set_allocated_bag(::Proto::Bag* bag);
+  private:
+  const ::Proto::Bag& _internal_bag() const;
+  ::Proto::Bag* _internal_mutable_bag();
+  public:
+  void unsafe_arena_set_allocated_bag(
+      ::Proto::Bag* bag);
+  ::Proto::Bag* unsafe_arena_release_bag();
+
   // uint64 sn = 1;
   void clear_sn();
   uint64_t sn() const;
@@ -991,6 +1356,7 @@ class Player final :
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
     ::Proto::PlayerBase* base_;
     ::Proto::PlayerMisc* misc_;
+    ::Proto::Bag* bag_;
     uint64_t sn_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -1452,6 +1818,134 @@ inline void PlayerMisc::set_online_version(int32_t value) {
 
 // -------------------------------------------------------------------
 
+// BagItem
+
+// uint64 item_id = 1;
+inline void BagItem::clear_item_id() {
+  _impl_.item_id_ = uint64_t{0u};
+}
+inline uint64_t BagItem::_internal_item_id() const {
+  return _impl_.item_id_;
+}
+inline uint64_t BagItem::item_id() const {
+  // @@protoc_insertion_point(field_get:Proto.BagItem.item_id)
+  return _internal_item_id();
+}
+inline void BagItem::_internal_set_item_id(uint64_t value) {
+  
+  _impl_.item_id_ = value;
+}
+inline void BagItem::set_item_id(uint64_t value) {
+  _internal_set_item_id(value);
+  // @@protoc_insertion_point(field_set:Proto.BagItem.item_id)
+}
+
+// int32 count = 2;
+inline void BagItem::clear_count() {
+  _impl_.count_ = 0;
+}
+inline int32_t BagItem::_internal_count() const {
+  return _impl_.count_;
+}
+inline int32_t BagItem::count() const {
+  // @@protoc_insertion_point(field_get:Proto.BagItem.count)
+  return _internal_count();
+}
+inline void BagItem::_internal_set_count(int32_t value) {
+  
+  _impl_.count_ = value;
+}
+inline void BagItem::set_count(int32_t value) {
+  _internal_set_count(value);
+  // @@protoc_insertion_point(field_set:Proto.BagItem.count)
+}
+
+// int32 slot = 3;
+inline void BagItem::clear_slot() {
+  _impl_.slot_ = 0;
+}
+inline int32_t BagItem::_internal_slot() const {
+  return _impl_.slot_;
+}
+inline int32_t BagItem::slot() const {
+  // @@protoc_insertion_point(field_get:Proto.BagItem.slot)
+  return _internal_slot();
+}
+inline void BagItem::_internal_set_slot(int32_t value) {
+  
+  _impl_.slot_ = value;
+}
+inline void BagItem::set_slot(int32_t value) {
+  _internal_set_slot(value);
+  // @@protoc_insertion_point(field_set:Proto.BagItem.slot)
+}
+
+// -------------------------------------------------------------------
+
+// Bag
+
+// int32 capacity = 1;
+inline void Bag::clear_capacity() {
+  _impl_.capacity_ = 0;
+}
+inline int32_t Bag::_internal_capacity() const {
+  return _impl_.capacity_;
+}
+inline int32_t Bag::capacity() const {
+  // @@protoc_insertion_point(field_get:Proto.Bag.capacity)
+  return _internal_capacity();
+}
+inline void Bag::_internal_set_capacity(int32_t value) {
+  
+  _impl_.capacity_ = value;
+}
+inline void Bag::set_capacity(int32_t value) {
+  _internal_set_capacity(value);
+  // @@protoc_insertion_point(field_set:Proto.Bag.capacity)
+}
+
+// repeated .Proto.BagItem items = 2;
+inline int Bag::_internal_items_size() const {
+  return _impl_.items_.size();
+}
+inline int Bag::items_size() const {
+  return _internal_items_size();
+}
+inline void Bag::clear_items() {
+  _impl_.items_.Clear();
+}
+inline ::Proto::BagItem* Bag::mutable_items(int index) {
+  // @@protoc_insertion_point(field_mutable:Proto.Bag.items)
+  return _impl_.items_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Proto::BagItem >*
+Bag::mutable_items() {
+  // @@protoc_insertion_point(field_mutable_list:Proto.Bag.items)
+  return &_impl_.items_;
+}
+inline const ::Proto::BagItem& Bag::_internal_items(int index) const {
+  return _impl_.items_.Get(index);
+}
+inline const ::Proto::BagItem& Bag::items(int index) const {
+  // @@protoc_insertion_point(field_get:Proto.Bag.items)
+  return _internal_items(index);
+}
+inline ::Proto::BagItem* Bag::_internal_add_items() {
+  return _impl_.items_.Add();
+}
+inline ::Proto::BagItem* Bag::add_items() {
+  ::Proto::BagItem* _add = _internal_add_items();
+  // @@protoc_insertion_point(field_add:Proto.Bag.items)
+  return _add;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Proto::BagItem >&
+Bag::items() const {
+  // @@protoc_insertion_point(field_list:Proto.Bag.items)
+  return _impl_.items_;
+}
+
+// -------------------------------------------------------------------
+
 // Player
 
 // uint64 sn = 1;
@@ -1704,9 +2198,103 @@ inline void Player::set_allocated_misc(::Proto::PlayerMisc* misc) {
   // @@protoc_insertion_point(field_set_allocated:Proto.Player.misc)
 }
 
+// .Proto.Bag bag = 5;
+inline bool Player::_internal_has_bag() const {
+  return this != internal_default_instance() && _impl_.bag_ != nullptr;
+}
+inline bool Player::has_bag() const {
+  return _internal_has_bag();
+}
+inline void Player::clear_bag() {
+  if (GetArenaForAllocation() == nullptr && _impl_.bag_ != nullptr) {
+    delete _impl_.bag_;
+  }
+  _impl_.bag_ = nullptr;
+}
+inline const ::Proto::Bag& Player::_internal_bag() const {
+  const ::Proto::Bag* p = _impl_.bag_;
+  return p != nullptr ? *p : reinterpret_cast<const ::Proto::Bag&>(
+      ::Proto::_Bag_default_instance_);
+}
+inline const ::Proto::Bag& Player::bag() const {
+  // @@protoc_insertion_point(field_get:Proto.Player.bag)
+  return _internal_bag();
+}
+inline void Player::unsafe_arena_set_allocated_bag(
+    ::Proto::Bag* bag) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.bag_);
+  }
+  _impl_.bag_ = bag;
+  if (bag) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Proto.Player.bag)
+}
+inline ::Proto::Bag* Player::release_bag() {
+  
+  ::Proto::Bag* temp = _impl_.bag_;
+  _impl_.bag_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::Proto::Bag* Player::unsafe_arena_release_bag() {
+  // @@protoc_insertion_point(field_release:Proto.Player.bag)
+  
+  ::Proto::Bag* temp = _impl_.bag_;
+  _impl_.bag_ = nullptr;
+  return temp;
+}
+inline ::Proto::Bag* Player::_internal_mutable_bag() {
+  
+  if (_impl_.bag_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Proto::Bag>(GetArenaForAllocation());
+    _impl_.bag_ = p;
+  }
+  return _impl_.bag_;
+}
+inline ::Proto::Bag* Player::mutable_bag() {
+  ::Proto::Bag* _msg = _internal_mutable_bag();
+  // @@protoc_insertion_point(field_mutable:Proto.Player.bag)
+  return _msg;
+}
+inline void Player::set_allocated_bag(::Proto::Bag* bag) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.bag_;
+  }
+  if (bag) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(bag);
+    if (message_arena != submessage_arena) {
+      bag = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, bag, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.bag_ = bag;
+  // @@protoc_insertion_point(field_set_allocated:Proto.Player.bag)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

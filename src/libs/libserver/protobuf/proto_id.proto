@@ -99,6 +99,10 @@ enum MsgId {
 	C2S_Move						= 1505;	// 玩家移动
 	S2C_Move						= 1506;
 
+	C2S_BagSync						= 1507;	// 客户端请求同步背包
+	S2C_BagSync						= 1508;	// 服务端推送背包数据
+	C2S_ItemUse						= 1509;	// 客户端使用物品
+
     // 
 	MI_BroadcastCreateWorld			= 2001;  // 进入地图，创建地图广播
 	MI_BroadcastCreateWorldProxy	= 2002;  // 进入地图，创建地图Proxy广播

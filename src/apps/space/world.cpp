@@ -1,6 +1,7 @@
 #include "world.h"
 #include "player_manager_component.h"
 #include "player_component_detail.h"
+#include "player_component_bag.h"
 
 #include "libserver/message_system_help.h"
 #include "libserver/message_system.h"
@@ -27,6 +28,9 @@ void World::Awake(int worldId)
     pMsgSystem->RegisterFunctionFilter<Player>(this, Proto::MsgId::G2S_RemovePlayer, BindFunP1(this, &World::GetPlayer), BindFunP2(this, &World::HandleG2SRemovePlayer));
 
     pMsgSystem->RegisterFunctionFilter<Player>(this, Proto::MsgId::C2S_Move, BindFunP1(this, &World::GetPlayer), BindFunP2(this, &World::HandleMove));
+
+    pMsgSystem->RegisterFunctionFilter<Player>(this, Proto::MsgId::C2S_BagSync, BindFunP1(this, &World::GetPlayer), BindFunP2(this, &World::HandleBagSync));
+    pMsgSystem->RegisterFunctionFilter<Player>(this, Proto::MsgId::C2S_ItemUse, BindFunP1(this, &World::GetPlayer), BindFunP2(this, &World::HandleItemUse));
 
 }
 
@@ -165,6 +169,7 @@ void World::HandleSyncPlayer(Packet* pPacket)
 
     pPlayer->ParserFromProto(playerSn, proto.player());
     pPlayer->AddComponent<PlayerComponentDetail>();
+    pPlayer->AddComponent<PlayerComponentBag>();
 
     const auto pComponentLastMap = pPlayer->AddComponent<PlayerComponentLastMap>();
     pComponentLastMap->EnterWorld(_worldId, _sn);
@@ -179,6 +184,9 @@ void World::HandleSyncPlayer(Packet* pPacket)
     MessageSystemHelp::SendPacket(Proto::MsgId::S2C_EnterWorld, protoEnterWorld, pPlayer);
 
     _addPlayer.insert(playerSn);
+
+    // 启动玩家独立定时存盘（10-60 秒随机间隔）
+    pPlayer->StartSaveTimer();
 }
 
 void World::BroadcastPacket(Proto::MsgId msgId, google::protobuf::Message& proto)
@@ -224,6 +232,12 @@ void World::HandleG2SRemovePlayer(Player* pPlayer, Packet* pPacket)
         return;
     }
 
+    // 跳转地图前先存盘
+    Proto::SavePlayer protoSave;
+    protoSave.set_player_sn(pPlayer->GetPlayerSN());
+    pPlayer->SerializeToProto(protoSave.mutable_player());
+    MessageSystemHelp::SendPacket(Proto::MsgId::G2DB_SavePlayer, protoSave, APP_DB_MGR);
+
     auto pPlayerMgr = GetComponent<PlayerManagerComponent>();
     pPlayerMgr->RemovePlayerBySn(pPlayer->GetPlayerSN());
 
@@ -258,4 +272,47 @@ void World::HandleMove(Player* pPlayer, Packet* pPacket)
     pMoveComponent->Update(pos, pComponentLastMap->GetCur()->Position);
 
     BroadcastPacket(Proto::MsgId::S2C_Move, proto);
+}
+
+void World::HandleBagSync(Player* pPlayer, Packet* pPacket)
+{
+    auto pBag = pPlayer->GetComponent<PlayerComponentBag>();
+    if (pBag == nullptr)
+        return;
+
+    Proto::BagSync proto;
+    proto.set_capacity(pBag->GetCapacity());
+    for (const auto& pair : pBag->GetItems())
+    {
+        auto item = proto.add_items();
+        item->CopyFrom(pair.second);
+    }
+    MessageSystemHelp::SendPacket(Proto::MsgId::S2C_BagSync, proto, pPlayer);
+}
+
+void World::HandleItemUse(Player* pPlayer, Packet* pPacket)
+{
+    auto proto = pPacket->ParseToProto<Proto::ItemUse>();
+    auto pBag = pPlayer->GetComponent<PlayerComponentBag>();
+    if (pBag == nullptr)
+        return;
+
+    if (!pBag->RemoveItem(proto.item_id(), proto.count()))
+    {
+        LOG_WARN("item use failed. player sn:" << pPlayer->GetPlayerSN()
+            << " item id:" << proto.item_id() << " count:" << proto.count());
+        return;
+    }
+
+    // 使用物品效果（TODO: 根据物品类型执行不同逻辑）
+
+    // 同步背包给客户端
+    Proto::BagSync protoSync;
+    protoSync.set_capacity(pBag->GetCapacity());
+    for (const auto& pair : pBag->GetItems())
+    {
+        auto item = protoSync.add_items();
+        item->CopyFrom(pair.second);
+    }
+    MessageSystemHelp::SendPacket(Proto::MsgId::S2C_BagSync, protoSync, pPlayer);
 }

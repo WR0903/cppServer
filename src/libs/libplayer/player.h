@@ -4,6 +4,8 @@
 #include "libserver/entity.h"
 #include "libserver/system.h"
 
+#include <random>
+
 class Player :public Entity<Player>, public NetIdentify,
     virtual public IAwakeFromPoolSystem<NetIdentify*, std::string>,
     virtual public IAwakeFromPoolSystem<NetIdentify*, uint64, uint64>
@@ -23,11 +25,22 @@ public:
     void ParserFromProto(uint64 playerSn, const Proto::Player& proto);
     void SerializeToProto(Proto::Player* pProto) const;
 
+    // 启动定时存盘（10-60 秒随机间隔，每个玩家独立计时）
+    void StartSaveTimer();
+
 protected:
     std::string _account{ "" };
     std::string _name{ "" };
 
     uint64 _playerSn{ 0 };
     Proto::Player _player;
+
+private:
+    void OnSaveTimer();
+
+    int _saveIntervalMin{ 10 };
+    int _saveIntervalMax{ 60 };
+    std::uniform_int_distribution<int> _saveDist{ _saveIntervalMin, _saveIntervalMax };
+    std::mt19937 _saveGen{ std::random_device{}() };
 };
 

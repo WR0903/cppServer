@@ -29,7 +29,7 @@ static constexpr ::_pbi::MigrationSchema* schemas = nullptr;
 static constexpr ::_pb::Message* const* file_default_instances = nullptr;
 
 const char descriptor_table_protodef_proto_5fid_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\016proto_id.proto\022\005Proto*\373\016\n\005MsgId\022\010\n\004Non"
+  "\n\016proto_id.proto\022\005Proto*\261\017\n\005MsgId\022\010\n\004Non"
   "e\020\000\022\025\n\021MI_NetworkConnect\020\001\022\027\n\023MI_Network"
   "Connected\020\002\022\024\n\020MI_NetworkListen\020\003\022\027\n\023MI_"
   "NetworkListenKey\020\004\022\030\n\024MI_NetworkDisconne"
@@ -62,26 +62,28 @@ const char descriptor_table_protodef_proto_5fid_2eproto[] PROTOBUF_SECTION_VARIA
   "dRs\020\336\010\022\023\n\016S2C_EnterWorld\020\335\013\022\023\n\016S2G_SyncP"
   "layer\020\336\013\022\023\n\016S2C_RoleAppear\020\337\013\022\026\n\021S2C_Rol"
   "eDisAppear\020\340\013\022\r\n\010C2S_Move\020\341\013\022\r\n\010S2C_Move"
-  "\020\342\013\022\034\n\027MI_BroadcastCreateWorld\020\321\017\022!\n\034MI_"
-  "BroadcastCreateWorldProxy\020\322\017\022\031\n\024MI_World"
-  "SyncToGather\020\271\027\022\036\n\031MI_WorldProxySyncToGa"
-  "ther\020\272\027\022 \n\033MI_AccountSyncOnlineToRedis\020\241"
-  "\037\022\"\n\035MI_AccountDeleteOnlineToRedis\020\242\037\022\037\n"
-  "\032MI_PlayerSyncOnlineToRedis\020\243\037\022!\n\034MI_Pla"
-  "yerDeleteOnlineToRedis\020\244\037\022\026\n\021MI_RobotSyn"
-  "cState\020\211\'\022\023\n\016MI_RobotCreate\020\212\'\022\021\n\014MI_Htt"
-  "pBegin\020\220N\022\031\n\024MI_HttpInnerResponse\020\221N\022\026\n\021"
-  "MI_HttpRequestBad\020\222N\022\030\n\023MI_HttpRequestLo"
-  "gin\020\223N\022\017\n\nMI_HttpEnd\020\203R\022\030\n\023MI_HttpOuterR"
-  "equest\020\204R\022\031\n\024MI_HttpOuterResponse\020\205R\022\022\n\014"
-  "MI_CmdThread\020\241\234\001\022\017\n\tMI_CmdApp\020\242\234\001\022\026\n\020MI_"
-  "CmdWorldProxy\020\243\234\001\022\021\n\013MI_CmdWorld\020\244\234\001\022\022\n\014"
-  "MI_CmdCreate\020\245\234\001\022\026\n\020MI_CmdEfficiency\020\246\234\001"
-  "\022\023\n\rMI_Efficiency\020\247\234\001b\006proto3"
+  "\020\342\013\022\020\n\013C2S_BagSync\020\343\013\022\020\n\013S2C_BagSync\020\344\013\022"
+  "\020\n\013C2S_ItemUse\020\345\013\022\034\n\027MI_BroadcastCreateW"
+  "orld\020\321\017\022!\n\034MI_BroadcastCreateWorldProxy\020"
+  "\322\017\022\031\n\024MI_WorldSyncToGather\020\271\027\022\036\n\031MI_Worl"
+  "dProxySyncToGather\020\272\027\022 \n\033MI_AccountSyncO"
+  "nlineToRedis\020\241\037\022\"\n\035MI_AccountDeleteOnlin"
+  "eToRedis\020\242\037\022\037\n\032MI_PlayerSyncOnlineToRedi"
+  "s\020\243\037\022!\n\034MI_PlayerDeleteOnlineToRedis\020\244\037\022"
+  "\026\n\021MI_RobotSyncState\020\211\'\022\023\n\016MI_RobotCreat"
+  "e\020\212\'\022\021\n\014MI_HttpBegin\020\220N\022\031\n\024MI_HttpInnerR"
+  "esponse\020\221N\022\026\n\021MI_HttpRequestBad\020\222N\022\030\n\023MI"
+  "_HttpRequestLogin\020\223N\022\017\n\nMI_HttpEnd\020\203R\022\030\n"
+  "\023MI_HttpOuterRequest\020\204R\022\031\n\024MI_HttpOuterR"
+  "esponse\020\205R\022\022\n\014MI_CmdThread\020\241\234\001\022\017\n\tMI_Cmd"
+  "App\020\242\234\001\022\026\n\020MI_CmdWorldProxy\020\243\234\001\022\021\n\013MI_Cm"
+  "dWorld\020\244\234\001\022\022\n\014MI_CmdCreate\020\245\234\001\022\026\n\020MI_Cmd"
+  "Efficiency\020\246\234\001\022\023\n\rMI_Efficiency\020\247\234\001b\006pro"
+  "to3"
   ;
 static ::_pbi::once_flag descriptor_table_proto_5fid_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_proto_5fid_2eproto = {
-    false, false, 1949, descriptor_table_protodef_proto_5fid_2eproto,
+    false, false, 2003, descriptor_table_protodef_proto_5fid_2eproto,
     "proto_id.proto",
     &descriptor_table_proto_5fid_2eproto_once, nullptr, 0, 0,
     schemas, file_default_instances, TableStruct_proto_5fid_2eproto::offsets,
@@ -156,6 +158,9 @@ bool MsgId_IsValid(int value) {
     case 1504:
     case 1505:
     case 1506:
+    case 1507:
+    case 1508:
+    case 1509:
     case 2001:
     case 2002:
     case 3001:

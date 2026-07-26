@@ -74,6 +74,9 @@ extern AppInfoSyncDefaultTypeInternal _AppInfoSync_default_instance_;
 class AppRegister;
 struct AppRegisterDefaultTypeInternal;
 extern AppRegisterDefaultTypeInternal _AppRegister_default_instance_;
+class BagSync;
+struct BagSyncDefaultTypeInternal;
+extern BagSyncDefaultTypeInternal _BagSync_default_instance_;
 class BroadcastCreateWorld;
 struct BroadcastCreateWorldDefaultTypeInternal;
 extern BroadcastCreateWorldDefaultTypeInternal _BroadcastCreateWorld_default_instance_;
@@ -128,6 +131,9 @@ extern GameTokenToRedisRsDefaultTypeInternal _GameTokenToRedisRs_default_instanc
 class Http;
 struct HttpDefaultTypeInternal;
 extern HttpDefaultTypeInternal _Http_default_instance_;
+class ItemUse;
+struct ItemUseDefaultTypeInternal;
+extern ItemUseDefaultTypeInternal _ItemUse_default_instance_;
 class LoginByToken;
 struct LoginByTokenDefaultTypeInternal;
 extern LoginByTokenDefaultTypeInternal _LoginByToken_default_instance_;
@@ -250,6 +256,7 @@ template<> ::Proto::AccountSyncOnlineToRedis* Arena::CreateMaybeMessage<::Proto:
 template<> ::Proto::AppInfoListSync* Arena::CreateMaybeMessage<::Proto::AppInfoListSync>(Arena*);
 template<> ::Proto::AppInfoSync* Arena::CreateMaybeMessage<::Proto::AppInfoSync>(Arena*);
 template<> ::Proto::AppRegister* Arena::CreateMaybeMessage<::Proto::AppRegister>(Arena*);
+template<> ::Proto::BagSync* Arena::CreateMaybeMessage<::Proto::BagSync>(Arena*);
 template<> ::Proto::BroadcastCreateWorld* Arena::CreateMaybeMessage<::Proto::BroadcastCreateWorld>(Arena*);
 template<> ::Proto::BroadcastCreateWorldProxy* Arena::CreateMaybeMessage<::Proto::BroadcastCreateWorldProxy>(Arena*);
 template<> ::Proto::CmdApp* Arena::CreateMaybeMessage<::Proto::CmdApp>(Arena*);
@@ -268,6 +275,7 @@ template<> ::Proto::GameToken* Arena::CreateMaybeMessage<::Proto::GameToken>(Are
 template<> ::Proto::GameTokenToRedis* Arena::CreateMaybeMessage<::Proto::GameTokenToRedis>(Arena*);
 template<> ::Proto::GameTokenToRedisRs* Arena::CreateMaybeMessage<::Proto::GameTokenToRedisRs>(Arena*);
 template<> ::Proto::Http* Arena::CreateMaybeMessage<::Proto::Http>(Arena*);
+template<> ::Proto::ItemUse* Arena::CreateMaybeMessage<::Proto::ItemUse>(Arena*);
 template<> ::Proto::LoginByToken* Arena::CreateMaybeMessage<::Proto::LoginByToken>(Arena*);
 template<> ::Proto::LoginByTokenRs* Arena::CreateMaybeMessage<::Proto::LoginByTokenRs>(Arena*);
 template<> ::Proto::LoginTokenToRedis* Arena::CreateMaybeMessage<::Proto::LoginTokenToRedis>(Arena*);
@@ -11413,6 +11421,333 @@ class Move final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_msg_2eproto;
 };
+// -------------------------------------------------------------------
+
+class BagSync final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Proto.BagSync) */ {
+ public:
+  inline BagSync() : BagSync(nullptr) {}
+  ~BagSync() override;
+  explicit PROTOBUF_CONSTEXPR BagSync(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  BagSync(const BagSync& from);
+  BagSync(BagSync&& from) noexcept
+    : BagSync() {
+    *this = ::std::move(from);
+  }
+
+  inline BagSync& operator=(const BagSync& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline BagSync& operator=(BagSync&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const BagSync& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const BagSync* internal_default_instance() {
+    return reinterpret_cast<const BagSync*>(
+               &_BagSync_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    64;
+
+  friend void swap(BagSync& a, BagSync& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(BagSync* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(BagSync* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  BagSync* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<BagSync>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const BagSync& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const BagSync& from) {
+    BagSync::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(BagSync* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Proto.BagSync";
+  }
+  protected:
+  explicit BagSync(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kItemsFieldNumber = 1,
+    kCapacityFieldNumber = 2,
+  };
+  // repeated .Proto.BagItem items = 1;
+  int items_size() const;
+  private:
+  int _internal_items_size() const;
+  public:
+  void clear_items();
+  ::Proto::BagItem* mutable_items(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Proto::BagItem >*
+      mutable_items();
+  private:
+  const ::Proto::BagItem& _internal_items(int index) const;
+  ::Proto::BagItem* _internal_add_items();
+  public:
+  const ::Proto::BagItem& items(int index) const;
+  ::Proto::BagItem* add_items();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Proto::BagItem >&
+      items() const;
+
+  // int32 capacity = 2;
+  void clear_capacity();
+  int32_t capacity() const;
+  void set_capacity(int32_t value);
+  private:
+  int32_t _internal_capacity() const;
+  void _internal_set_capacity(int32_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Proto.BagSync)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Proto::BagItem > items_;
+    int32_t capacity_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_msg_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ItemUse final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Proto.ItemUse) */ {
+ public:
+  inline ItemUse() : ItemUse(nullptr) {}
+  ~ItemUse() override;
+  explicit PROTOBUF_CONSTEXPR ItemUse(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  ItemUse(const ItemUse& from);
+  ItemUse(ItemUse&& from) noexcept
+    : ItemUse() {
+    *this = ::std::move(from);
+  }
+
+  inline ItemUse& operator=(const ItemUse& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ItemUse& operator=(ItemUse&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const ItemUse& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const ItemUse* internal_default_instance() {
+    return reinterpret_cast<const ItemUse*>(
+               &_ItemUse_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    65;
+
+  friend void swap(ItemUse& a, ItemUse& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ItemUse* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ItemUse* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  ItemUse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<ItemUse>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const ItemUse& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const ItemUse& from) {
+    ItemUse::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ItemUse* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Proto.ItemUse";
+  }
+  protected:
+  explicit ItemUse(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kItemIdFieldNumber = 1,
+    kCountFieldNumber = 2,
+  };
+  // uint64 item_id = 1;
+  void clear_item_id();
+  uint64_t item_id() const;
+  void set_item_id(uint64_t value);
+  private:
+  uint64_t _internal_item_id() const;
+  void _internal_set_item_id(uint64_t value);
+  public:
+
+  // int32 count = 2;
+  void clear_count();
+  int32_t count() const;
+  void set_count(int32_t value);
+  private:
+  int32_t _internal_count() const;
+  void _internal_set_count(int32_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:Proto.ItemUse)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    uint64_t item_id_;
+    int32_t count_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_msg_2eproto;
+};
 // ===================================================================
 
 
@@ -16298,9 +16633,118 @@ Move::position() const {
   return _impl_.position_;
 }
 
+// -------------------------------------------------------------------
+
+// BagSync
+
+// repeated .Proto.BagItem items = 1;
+inline int BagSync::_internal_items_size() const {
+  return _impl_.items_.size();
+}
+inline int BagSync::items_size() const {
+  return _internal_items_size();
+}
+inline ::Proto::BagItem* BagSync::mutable_items(int index) {
+  // @@protoc_insertion_point(field_mutable:Proto.BagSync.items)
+  return _impl_.items_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Proto::BagItem >*
+BagSync::mutable_items() {
+  // @@protoc_insertion_point(field_mutable_list:Proto.BagSync.items)
+  return &_impl_.items_;
+}
+inline const ::Proto::BagItem& BagSync::_internal_items(int index) const {
+  return _impl_.items_.Get(index);
+}
+inline const ::Proto::BagItem& BagSync::items(int index) const {
+  // @@protoc_insertion_point(field_get:Proto.BagSync.items)
+  return _internal_items(index);
+}
+inline ::Proto::BagItem* BagSync::_internal_add_items() {
+  return _impl_.items_.Add();
+}
+inline ::Proto::BagItem* BagSync::add_items() {
+  ::Proto::BagItem* _add = _internal_add_items();
+  // @@protoc_insertion_point(field_add:Proto.BagSync.items)
+  return _add;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Proto::BagItem >&
+BagSync::items() const {
+  // @@protoc_insertion_point(field_list:Proto.BagSync.items)
+  return _impl_.items_;
+}
+
+// int32 capacity = 2;
+inline void BagSync::clear_capacity() {
+  _impl_.capacity_ = 0;
+}
+inline int32_t BagSync::_internal_capacity() const {
+  return _impl_.capacity_;
+}
+inline int32_t BagSync::capacity() const {
+  // @@protoc_insertion_point(field_get:Proto.BagSync.capacity)
+  return _internal_capacity();
+}
+inline void BagSync::_internal_set_capacity(int32_t value) {
+  
+  _impl_.capacity_ = value;
+}
+inline void BagSync::set_capacity(int32_t value) {
+  _internal_set_capacity(value);
+  // @@protoc_insertion_point(field_set:Proto.BagSync.capacity)
+}
+
+// -------------------------------------------------------------------
+
+// ItemUse
+
+// uint64 item_id = 1;
+inline void ItemUse::clear_item_id() {
+  _impl_.item_id_ = uint64_t{0u};
+}
+inline uint64_t ItemUse::_internal_item_id() const {
+  return _impl_.item_id_;
+}
+inline uint64_t ItemUse::item_id() const {
+  // @@protoc_insertion_point(field_get:Proto.ItemUse.item_id)
+  return _internal_item_id();
+}
+inline void ItemUse::_internal_set_item_id(uint64_t value) {
+  
+  _impl_.item_id_ = value;
+}
+inline void ItemUse::set_item_id(uint64_t value) {
+  _internal_set_item_id(value);
+  // @@protoc_insertion_point(field_set:Proto.ItemUse.item_id)
+}
+
+// int32 count = 2;
+inline void ItemUse::clear_count() {
+  _impl_.count_ = 0;
+}
+inline int32_t ItemUse::_internal_count() const {
+  return _impl_.count_;
+}
+inline int32_t ItemUse::count() const {
+  // @@protoc_insertion_point(field_get:Proto.ItemUse.count)
+  return _internal_count();
+}
+inline void ItemUse::_internal_set_count(int32_t value) {
+  
+  _impl_.count_ = value;
+}
+inline void ItemUse::set_count(int32_t value) {
+  _internal_set_count(value);
+  // @@protoc_insertion_point(field_set:Proto.ItemUse.count)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

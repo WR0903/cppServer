@@ -411,3 +411,13 @@ message Move {
 	uint64 player_sn = 1;
 	repeated Vector3 position = 2;
 }
+
+message BagSync {
+	repeated BagItem items = 1;
+	int32 capacity = 2;
+}
+
+message ItemUse {
+	uint64 item_id = 1;
+	int32 count = 2;
+}

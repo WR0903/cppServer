@@ -36,9 +36,21 @@ message PlayerMisc {
 	int32 online_version = 3;	// 在线版本（乐观锁）
 }
 
+message BagItem {
+	uint64 item_id = 1;		// 物品ID
+	int32 count = 2;			// 数量
+	int32 slot = 3;			// 格子位置
+}
+
+message Bag {
+	int32 capacity = 1;			// 背包容量
+	repeated BagItem items = 2;	// 物品列表
+}
+
 message Player {
 	uint64 sn = 1;
 	string name = 2;
 	PlayerBase base = 3;
 	PlayerMisc misc = 4;
+	Bag bag = 5;			// 背包
 }

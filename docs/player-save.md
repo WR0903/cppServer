@@ -6,7 +6,9 @@
 
 ## 1. 存盘时机
 
-角色存盘在 **Space 进程** 中触发，时机为**玩家断线**：
+角色存盘在 **Space 进程** 中触发，共三个时机：
+
+### 1.1 玩家断线存盘
 
 ```
 玩家断线 → World::HandleNetworkDisconnect
@@ -14,29 +16,63 @@
   → SendPacket(G2DB_SavePlayer, protoSave, APP_DB_MGR)     // 发给 DBMgr
 ```
 
-> 目前仅在断线时存盘，没有定时存盘机制。
+### 1.2 玩家跳转地图存盘
+
+```
+玩家跳转 → World::HandleG2SRemovePlayer
+  → Player::SerializeToProto(protoSave.mutable_player())   // 收集内存数据
+  → SendPacket(G2DB_SavePlayer, protoSave, APP_DB_MGR)     // 发给 DBMgr
+  → RemovePlayerBySn（从当前 World 移除）
+```
+
+### 1.3 定时存盘（10-60 秒随机间隔）
+
+每个玩家在进入世界时启动独立的定时存盘，间隔随机 10-60 秒，避免大量玩家同时存盘打崩 DB：
+
+```
+World::HandleSyncPlayer
+  → pPlayer->StartSaveTimer()
+      → AddTimer(1, 随机10-60秒, ...) → 到期执行 OnSaveTimer()
+          → SerializeToProto + SendPacket(G2DB_SavePlayer)
+          → 检查是否已被回收（_pSystemManager == nullptr 则停止）
+          → StartSaveTimer() 重新设随机间隔，循环往复
+```
+
+| 特性 | 说明 |
+|------|------|
+| 独立计时 | 每个玩家有自己的定时器，互不影响 |
+| 随机间隔 | 10-60 秒随机，天然分散 DB 压力 |
+| 安全退出 | 玩家断线/跳转时 `BackToPool` 会清理定时器 |
+| 防崩溃检查 | `OnSaveTimer` 中检查 `_pSystemManager` 是否为空，避免定时器回调期间玩家已被回收导致崩溃 |
+
+> 定时存盘逻辑位于 `Player::StartSaveTimer()` / `Player::OnSaveTimer()`（`src/libs/libplayer/player.cpp`），由 `World::HandleSyncPlayer` 在玩家进入世界时启动。
 
 ---
 
 ## 2. 存盘调用链
 
+三个存盘入口最终都调用相同的链路：
+
 ```
-Space::World::HandleNetworkDisconnect
-  │
-  ├─ Player::SerializeToProto(Proto::Player* pProto)
-  │    │
-  │    ├─ pProto->CopyFrom(_player)           // 拷贝内存中的 Player proto 基础数据
-  │    │
-  │    └─ 遍历所有 Component
-  │         └─ dynamic_cast<PlayerComponent*>  // 只调用实现了 PlayerComponent 接口的组件
-  │              └─ pPlayerComponent->SerializeToProto(pProto)   // 各组件写回自己的字段
-  │
-  └─ SendPacket(G2DB_SavePlayer)  →  DBMgr
-                                        │
-                                        └─ MysqlConnector::OnSavePlayer
-                                             ├─ protoPlayer.base().SerializeToString()  → blob
-                                             ├─ protoPlayer.misc().SerializeToString()  → blob
-                                             └─ ExecuteStmt("update player set base=?, misc=?, savetime=now() where sn=?")
+存盘触发点（三选一）
+  ├─ World::HandleNetworkDisconnect     // 玩家断线
+  ├─ World::HandleG2SRemovePlayer        // 玩家跳转地图
+  └─ Player::OnSaveTimer                 // 定时存盘（10-60秒）
+      │
+      ├─ Player::SerializeToProto(Proto::Player* pProto)
+      │    │
+      │    ├─ pProto->CopyFrom(_player)           // 拷贝内存中的 Player proto 基础数据
+      │    │
+      │    └─ 遍历所有 Component
+      │         └─ dynamic_cast<PlayerComponent*>  // 只调用实现了 PlayerComponent 接口的组件
+      │              └─ pPlayerComponent->SerializeToProto(pProto)   // 各组件写回自己的字段
+      │
+      └─ SendPacket(G2DB_SavePlayer)  →  DBMgr
+                                                │
+                                                └─ MysqlConnector::OnSavePlayer
+                                                     ├─ protoPlayer.base().SerializeToString()  → blob
+                                                     ├─ protoPlayer.misc().SerializeToString()  → blob
+                                                     └─ ExecuteStmt("update player set base=?, misc=?, savetime=now() where sn=?")
 ```
 
 ---
@@ -131,11 +167,11 @@ message Player {
 INSERT INTO player (sn, account, name, savetime, createtime)
 VALUES (?, ?, ?, now(), now())
 
--- 存盘（每次断线触发，mysql_connector.cpp:133）
+-- 存盘（断线/跳转/定时存盘均使用同一条 SQL，mysql_connector.cpp:133）
 UPDATE player SET base=?, misc=?, savetime=now() WHERE sn=?
 ```
 
-> **注意**：存盘只更新 `base` 和 `misc` 两列。`name`、`account` 创建后不更新，`item` 列预留未用。
+> **注意**：存盘只更新 `base` 和 `misc` 两列。`name`、`account` 创建后不更新，`item` 列预留未用。三个存盘入口共用同一套 SQL 和 DBMgr 处理逻辑。
 
 ---
 
@@ -197,9 +233,10 @@ Game::Lobby::HandleQueryPlayerRs
   ↓
 Space::World::HandleSyncPlayer
   │  ParserFromProto → 各 Component 从 proto 加载数据
+  │  启动定时存盘 → Player::StartSaveTimer()
   │  运行中各 Component 修改内存数据
   ↓
-玩家断线
+玩家断线 / 跳转地图 / 定时存盘
   │  SerializeToProto → 各 Component 写回 Proto::Player
   │  G2DB_SavePlayer（Proto::Player）
   ↓
@@ -232,32 +269,29 @@ SELECT sn, name, account, base, item, misc FROM player WHERE sn = xxx
                          │
             ┌────────────┼────────────┐
             ↓            │            ↑
-      G2DB_QueryPlayerRs │     G2DB_SavePlayer
+      G2DB_QueryPlayerRs │     G2DB_SavePlayer（三个触发点）
             │            │            │
-            ↓            │            │
-    ┌────────────┐       │     ┌────────────┐
-    │   Game     │       │     │   Space    │
-    │  (Lobby)   │       │     │  (World)   │
-    │            │       │     │            │
-    │ParserFrom  │       │     │SerializeTo │
-    │Proto(加载) │       │     │Proto(存盘) │
-    └─────┬──────┘       │     └────────────┘
-          │              │
-    Teleport(中转)       │
-          │              │
-    ┌─────↓──────┐       │
-    │   Space    │       │
-    │  (World)   │       │
-    │            │       │
-    │ParserFrom  │       │
-    │Proto(加载) │       │
-    └────────────┘       │
-          │              │
-    ┌─────↓──────┐  │
-    │  Component │  │
-    │  运行时修改  │  │
-    │  内存数据   │  │
-    └────────────┘  │
+            ↓            │      ① 玩家断线
+    ┌────────────┐       │      ② 跳转地图
+    │   Game     │       │      ③ 定时存盘(10-60s随机)
+    │  (Lobby)   │       │            │
+    │            │       │            │
+    │ParserFrom  │       │     ┌────────────┐
+    │Proto(加载) │       │     │   Space    │
+    └─────┬──────┘       │     │  (World)  │
+          │              │     │            │
+    Teleport(中转)       │     │SerializeTo │
+          │              │     │Proto(存盘) │
+    ┌─────↓──────┐       │     └────────────┘
+    │   Space    │       │            ↑
+    │  (World)   │       │     Player::OnSaveTimer
+    │            │       │     （独立定时器，10-60s随机）
+    │ParserFrom  │       │            │
+    │Proto(加载) │       │     ┌────────────┐
+    │StartSave  │       │     │  Component │
+    │Timer()    │───────┼────→│  运行时修改  │
+    └────────────┘       │     │  内存数据   │
+                          │     └────────────┘
 ```
 
 ---

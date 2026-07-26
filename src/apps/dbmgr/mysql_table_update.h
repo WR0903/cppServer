@@ -19,11 +19,12 @@ private:
     // 检查DB数据，更新到最新版本
     bool UpdateToVersion();
     bool Update00();
+    bool Update01();
 
 private:
     // update
     typedef std::function<bool(void)> OnUpdate;
     std::vector<OnUpdate> _update_func;
 
-    int const _version = 0;
+    int const _version = 1;
 };

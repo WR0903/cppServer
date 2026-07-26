@@ -130,7 +130,7 @@ void MysqlConnector::InitStmts()
     DatabaseStmt* stmt = CreateStmt("insert into player ( sn, account, name, savetime, createtime ) value ( ?, ?, ?, now(), now() )");
     _mapStmt.insert(std::make_pair(DatabaseStmtKey::Create, stmt));
 
-    stmt = CreateStmt("update player set base=?, misc=?, savetime=now() where sn = ?");
+    stmt = CreateStmt("update player set base=?, misc=?, bag=?, savetime=now() where sn = ?");
     _mapStmt.insert(std::make_pair(DatabaseStmtKey::Save, stmt));
 
     LOG_DEBUG("\tMysqlConnector::InitStmts successfully!");

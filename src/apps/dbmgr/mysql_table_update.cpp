@@ -11,7 +11,8 @@
 MysqlTableUpdate::MysqlTableUpdate()
 {
     // 注册更新函数，按下标执行，注意顺序
-    _update_func.push_back(BindFunP0(this, &MysqlTableUpdate::Update00)); 
+    _update_func.push_back(BindFunP0(this, &MysqlTableUpdate::Update00));
+    _update_func.push_back(BindFunP0(this, &MysqlTableUpdate::Update01));
 }
 
 MysqlTableUpdate::~MysqlTableUpdate()
@@ -132,6 +133,7 @@ bool MysqlTableUpdate::CreateDatabaseIfNotExist()
         "`base` blob," \
         "`item` blob,"  \
         "`misc` blob,"  \
+        "`bag` blob,"  \
         "`savetime` datetime default NULL," \
         "`createtime` datetime default NULL," \
         "PRIMARY KEY  (`sn`),"  \
@@ -198,14 +200,15 @@ bool MysqlTableUpdate::Update00()
     return true;
 }
 
-//bool MysqlTableUpdate::Update01()
-//{
-//    std::string sql = "ALTER TABLE `player` ADD COLUMN `testa`  blob NULL AFTER `misc`;";
-//    my_ulonglong affected_rows;
-//    if (!Query(sql.c_str(), affected_rows)) {
-//        LOG_ERROR("!!! Failed. MysqlTableUpdate::Update01. " << sql.c_str());
-//        return false;
-//    }
-//
-//    return true;
-//}
+bool MysqlTableUpdate::Update01()
+{
+    // 添加 bag 列（背包数据）
+    std::string sql = "ALTER TABLE `player` ADD COLUMN `bag` blob NULL AFTER `misc`;";
+    my_ulonglong affected_rows;
+    if (!Query(sql.c_str(), affected_rows)) {
+        LOG_ERROR("!!! Failed. MysqlTableUpdate::Update01. " << sql);
+        return false;
+    }
+
+    return true;
+}

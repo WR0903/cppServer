@@ -1,6 +1,7 @@
 #include "player.h"
 #include "player_component.h"
 #include "libserver/message_system_help.h"
+#include "libserver/log4_help.h"
 
 void Player::Awake(NetIdentify* pIdentify, std::string account)
 {
@@ -104,4 +105,28 @@ void Player::SerializeToProto(Proto::Player* pProto) const
 
         pPlayerComponent->SerializeToProto(pProto);
     }
+}
+
+void Player::StartSaveTimer()
+{
+    // 每个玩家独立定时存盘，10-60 秒随机间隔
+    const int interval = _saveDist(_saveGen);
+    AddTimer(1, interval, false, 0, BindFunP0(this, &Player::OnSaveTimer));
+}
+
+void Player::OnSaveTimer()
+{
+    // 定时存盘
+    Proto::SavePlayer protoSave;
+    protoSave.set_player_sn(_playerSn);
+    SerializeToProto(protoSave.mutable_player());
+    MessageSystemHelp::SendPacket(Proto::MsgId::G2DB_SavePlayer, protoSave, APP_DB_MGR);
+
+    // 检查是否已被回收（玩家可能已断线/跳转）
+    // _pSystemManager 在 ComponentBackToPool 后会被置空
+    if (_pSystemManager == nullptr)
+        return;
+
+    // 重新启动下一个随机间隔的定时器
+    StartSaveTimer();
 }
