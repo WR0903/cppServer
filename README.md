@@ -16,8 +16,8 @@
 
 ### 编译器要求
 
-- C++ 标准：C++14
-- GCC 版本：5.0+（推荐 GCC 9+ 或 GCC 13）
+- C++ 标准：C++20
+- GCC 版本：10.0+（推荐 GCC 13+）
 - 支持 `-pthread`、`-Wall`、`-DEPOLL` 编译选项
 
 ### CMake 要求
@@ -41,11 +41,11 @@ pip install cmake --upgrade
 以下库无法源码编译，需通过系统包管理器安装：
 
 ```bash
-# 一条命令安装全部系统库
+# 一条命令安装全部系统库（build-essential 自带 GCC 13，支持 C++20）
 sudo apt install build-essential cmake libmysqlclient-dev libssl-dev uuid-dev protobuf-compiler
 
 # 分项说明：
-# build-essential      → GCC、G++、make 等基础编译工具
+# build-essential      → GCC 13+（支持 C++20）、G++、make 等基础编译工具
 # cmake                → CMake 构建系统
 # libmysqlclient-dev   → MySQL 客户端开发库（mysqlclient）
 # libssl-dev           → OpenSSL 开发库（ssl、crypto）
