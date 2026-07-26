@@ -46,13 +46,13 @@ get_exe_name() {
 }
 
 # 检查 python3 是否可用
-if ! command -v python3 &> /dev/null; then
+if ! command -v python3 > /dev/null 2>&1; then
     echo "Error: 需要 python3 来解析 YAML 配置"
     exit 1
 fi
 
 # 检查 python3 yaml 模块是否可用
-if ! python3 -c "import yaml" &> /dev/null; then
+if ! python3 -c "import yaml" > /dev/null 2>&1; then
     echo "Error: 需要 PyYAML 模块，请运行: pip3 install pyyaml"
     exit 1
 fi
