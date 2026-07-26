@@ -352,3 +352,7 @@ main() → ServerApp::Initialize()
 | 新增 System | 继承 `ISystem<T>` → 实现 Update → CreateSystem 注册 |
 | 新增协议 | .proto 定义 → protoc 生成 → RegisterFunction 注册回调 |
 | 单线程模式 | engine.yaml 中 thread_logic/thread_mysql 设为 0 |
+
+### 实战示例
+
+- [添加背包系统](docs/bag-component.md) — 以背包为例，完整演示 Player 组件开发流程（proto 定义 → 组件实现 → 消息注册 → 存档持久化）

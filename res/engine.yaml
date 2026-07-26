@@ -3,7 +3,7 @@ allinone:
   thread_mysql: 2
   thread_listen: 2
   thread_connector: 1
-  ip: 0.0.0.0
+  ip: 114.132.58.120
   port: 5401
   http_port: 7071
 
@@ -11,7 +11,7 @@ appmgr:
   thread_logic: 2
   thread_listen: 2
   thread_connector: 2
-  ip: 127.0.0.1
+  ip: 114.132.58.120
   port: 5500
   http_port: 7071
 
@@ -23,7 +23,7 @@ login:
   url_method: "get"
   apps:
     - id: 101
-      ip: 127.0.0.1
+      ip: 114.132.58.120
       port: 5401
       
 game:
@@ -32,10 +32,10 @@ game:
   thread_connector: 1
   apps:
     - id: 201
-      ip: 127.0.0.1
+      ip: 114.132.58.120
       port: 5601
     - id: 202
-      ip: 127.0.0.1
+      ip: 114.132.58.120
       port: 5602
 
 space:
@@ -44,7 +44,7 @@ space:
   thread_connector: 1
   apps:
     - id: 301
-      ip: 127.0.0.1
+      ip: 114.132.58.120
       port: 5701
 
 dbmgr:
