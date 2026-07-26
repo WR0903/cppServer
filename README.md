@@ -355,4 +355,5 @@ main() → ServerApp::Initialize()
 
 ### 实战示例
 
+- [角色数据存盘机制](docs/player-save.md) — 存盘时机、调用链、MySQL 表结构、Component 参与存盘的机制、如何扩展存盘字段
 - [添加背包系统](docs/bag-component.md) — 以背包为例，完整演示 Player 组件开发流程（proto 定义 → 组件实现 → 消息注册 → 存档持久化）
