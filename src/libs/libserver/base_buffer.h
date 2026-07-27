@@ -10,6 +10,12 @@
 // 最大缓冲
 #define MAX_SIZE		1024 * 1024 // 1M
 
+// 单个 TCP 包的总长上限（含长度头与协议头），超过则视为非法包直接断开连接。
+// 协议里 TotalSizeType 是 unsigned short，天然上限就是 0xFFFF (64KB-1)，
+// 所以这里必须使用 uint16 的上限，否则接收侧 `totalSize > MAX_PACKET_SIZE` 判断永远为 false，
+// 上限校验形同虚设。
+#define MAX_PACKET_SIZE		0xFFFF
+
 class Buffer
 {
 public:

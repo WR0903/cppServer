@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <stdexcept>
 
 unsigned Buffer::GetEmptySize()
 {
@@ -11,9 +12,11 @@ unsigned Buffer::GetEmptySize()
 
 void Buffer::ReAllocBuffer(const unsigned int dataLength)
 {
-	// 如果缓冲区超过最大缓冲值，发出警告
+	// 如果缓冲区超过最大缓冲值，直接抛出异常终止扩容。
+	// 原实现只会打印警告但仍继续分配，恶意/出错的连接可借此耗尽进程内存（DoS）。
 	if (_bufferSize >= MAX_SIZE) {
-		std::cout << "Buffer::Realloc except!! Max size:" << _bufferSize << std::endl;
+		std::cout << "Buffer::Realloc refused. buffer reached MAX_SIZE:" << _bufferSize << std::endl;
+		throw std::length_error("buffer exceeded MAX_SIZE");
 	}
 
 	char* tempBuffer = new char[_bufferSize + ADDITIONAL_SIZE];

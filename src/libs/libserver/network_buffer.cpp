@@ -6,6 +6,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <stdexcept>
 #include "mongoose/mongoose.h"
 
 NetworkBuffer::NetworkBuffer(const unsigned int size, ConnectObj* pConnectObj)
@@ -140,6 +141,15 @@ Packet* RecvNetworkBuffer::GetTcpPacket()
     unsigned short totalSize;
     MemcpyFromBuffer(reinterpret_cast<char*>(&totalSize), sizeof(TotalSizeType));
 
+    // 非法包校验：总长必须能容纳两个长度头（4字节），且小于等于上限。
+    // 否则可能是恶意/出错连接，直接断开，避免后续无限扩容耗尽内存（DoS）。
+    if (totalSize < sizeof(TotalSizeType) * 2 || totalSize > MAX_PACKET_SIZE)
+    {
+        LOG_WARN("recv invalid packet size:" << totalSize << ". close connection.");
+        _pConnectObj->Close();
+        return nullptr;
+    }
+
     // 协议体长度不够，等待
     if (_dataSize < totalSize)
     {
@@ -154,22 +164,24 @@ Packet* RecvNetworkBuffer::GetTcpPacket()
     RemoveDate(sizeof(TotalSizeType));
 
     // 3.读出 PacketHead
-    PacketHead* pHead;
+    // 注意：head 变量必须声明在 if/else 外层，否则出了块作用域后 pHead / pHeadS2s
+    // 会变成悬垂指针，指向被回收的栈空间，产生未定义行为。
+    PacketHead head{};
+    PacketHeadS2S headS2s{};
+    PacketHead* pHead = nullptr;
     PacketHeadS2S* pHeadS2s = nullptr;
-    if (headSize == sizeof(PacketHead)) 
+    if (headSize == sizeof(PacketHead))
     {
-        PacketHead head;
         MemcpyFromBuffer(reinterpret_cast<char*>(&head), sizeof(PacketHead));
         RemoveDate(sizeof(PacketHead));
         pHead = &head;
     }
     else
     {
-        PacketHeadS2S head;
-        MemcpyFromBuffer(reinterpret_cast<char*>(&head), sizeof(PacketHeadS2S));
+        MemcpyFromBuffer(reinterpret_cast<char*>(&headS2s), sizeof(PacketHeadS2S));
         RemoveDate(sizeof(PacketHeadS2S));
-        pHead = &head;
-        pHeadS2s = &head;
+        pHead = &headS2s;
+        pHeadS2s = &headS2s;
     }
 
     // 4.读出 协议
@@ -188,9 +200,20 @@ Packet* RecvNetworkBuffer::GetTcpPacket()
     if (pHeadS2s != nullptr)
         dataLength = totalSize - sizeof(PacketHeadS2S) - sizeof(TotalSizeType) * 2;
 
-    while (pPacket->GetTotalSize() < dataLength)
+    try
     {
-        pPacket->ReAllocBuffer();
+        while (pPacket->GetTotalSize() < dataLength)
+        {
+            pPacket->ReAllocBuffer();
+        }
+    }
+    catch (const std::exception& e)
+    {
+        // 包体过大，扩容失败：断开连接并回收已创建的 packet
+        LOG_WARN("recv packet too large, alloc failed: " << e.what() << ". close connection.");
+        DynamicPacketPool::GetInstance()->FreeObject(pPacket);
+        _pConnectObj->Close();
+        return nullptr;
     }
 
     MemcpyFromBuffer(pPacket->GetBuffer(), dataLength);
@@ -326,9 +349,19 @@ void SendNetworkBuffer::AddPacket(Packet* pPacket)
     }
 
     // 长度不够，扩容
-    while (GetEmptySize() < totalSize) {
-        ReAllocBuffer();
-        //std::cout << "send buffer::Realloc. _bufferSize:" << _bufferSize << std::endl;
+    try
+    {
+        while (GetEmptySize() < totalSize) {
+            ReAllocBuffer();
+            //std::cout << "send buffer::Realloc. _bufferSize:" << _bufferSize << std::endl;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        // 发送缓冲区超过上限（理论上已被接收侧 totalSize 上限拦截，这里做兜底）：
+        // 直接丢弃本次写入，packet 的释放交由外层 SendPacket 统一处理，避免双重释放。
+        LOG_WARN("send buffer alloc failed: " << e.what() << ". drop packet.");
+        return;
     }
 
     // 对于http协议来说，只有body，没有自定义头

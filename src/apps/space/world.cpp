@@ -2,6 +2,7 @@
 #include "player_manager_component.h"
 #include "player_component_detail.h"
 #include "player_component_bag.h"
+#include "aoi_component.h"
 
 #include "libserver/message_system_help.h"
 #include "libserver/message_system.h"
@@ -15,6 +16,7 @@ void World::Awake(int worldId)
     _worldId = worldId;
 
     AddComponent<PlayerManagerComponent>();
+    AddComponent<AoiComponent>();
 
     AddTimer(0, 10, false, 0, BindFunP0(this, &World::SyncWorldToGather));
     AddTimer(0, 1, false, 0, BindFunP0(this, &World::SyncAppearTimer));
@@ -71,7 +73,10 @@ void World::HandleNetworkDisconnect(Packet* pPacket)
         pPlayer->SerializeToProto(protoSave.mutable_player());
         MessageSystemHelp::SendPacket(Proto::MsgId::G2DB_SavePlayer, protoSave, APP_DB_MGR);
 
-        // 玩家掉线
+        // 玩家掉线，先从AOI中移除
+        auto pAoi = GetComponent<AoiComponent>();
+        pAoi->Leave(pTagPlayer->KeyInt64);
+
         pPlayerMgr->RemovePlayerBySn(pTagPlayer->KeyInt64);
     }
     else
@@ -185,6 +190,10 @@ void World::HandleSyncPlayer(Packet* pPacket)
 
     _addPlayer.insert(playerSn);
 
+    // 将玩家加入AOI
+    auto pAoi = GetComponent<AoiComponent>();
+    pAoi->Enter(playerSn, pLastMap->Position);
+
     // 启动玩家独立定时存盘（10-60 秒随机间隔）
     pPlayer->StartSaveTimer();
 }
@@ -238,6 +247,10 @@ void World::HandleG2SRemovePlayer(Player* pPlayer, Packet* pPacket)
     pPlayer->SerializeToProto(protoSave.mutable_player());
     MessageSystemHelp::SendPacket(Proto::MsgId::G2DB_SavePlayer, protoSave, APP_DB_MGR);
 
+    // 从AOI中移除
+    auto pAoi = GetComponent<AoiComponent>();
+    pAoi->Leave(pPlayer->GetPlayerSN());
+
     auto pPlayerMgr = GetComponent<PlayerManagerComponent>();
     pPlayerMgr->RemovePlayerBySn(pPlayer->GetPlayerSN());
 
@@ -259,19 +272,29 @@ void World::HandleMove(Player* pPlayer, Packet* pPacket)
     }
 
     std::queue<Vector3> pos;
+    Vector3 lastPos(0, 0, 0);
     for (auto index = 0; index < proto.position_size(); index++)
     {
         Vector3 v3(0, 0, 0);
         v3.ParserFromProto(positions->Get(index));
         pos.push(v3);
-
-        //LOG_DEBUG("move target. " << v3);
+        lastPos = v3;  // 记录最后一个路径点（目标位置）
     }
 
     const auto pComponentLastMap = pPlayer->GetComponent<PlayerComponentLastMap>();
     pMoveComponent->Update(pos, pComponentLastMap->GetCur()->Position);
 
-    BroadcastPacket(Proto::MsgId::S2C_Move, proto);
+    // 更新玩家在AOI中的位置
+    auto pAoi = GetComponent<AoiComponent>();
+    if (proto.position_size() > 0)
+    {
+        pAoi->Move(pPlayer->GetPlayerSN(), lastPos);
+    }
+
+    // 只广播给九宫格范围内的玩家（AOI过滤），排除自己
+    std::set<uint64> nearbyPlayers = pAoi->GetNearbyPlayers(pPlayer->GetPlayerSN());
+    nearbyPlayers.erase(pPlayer->GetPlayerSN());
+    BroadcastPacket(Proto::MsgId::S2C_Move, proto, nearbyPlayers);
 }
 
 void World::HandleBagSync(Player* pPlayer, Packet* pPacket)

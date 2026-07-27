@@ -1,5 +1,7 @@
 #include "connect_obj.h"
 
+#include <stdexcept>
+
 #include "network.h"
 #include "network_buffer.h"
 
@@ -79,7 +81,17 @@ bool ConnectObj::Recv()
         // 总空间数据不足一个头的大小，扩容
         if (_recvBuffer->GetEmptySize() < (sizeof(PacketHeadS2S) + sizeof(TotalSizeType) * 2))
         {
-            _recvBuffer->ReAllocBuffer();
+            try
+            {
+                _recvBuffer->ReAllocBuffer();
+            }
+            catch (const std::exception& e)
+            {
+                // 接收缓冲区超过上限（恶意/出错连接），断开并退出
+                LOG_WARN("recv buffer alloc failed: " << e.what() << ". close connection.");
+                Close();
+                return false;
+            }
         }
 
         const int emptySize = _recvBuffer->GetBuffer(pBuffer);

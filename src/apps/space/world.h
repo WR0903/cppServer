@@ -3,6 +3,7 @@
 #include "libplayer/world_base.h"
 #include "libserver/entity.h"
 #include "libserver/socket_object.h"
+#include "aoi_component.h"
 
 class Player;
 class World :public Entity<World>, public IWorld, public IAwakeFromPoolSystem<int>
