@@ -8,6 +8,7 @@
 #include <cstring>
 #include <stdexcept>
 #include "mongoose/mongoose.h"
+#include "object_pool_packet.h"
 
 NetworkBuffer::NetworkBuffer(const unsigned int size, ConnectObj* pConnectObj)
 {
