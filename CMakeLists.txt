@@ -67,7 +67,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "只构建静态库" FORCE)
 set(DISABLE_TESTS ON CACHE BOOL "关闭测试" FORCE)
 set(ENABLE_SSL OFF CACHE BOOL "关闭 SSL" FORCE)
 set(ENABLE_EXAMPLES OFF CACHE BOOL "关闭示例" FORCE)
-add_subdirectory(src/3rdparty/hiredis-master)
+add_subdirectory(src/3rdparty/hiredis)
 
 # ========== 全局 3rdparty 头文件路径 ==========
 

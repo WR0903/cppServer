@@ -11,12 +11,6 @@ fi
 
 BUILD_DIR="build"
 
-# 代码中使用 #include <hiredis/hiredis.h>，但 3rdparty 下目录名为 hiredis-master，
-# 建立软链接 hiredis -> hiredis-master 让头文件路径正确解析（不影响 git 跟踪）。
-if [ ! -e "src/3rdparty/hiredis" ]; then
-    ln -sfn hiredis-master src/3rdparty/hiredis
-fi
-
 if ${clean};then
     rm -rf ${BUILD_DIR}
 else
