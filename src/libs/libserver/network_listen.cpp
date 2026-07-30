@@ -64,7 +64,8 @@ void NetworkListen::Awake(std::string ip, int port, NetworkType iType)
 #ifdef EPOLL
     LOG_INFO("epoll model. listen " << ip << "(" << bindIp << ")" << ":" << port << " SOMAXCONN:" << maxConn);
     InitEpoll();
-    AddEvent(_epfd, _masterSocket, EPOLLIN | EPOLLET | EPOLLOUT | EPOLLRDHUP);
+    AddEvent(_epfd, _masterSocket, EPOLLIN | EPOLLET);
+    // AddEvent(_epfd, _masterSocket, EPOLLIN | EPOLLET | EPOLLOUT | EPOLLRDHUP);
 #else
     LOG_INFO("select model. listen " << ip << "(" << bindIp << ")" << ":" << port << " SOMAXCONN:" << maxConn);
 #endif
@@ -113,8 +114,23 @@ int NetworkListen::Accept()
     while (true)
     {
         const SOCKET socket = ::accept(_masterSocket, &socketClient, &socketLength);
+        // const SOCKET socket = _sock_accept(_masterSocket, &socketClient, &socketLength);
         if (socket == INVALID_SOCKET)
+        {
+#if ENGINE_PLATFORM != PLATFORM_WIN32
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+                return rs;
+            if (errno == EINTR)
+                continue;
+            LOG_ERROR("accept failed. err:" << _sock_err()
+                      << " networktype:" << GetNetworkTypeName(_networkType));
             return rs;
+#else
+            if (_sock_is_blocked())
+                return rs;
+            return rs;
+#endif
+        }
 
         //LOG_DEBUG("accept socket:" << socket << " networktype:" << GetNetworkTypeName(_networkType));
         if (!CreateConnectObj(socket, TagType::None, TagValue{}, ConnectStateType::Connected))
