@@ -203,7 +203,6 @@ cppServer/
 
 ## 文档
 
-- [Accept 优化（epoll flag + ET errno + accept4）](docs/accept-optimization.md)
 - [AOI 九宫格系统](docs/aoi-system.md)
 - [角色数据存盘机制](https://wangranhit.pythonanywhere.com/blog/show/76) — 存盘时机、调用链、MySQL 表结构、如何扩展存盘字段
 - [添加背包系统](https://wangranhit.pythonanywhere.com/blog/show/77) — 以背包为例，完整演示 Player 组件开发流程（proto 定义 → 组件实现 → 消息注册 → 存档持久化）
