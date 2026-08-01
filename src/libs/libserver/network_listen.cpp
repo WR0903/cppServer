@@ -113,8 +113,8 @@ int NetworkListen::Accept()
     int rs = 0;
     while (true)
     {
-        const SOCKET socket = ::accept(_masterSocket, &socketClient, &socketLength);
-        // const SOCKET socket = _sock_accept(_masterSocket, &socketClient, &socketLength);
+        //const SOCKET socket = ::accept(_masterSocket, &socketClient, &socketLength);
+        const SOCKET socket = _sock_accept(_masterSocket, &socketClient, &socketLength);
         if (socket == INVALID_SOCKET)
         {
 #if ENGINE_PLATFORM != PLATFORM_WIN32

@@ -19,7 +19,8 @@ bin/allinoned
 bin/robots
 bin/robotsd
 bin/stdout_*.log
-
+libs/
+*.log
 # ========== IDE / 编辑器 ==========
 
 .vscode/

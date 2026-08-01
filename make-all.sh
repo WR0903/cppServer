@@ -18,5 +18,5 @@ else
     cd ${BUILD_DIR}
     cmake -DCMAKE_BUILD_TYPE=${buildType} ..
     # 限制并行作业数，避免 allinone 等合并编译目标内存峰值触发 OOM
-    make -j8
+    make -j$(nproc)
 fi

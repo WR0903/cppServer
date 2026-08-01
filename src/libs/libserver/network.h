@@ -32,7 +32,7 @@
 #define _sock_init( )
 #define _sock_nonblock( sockfd ) { int flags = fcntl(sockfd, F_GETFL, 0); fcntl(sockfd, F_SETFL, flags | O_NONBLOCK); }
 // accept4
-#define _sock_accept( listen_fd, addr, len ) ::accept4(listen_fd, addr, len, SOCK_NONBLOCK | SOCK_CLOEXEC)
+#define _sock_accept( listen_fd, addr, len ) ::accept4(listen_fd, addr, len, SOCK_NONBLOCK )
 #define _sock_accepted_nonblock( sockfd )    ((void)0)
 #define _sock_exit( )
 #define _sock_err( )	errno
