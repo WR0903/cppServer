@@ -271,7 +271,7 @@ void Account::HandleCreatePlayerRs(Packet* pPacket)
 
     auto pPlayerCollector = GetComponent<PlayerCollectorComponent>();
 
-    auto pPlayer = pPlayerCollector->GetPlayerBySocket(pPacket->GetSocketKey()->Socket);
+    auto pPlayer = pPlayerCollector->GetPlayerByAccount(account);
     if (pPlayer == nullptr)
     {
         LOG_ERROR("HandleCreatePlayerToDBRs. pPlayer == nullptr. account:" << account.c_str());
@@ -281,6 +281,14 @@ void Account::HandleCreatePlayerRs(Packet* pPacket)
     Proto::CreatePlayerRs createProto;
     createProto.set_return_code(protoRs.return_code());
     MessageSystemHelp::SendPacket(Proto::MsgId::C2L_CreatePlayerRs, createProto, pPlayer);
+
+    // 创建成功后，重新向DB请求玩家列表，以便客户端收到更新后的 L2C_PlayerList
+    if (protoRs.return_code() == Proto::CreatePlayerReturnCode::CPR_Create_OK)
+    {
+        Proto::QueryPlayerList protoQuery;
+        protoQuery.set_account(account.c_str());
+        MessageSystemHelp::SendPacket(Proto::MsgId::L2DB_QueryPlayerList, protoQuery, APP_DB_MGR);
+    }
 }
 
 void Account::HandleSelectPlayer(Packet* pPacket)
