@@ -291,9 +291,9 @@ void World::HandleMove(Player* pPlayer, Packet* pPacket)
         pAoi->Move(pPlayer->GetPlayerSN(), lastPos);
     }
 
-    // 只广播给九宫格范围内的玩家（AOI过滤），排除自己
+    // 广播给九宫格范围内的玩家（AOI过滤），包含发起者自己，
+    // 以支持客户端服务器确认式移动（客户端发送 C2S_Move 后，需要收到 S2C_Move 才会驱动角色移动）
     std::set<uint64> nearbyPlayers = pAoi->GetNearbyPlayers(pPlayer->GetPlayerSN());
-    nearbyPlayers.erase(pPlayer->GetPlayerSN());
     BroadcastPacket(Proto::MsgId::S2C_Move, proto, nearbyPlayers);
 }
 
