@@ -194,10 +194,28 @@ void Account::HandleAccountQueryOnlineToRedisRs(Packet* pPacket)
     {
         //LOG_WARN("check [3/3]. account is online. " << protoRs.account().c_str());
 
+        // 保存网络标识副本（RemovePlayer 后 pPlayer 会被回收）
+        NetIdentify playerIdentify;
+        playerIdentify.GetSocketKey()->CopyFrom(pPlayer->GetSocketKey());
+        playerIdentify.GetTagKey()->CopyFrom(pPlayer->GetTagKey());
+
+        // 从 PlayerCollector 移除玩家，清理本地 _accounts 记录。
+        // 注意：此时还没有添加 PlayerComponentOnlineInLogin，所以 BackToPool 不会清 Redis 标志。
+        GetComponent<PlayerCollectorComponent>()->RemovePlayerBySocket(pPlayer->GetSocketKey()->Socket);
+
+        // 显式清除 Redis 在线标志（HandleAccountQueryOnline 的 SetnxExpire 写入的）。
+        // 如果标志是其他 Login 设的，删除也无妨——对方验证成功后会通过 SetOnlineFlag 重新设上。
+        Proto::AccountDeleteOnlineToRedis protoDel;
+        protoDel.set_account(protoRs.account().c_str());
+        MessageSystemHelp::DispatchPacket(Proto::MsgId::MI_AccountDeleteOnlineToRedis, protoDel, nullptr);
+
         // 结果给客户端
         Proto::AccountCheckRs protoResult;
         protoResult.set_return_code(Proto::AccountCheckReturnCode::ARC_ONLINE);
-        MessageSystemHelp::SendPacket(Proto::MsgId::C2L_AccountCheckRs, protoResult, pPlayer);
+        MessageSystemHelp::SendPacket(Proto::MsgId::C2L_AccountCheckRs, protoResult, &playerIdentify);
+
+        // 断开 TCP 连接，让客户端回到登录界面
+        MessageSystemHelp::DispatchPacket(Proto::MsgId::MI_NetworkRequestDisconnect, &playerIdentify);
         return;
     }
 
@@ -407,32 +425,55 @@ void Account::HandleHttpOuterResponse(Packet* pPacket)
     // 不论成功，关闭http连接
     MessageSystemHelp::DispatchPacket(Proto::MsgId::MI_NetworkRequestDisconnect, pPacket);
 
-    //通知客户端进入lobby地图
-    auto pResMsg = ResourceHelp::GetResourceManager();
-    auto pRolesMap = pResMsg->Worlds->GetRolesMap();
-    if (pRolesMap != nullptr)
-    {
-        Proto::EnterWorld protoEnterWorld;
-        protoEnterWorld.set_world_id(pRolesMap->GetId());
-        MessageSystemHelp::SendPacket(Proto::MsgId::S2C_EnterWorld, protoEnterWorld, pPlayer);
-    }
-    else
-    {
-        LOG_ERROR("config error. not roles map.");
-    }
-
-    // 验证成功，向DB发起查询
+    // 验证成功，向DB发起查询，并通知客户端进入lobby地图
     if (rsCode == Proto::AccountCheckReturnCode::ARC_OK)
     {
+        // 通知客户端进入lobby地图
+        auto pResMsg = ResourceHelp::GetResourceManager();
+        auto pRolesMap = pResMsg->Worlds->GetRolesMap();
+        if (pRolesMap != nullptr)
+        {
+            Proto::EnterWorld protoEnterWorld;
+            protoEnterWorld.set_world_id(pRolesMap->GetId());
+            MessageSystemHelp::SendPacket(Proto::MsgId::S2C_EnterWorld, protoEnterWorld, pPlayer);
+        }
+        else
+        {
+            LOG_ERROR("config error. not roles map.");
+        }
+
         Proto::QueryPlayerList protoQuery;
         protoQuery.set_account(pPlayer->GetAccount().c_str());
         MessageSystemHelp::SendPacket(Proto::MsgId::L2DB_QueryPlayerList, protoQuery, APP_DB_MGR);
     }
     else
     {
+        // 验证失败：只通知客户端错误码，不进入世界。
+
+        // 注意：pPacket 是 HTTP 响应包，其 SocketKey 指向验证用 HTTP 服务器，
+        // 不是玩家的 TCP 连接，所以不能直接用 pPacket 给客户端发包。
+        // 必须用 pPlayer 的 SocketKey（玩家 TCP 连接）来发送错误码和断开连接。
+
+        // 先保存 pPlayer 的网络标识和账号副本（RemovePlayer 后 pPlayer 会被回收，不可再用）。
+        NetIdentify playerIdentify;
+        playerIdentify.GetSocketKey()->CopyFrom(pPlayer->GetSocketKey());
+        playerIdentify.GetTagKey()->CopyFrom(pPlayer->GetTagKey());
+        std::string failAccount = pPlayer->GetAccount();
+
+        // 从 PlayerCollector 移除该玩家（触发 PlayerComponentOnlineInLogin::BackToPool），
+        // 必须在断开 TCP 网络之前移除，否则 socket 失效后无法按 socket 查找玩家。
+        pPlayerCollector->RemovePlayerBySocket(pPlayer->GetSocketKey()->Socket);
+
+        // 显式清除 Redis 在线标志（双保险，确保下次登录不会被误判为“账号在线”）。
+        // RemovePlayer 触发的 BackToPool 也会发清除消息，但异步处理可能有延迟。
+        Proto::AccountDeleteOnlineToRedis protoDel;
+        protoDel.set_account(failAccount.c_str());
+        MessageSystemHelp::DispatchPacket(Proto::MsgId::MI_AccountDeleteOnlineToRedis, protoDel, nullptr);
+
+        // 通知客户端错误码（不断开 TCP，避免断开事件覆盖客户端的错误提示框）
         Proto::AccountCheckRs protoResult;
         protoResult.set_return_code(rsCode);
-        MessageSystemHelp::SendPacket(Proto::MsgId::C2L_AccountCheckRs, protoResult, pPlayer);
+        MessageSystemHelp::SendPacket(Proto::MsgId::C2L_AccountCheckRs, protoResult, &playerIdentify);
     }
 }
 

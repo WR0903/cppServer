@@ -84,6 +84,51 @@ stop_proc "login"
 stop_proc "dbmgr"
 stop_proc "appmgr"
 
+# ========== 清理 Redis 残留的在线标志 ==========
+# 停服时进程可能来不及清理 Redis 中的在线标志（TTL 6 分钟），
+# 残留的标志会导致重启后玩家再次登录时被误判为"账号在线"而被踢。
+# 清理的 key：
+#   engine::online::login::<账号>   (login 进程写入)
+#   engine::online::game::<账号>    (game 进程写入)
+#   engine::token::<账号>           (登录 token)
+
+REDIS_CLI=$(command -v redis-cli 2>/dev/null)
+if [ -n "${REDIS_CLI}" ]; then
+    echo "-----------------------------------------"
+    echo " 清理 Redis 残留在线标志"
+    echo "-----------------------------------------"
+
+    # 清理 login 在线标志
+    LOGIN_KEYS=$(redis-cli -h 127.0.0.1 -p 6379 --scan --pattern "engine::online::login::*" 2>/dev/null)
+    if [ -n "${LOGIN_KEYS}" ]; then
+        echo "${LOGIN_KEYS}" | xargs -r redis-cli -h 127.0.0.1 -p 6379 DEL >/dev/null 2>&1
+        echo "[CLEAN] engine::online::login::*  (清除 $(echo "${LOGIN_KEYS}" | wc -l) 个)"
+    else
+        echo "[SKIP]  engine::online::login::*  (无残留)"
+    fi
+
+    # 清理 game 在线标志
+    GAME_KEYS=$(redis-cli -h 127.0.0.1 -p 6379 --scan --pattern "engine::online::game::*" 2>/dev/null)
+    if [ -n "${GAME_KEYS}" ]; then
+        echo "${GAME_KEYS}" | xargs -r redis-cli -h 127.0.0.1 -p 6379 DEL >/dev/null 2>&1
+        echo "[CLEAN] engine::online::game::*   (清除 $(echo "${GAME_KEYS}" | wc -l) 个)"
+    else
+        echo "[SKIP]  engine::online::game::*   (无残留)"
+    fi
+
+    # 清理 token 标志
+    TOKEN_KEYS=$(redis-cli -h 127.0.0.1 -p 6379 --scan --pattern "engine::token::*" 2>/dev/null)
+    if [ -n "${TOKEN_KEYS}" ]; then
+        echo "${TOKEN_KEYS}" | xargs -r redis-cli -h 127.0.0.1 -p 6379 DEL >/dev/null 2>&1
+        echo "[CLEAN] engine::token::*          (清除 $(echo "${TOKEN_KEYS}" | wc -l) 个)"
+    else
+        echo "[SKIP]  engine::token::*          (无残留)"
+    fi
+else
+    echo "[WARN] 未找到 redis-cli，跳过 Redis 残留标志清理"
+    echo "       可手动执行: redis-cli KEYS 'engine::online::*' | xargs redis-cli DEL"
+fi
+
 echo "========================================="
 echo " 停服完成"
 echo "========================================="
