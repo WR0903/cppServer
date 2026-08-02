@@ -1,5 +1,5 @@
 #include "robot_console_http.h"
-#include "libserver/thread_mgr.h"
+#include "libserver/thread/thread_mgr.h"
 #include "test_http_login.h"
 
 void RobotConsoleHttp::RegisterHandler()

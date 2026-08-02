@@ -2,20 +2,20 @@
 #include "world_proxy_locator.h"
 #include "player_component_onlinegame.h"
 
-#include "libserver/component_help.h"
-#include "libserver/message_system_help.h"
-#include "libserver/message_system.h"
+#include "libserver/ecs/component_help.h"
+#include "libserver/message/message_system_help.h"
+#include "libserver/message/message_system.h"
 
 #include "libplayer/player_collector_component.h"
 #include "libplayer/player.h"
 
-#include "libserver/log4.h"
-#include "libserver/network_help.h"
+#include "libserver/log/log4.h"
+#include "libserver/network/network_help.h"
 
 #include "world_proxy_component_gather.h"
 #include "world_component_teleport.h"
 #include "libresource/resource_help.h"
-#include "libserver/socket_locator.h"
+#include "libserver/network/socket_locator.h"
 
 void WorldProxy::Awake(int worldId, uint64 lastWorldSn)
 {

@@ -1,7 +1,7 @@
 #pragma once
-#include "libserver/component.h"
-#include "libserver/system.h"
-#include "libserver/socket_object.h"
+#include "libserver/ecs/component.h"
+#include "libserver/ecs/system.h"
+#include "libserver/network/socket_object.h"
 
 class Robot;
 

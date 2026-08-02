@@ -1,6 +1,6 @@
 #pragma once
-#include "libserver/component.h"
-#include "libserver/system.h"
+#include "libserver/ecs/component.h"
+#include "libserver/ecs/system.h"
 #include "libplayer/player_component.h"
 
 class PlayerComponentDetail :public Component<PlayerComponentDetail>, public IAwakeFromPoolSystem<>, public PlayerComponent

@@ -1,7 +1,7 @@
 
-#include "libserver/common.h"
-#include "libserver/server_app.h"
-#include "libserver/component_help.h"
+#include "libserver/utils/common.h"
+#include "libserver/utils/server_app.h"
+#include "libserver/ecs/component_help.h"
 
 #include "login/login.h"
 #include "dbmgr/dbmgr.h"
@@ -9,11 +9,11 @@
 #include "game/game.h"
 #include "space/space.h"
 
-#include "libserver/network_listen.h"
-#include "libserver/thread_type.h"
-#include "libserver/global.h"
-#include "libserver/network_connector.h"
-#include "libserver/message_system.h"
+#include "libserver/network/network_listen.h"
+#include "libserver/thread/thread_type.h"
+#include "libserver/utils/global.h"
+#include "libserver/network/network_connector.h"
+#include "libserver/message/message_system.h"
 
 #include "libresource/resource_manager.h"
 

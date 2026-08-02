@@ -1,8 +1,8 @@
 #pragma once
-#include "libserver/system.h"
+#include "libserver/ecs/system.h"
 #include "libplayer/world_base.h"
-#include "libserver/entity.h"
-#include "libserver/socket_object.h"
+#include "libserver/ecs/entity.h"
+#include "libserver/network/socket_object.h"
 #include "aoi_component.h"
 
 class Player;

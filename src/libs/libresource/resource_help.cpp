@@ -1,5 +1,5 @@
 #include "resource_help.h"
-#include "libserver/thread_mgr.h"
+#include "libserver/thread/thread_mgr.h"
 
 ResourceManager* ResourceHelp::GetResourceManager()
 {

@@ -1,13 +1,13 @@
 #include "robot_console_login.h"
 #include "robot.h"
 
-#include "libserver/common.h"
-#include "libserver/thread_mgr.h"
+#include "libserver/utils/common.h"
+#include "libserver/thread/thread_mgr.h"
 
 #include <iostream>
 #include "global_robots.h"
-#include "libserver/yaml.h"
-#include "libserver/global.h"
+#include "libserver/utils/yaml.h"
+#include "libserver/utils/global.h"
 #include "robot_collection.h"
 
 void RobotConsoleLogin::RegisterHandler()

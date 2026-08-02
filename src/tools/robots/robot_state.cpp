@@ -1,9 +1,9 @@
 #include "robot_state.h"
-#include "libserver/packet.h"
+#include "libserver/network/packet.h"
 #include "robot.h"
-#include "libserver/thread_mgr.h"
-#include "libserver/message_system.h"
-#include "libserver/component_help.h"
+#include "libserver/thread/thread_mgr.h"
+#include "libserver/message/message_system.h"
+#include "libserver/ecs/component_help.h"
 
 // 检测是否已断线
 RobotStateType RobotState::Update()

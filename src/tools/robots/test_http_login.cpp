@@ -1,7 +1,7 @@
 #include "test_http_login.h"
-#include "libserver/message_system_help.h"
-#include "libserver/component_help.h"
-#include "libserver/message_system.h"
+#include "libserver/message/message_system_help.h"
+#include "libserver/ecs/component_help.h"
+#include "libserver/message/message_system.h"
 
 void TestHttpLogin::Awake(std::string account, std::string password)
 {

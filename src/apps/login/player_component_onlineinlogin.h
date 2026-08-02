@@ -1,6 +1,6 @@
 #pragma once
-#include "libserver/message_system.h"
-#include "libserver/component.h"
+#include "libserver/message/message_system.h"
+#include "libserver/ecs/component.h"
 
 class PlayerComponentOnlineInLogin :public Component<PlayerComponentOnlineInLogin>, public IAwakeFromPoolSystem<std::string>
 {

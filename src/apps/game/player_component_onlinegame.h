@@ -1,6 +1,6 @@
 #pragma once
-#include "libserver/system.h"
-#include "libserver/component.h"
+#include "libserver/ecs/system.h"
+#include "libserver/ecs/component.h"
 #include "libplayer/player_component.h"
 
 class PlayerComponentOnlineInGame :public Component<PlayerComponentOnlineInGame>,

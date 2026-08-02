@@ -1,7 +1,7 @@
 #include "robot_state_login.h"
 #include "robot.h"
-#include "libserver/message_system_help.h"
-#include "libserver/component_help.h"
+#include "libserver/message/message_system_help.h"
+#include "libserver/ecs/component_help.h"
 #include "robot_component_login.h"
 
 void RobotStateLoginConnecting::OnEnterState()

@@ -1,5 +1,5 @@
 #include "resource_world.h"
-#include "libserver/log4_help.h"
+#include "libserver/log/log4_help.h"
 
 ResourceWorld::ResourceWorld(std::map<std::string, int>& head) : ResourceBase(head)
 {

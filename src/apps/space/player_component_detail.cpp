@@ -1,7 +1,7 @@
 #include "player_component_detail.h"
 
 #include "libplayer/player.h"
-#include "libserver/message_system_help.h"
+#include "libserver/message/message_system_help.h"
 
 void PlayerComponentDetail::Awake()
 {

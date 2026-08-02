@@ -1,6 +1,6 @@
 #include "move_system.h"
 #include "move_component.h"
-#include "libserver/entity_system.h"
+#include "libserver/ecs/entity_system.h"
 #include "libplayer/player.h"
 #include "libplayer/player_component_last_map.h"
 

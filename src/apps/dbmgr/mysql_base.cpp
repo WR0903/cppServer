@@ -1,6 +1,6 @@
 #include "mysql_base.h"
 
-#include "libserver/log4_help.h"
+#include "libserver/log/log4_help.h"
 
 bool MysqlBase::ConnectInit()
 {

@@ -1,8 +1,8 @@
 #include "robot_state_game.h"
 #include "robot.h"
-#include "libserver/message_system_help.h"
+#include "libserver/message/message_system_help.h"
 #include "robot_component_gametoken.h"
-#include "libserver/log4_help.h"
+#include "libserver/log/log4_help.h"
 #include "global_robots.h"
 
 #include <chrono>

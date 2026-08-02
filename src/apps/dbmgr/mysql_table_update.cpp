@@ -1,8 +1,8 @@
 #include "mysql_table_update.h"
 
-#include "libserver/log4_help.h"
-#include "libserver/util_string.h"
-#include "libserver/component_help.h"
+#include "libserver/log/log4_help.h"
+#include "libserver/utils/util_string.h"
+#include "libserver/ecs/component_help.h"
 
 #include <mysql/mysql.h>
 #include <mysql/mysqld_error.h>

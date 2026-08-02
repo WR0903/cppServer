@@ -1,6 +1,6 @@
 #pragma once
-#include "libserver/component.h"
-#include "libserver/system.h"
+#include "libserver/ecs/component.h"
+#include "libserver/ecs/system.h"
 
 // 跳转相关数据
 // 1,跳转需要等待目标地图创建完成

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "libserver/entity.h"
+#include "libserver/ecs/entity.h"
 #include "resource_world.h"
 
 class ResourceManager :public Entity<ResourceManager>, public IAwakeSystem<>

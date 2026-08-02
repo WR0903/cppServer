@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "libserver/log4_help.h"
-#include "libserver/res_path.h"
-#include "libserver/global.h"
+#include "libserver/log/log4_help.h"
+#include "libserver/utils/res_path.h"
+#include "libserver/utils/global.h"
 
 #include "resource_base.h"
 

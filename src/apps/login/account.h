@@ -1,8 +1,8 @@
 #pragma once
-#include "libserver/entity.h"
-#include "libserver/system.h"
-#include "libserver/sync_component.h"
-#include "libserver/socket_object.h"
+#include "libserver/ecs/entity.h"
+#include "libserver/ecs/system.h"
+#include "libserver/utils/sync_component.h"
+#include "libserver/network/socket_object.h"
 
 #include <json/reader.h>
 class Player;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "libserver/robot_state_type.h"
-#include "libserver/entity.h"
+#include "libserver/utils/robot_state_type.h"
+#include "libserver/ecs/entity.h"
 
 class RobotMgr : public Entity<RobotMgr>, public IAwakeSystem<>
 {

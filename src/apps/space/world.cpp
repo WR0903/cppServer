@@ -4,8 +4,8 @@
 #include "player_component_bag.h"
 #include "aoi_component.h"
 
-#include "libserver/message_system_help.h"
-#include "libserver/message_system.h"
+#include "libserver/message/message_system_help.h"
+#include "libserver/message/message_system.h"
 #include "libplayer/player_component_last_map.h"
 #include "move_component.h"
 

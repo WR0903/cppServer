@@ -1,6 +1,6 @@
 #pragma once
-#include "libserver/entity.h"
-#include "libserver/sync_component.h"
+#include "libserver/ecs/entity.h"
+#include "libserver/utils/sync_component.h"
 
 class Packet;
 

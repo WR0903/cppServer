@@ -1,5 +1,5 @@
 #pragma once
-#include "libserver/console.h"
+#include "libserver/console/console.h"
 #include <list>
 
 class RobotConsoleLogin :public ConsoleCmd

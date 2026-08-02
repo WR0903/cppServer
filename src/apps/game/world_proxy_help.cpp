@@ -1,9 +1,9 @@
 #include "world_proxy_help.h"
 
-#include "libserver/message_system_help.h"
+#include "libserver/message/message_system_help.h"
 
 #include "libplayer/player.h"
-#include "libserver/thread_mgr.h"
+#include "libserver/thread/thread_mgr.h"
 
 void WorldProxyHelp::Teleport(Player* pPlayer, const uint64 lastWorldSn, const uint64 targetWorldSn)
 {

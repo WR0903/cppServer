@@ -1,12 +1,12 @@
 #include "redis_login.h"
 #include "libserver/protobuf/proto_id.pb.h"
-#include "libserver/redis_constants.h"
-#include "libserver/log4_help.h"
-#include "libserver/thread_mgr.h"
+#include "libserver/redis/redis_constants.h"
+#include "libserver/log/log4_help.h"
+#include "libserver/thread/thread_mgr.h"
 
-#include "libserver/message_system_help.h"
-#include "libserver/global.h"
-#include "libserver/message_system.h"
+#include "libserver/message/message_system_help.h"
+#include "libserver/utils/global.h"
+#include "libserver/message/message_system.h"
 
 void RedisLogin::RegisterMsgFunction()
 {

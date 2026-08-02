@@ -1,7 +1,7 @@
 #pragma once
 
 #include "robot_state.h"
-#include "libserver/common.h"
+#include "libserver/utils/common.h"
 
 class RobotStateLoginConnecting : public RobotState {
 public:

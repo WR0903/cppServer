@@ -1,9 +1,9 @@
 #pragma once
-#include "libserver/component.h"
+#include "libserver/ecs/component.h"
 
 #include "player_component.h"
-#include "libserver/vector3.h"
-#include "libserver/system.h"
+#include "libserver/utils/vector3.h"
+#include "libserver/ecs/system.h"
 
 struct LastWorld
 {

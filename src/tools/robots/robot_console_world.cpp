@@ -1,8 +1,8 @@
 #include "robot_console_world.h"
 #include "libresource/resource_manager.h"
-#include "libserver/thread_mgr.h"
+#include "libserver/thread/thread_mgr.h"
 #include "robot.h"
-#include "libserver/message_system.h"
+#include "libserver/message/message_system.h"
 #include "robot_locator.h"
 
 void RobotConsoleWorld::RegisterHandler()

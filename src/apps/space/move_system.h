@@ -1,7 +1,7 @@
 #pragma once
-#include "libserver/system.h"
-#include "libserver/util_time.h"
-#include "libserver/component_collections.h"
+#include "libserver/ecs/system.h"
+#include "libserver/utils/util_time.h"
+#include "libserver/ecs/component_collections.h"
 
 class MoveSystem : public ISystem<MoveSystem>
 {

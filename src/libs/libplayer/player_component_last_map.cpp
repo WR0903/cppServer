@@ -2,7 +2,7 @@
 #include "libresource/resource_manager.h"
 #include "player.h"
 #include "libresource/resource_help.h"
-#include "libserver/vector3.h"
+#include "libserver/utils/vector3.h"
 
 LastWorld::LastWorld(const int worldId, const uint64 worldSn, const Vector3 pos)
 {

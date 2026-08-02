@@ -1,7 +1,7 @@
 #pragma once
 
-#include "libserver/common.h"
-#include "libserver/yaml.h"
+#include "libserver/utils/common.h"
+#include "libserver/utils/yaml.h"
 
 #include <mysql/mysql.h>
 

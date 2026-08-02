@@ -1,6 +1,6 @@
 #pragma once
-#include "libserver/entity.h"
-#include "libserver/system.h"
+#include "libserver/ecs/entity.h"
+#include "libserver/ecs/system.h"
 #include "robot.h"
 
 #include <mutex>

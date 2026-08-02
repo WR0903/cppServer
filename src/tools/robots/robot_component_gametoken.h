@@ -1,6 +1,6 @@
 #pragma once
-#include "libserver/component.h"
-#include "libserver/system.h"
+#include "libserver/ecs/component.h"
+#include "libserver/ecs/system.h"
 
 class RobotComponentGameToken :public Component<RobotComponentGameToken>, public IAwakeFromPoolSystem<std::string, std::string, int>
 {

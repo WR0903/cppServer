@@ -1,5 +1,5 @@
 #include "console_cmd_world.h"
-#include "libserver/message_system_help.h"
+#include "libserver/message/message_system_help.h"
 
 void ConsoleCmdWorld::RegisterHandler()
 {

@@ -5,16 +5,16 @@
 #include "robot_state_game.h"
 #include "global_robots.h"
 
-#include "libserver/common.h"
-#include "libserver/robot_state_type.h"
-#include "libserver/entity_system.h"
-#include "libserver/log4_help.h"
-#include "libserver/message_system_help.h"
-#include "libserver/update_component.h"
+#include "libserver/utils/common.h"
+#include "libserver/utils/robot_state_type.h"
+#include "libserver/ecs/entity_system.h"
+#include "libserver/log/log4_help.h"
+#include "libserver/message/message_system_help.h"
+#include "libserver/ecs/update_component.h"
 
 #include <json/reader.h>
 
-#include "libserver/message_system.h"
+#include "libserver/message/message_system.h"
 
 void Robot::Awake(std::string account)
 {

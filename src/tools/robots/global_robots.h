@@ -1,5 +1,5 @@
 #pragma once
-#include "libserver/singleton.h"
+#include "libserver/utils/singleton.h"
 #include <mutex>
 
 class GlobalRobots : public Singleton<GlobalRobots>

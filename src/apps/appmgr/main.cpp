@@ -1,9 +1,9 @@
 
-#include "libserver/server_app.h"
-#include "libserver/network_listen.h"
-#include "libserver/component_help.h"
-#include "libserver/app_type.h"
-#include "libserver/global.h"
+#include "libserver/utils/server_app.h"
+#include "libserver/network/network_listen.h"
+#include "libserver/ecs/component_help.h"
+#include "libserver/utils/app_type.h"
+#include "libserver/utils/global.h"
 
 #include "appmgr.h"
 #include "libresource/resource_manager.h"

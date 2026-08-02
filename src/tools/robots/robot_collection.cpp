@@ -1,11 +1,11 @@
 #include "robot_collection.h"
-#include "libserver/message_system.h"
+#include "libserver/message/message_system.h"
 
 #include <json/reader.h>
 #include "robot_component_login.h"
 #include "global_robots.h"
 #include "robot_component_gametoken.h"
-#include "libserver/message_system_help.h"
+#include "libserver/message/message_system_help.h"
 #include "robot_locator.h"
 
 #include <thread>

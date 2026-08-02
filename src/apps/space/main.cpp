@@ -1,11 +1,11 @@
-#include "libserver/common.h"
-#include "libserver/server_app.h"
-#include "libserver/global.h"
-#include "libserver/network_listen.h"
+#include "libserver/utils/common.h"
+#include "libserver/utils/server_app.h"
+#include "libserver/utils/global.h"
+#include "libserver/network/network_listen.h"
 
 #include "space.h"
 #include "libresource/resource_manager.h"
-#include "libserver/network_connector.h"
+#include "libserver/network/network_connector.h"
 
 int main(int argc, char* argv[])
 {

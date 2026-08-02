@@ -1,6 +1,6 @@
 #include "mysql_connector.h"
-#include "libserver/log4_help.h"
-#include "libserver/component_help.h"
+#include "libserver/log/log4_help.h"
+#include "libserver/ecs/component_help.h"
 
 #include <thread>
 

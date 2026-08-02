@@ -1,10 +1,10 @@
 #include "robot_mgr.h"
-#include "libserver/common.h"
-#include "libserver/global.h"
-#include "libserver/yaml.h"
-#include "libserver/entity_system.h"
-#include "libserver/message_system.h"
-#include "libserver/message_system_help.h"
+#include "libserver/utils/common.h"
+#include "libserver/utils/global.h"
+#include "libserver/utils/yaml.h"
+#include "libserver/ecs/entity_system.h"
+#include "libserver/message/message_system.h"
+#include "libserver/message/message_system_help.h"
 
 #include "global_robots.h"
 #include <sstream>

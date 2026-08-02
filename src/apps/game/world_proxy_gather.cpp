@@ -1,9 +1,9 @@
 #include "world_proxy_gather.h"
 
-#include "libserver/message_system_help.h"
-#include "libserver/thread_mgr.h"
-#include "libserver/message_system.h"
-#include "libserver/global.h"
+#include "libserver/message/message_system_help.h"
+#include "libserver/thread/thread_mgr.h"
+#include "libserver/message/message_system.h"
+#include "libserver/utils/global.h"
 
 #include <numeric>
 #include "libresource/resource_help.h"

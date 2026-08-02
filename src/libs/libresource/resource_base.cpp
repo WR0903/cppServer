@@ -1,7 +1,7 @@
 #include "resource_base.h"
 
-#include "libserver/log4_help.h"
-#include "libserver/util_string.h"
+#include "libserver/log/log4_help.h"
+#include "libserver/utils/util_string.h"
 
 std::vector<std::string> ResourceBase::ParserLine(std::string line)
 {

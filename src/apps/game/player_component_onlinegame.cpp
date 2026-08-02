@@ -1,9 +1,9 @@
 #include "player_component_onlinegame.h"
-#include "libserver/redis_constants.h"
+#include "libserver/redis/redis_constants.h"
 
 #include "libplayer/player.h"
-#include "libserver/entity.h"
-#include "libserver/message_system_help.h"
+#include "libserver/ecs/entity.h"
+#include "libserver/message/message_system_help.h"
 
 void PlayerComponentOnlineInGame::Awake(const std::string account, int version)
 {

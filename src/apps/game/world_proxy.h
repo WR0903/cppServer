@@ -1,6 +1,6 @@
 #pragma once
-#include "libserver/entity.h"
-#include "libserver/socket_object.h"
+#include "libserver/ecs/entity.h"
+#include "libserver/network/socket_object.h"
 
 #include "libplayer/world_base.h"
 

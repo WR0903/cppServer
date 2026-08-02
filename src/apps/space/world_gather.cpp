@@ -1,10 +1,10 @@
 #include "world_gather.h"
 
-#include "libserver/thread_mgr.h"
-#include "libserver/network_locator.h"
-#include "libserver/message_system_help.h"
-#include "libserver/global.h"
-#include "libserver/message_system.h"
+#include "libserver/thread/thread_mgr.h"
+#include "libserver/network/network_locator.h"
+#include "libserver/message/message_system_help.h"
+#include "libserver/utils/global.h"
+#include "libserver/message/message_system.h"
 
 void WorldGather::Awake()
 {

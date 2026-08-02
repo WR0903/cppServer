@@ -1,7 +1,7 @@
 #pragma once
 
-#include "libserver/system.h"
-#include "libserver/entity.h"
+#include "libserver/ecs/system.h"
+#include "libserver/ecs/entity.h"
 
 class Packet;
 

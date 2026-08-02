@@ -1,7 +1,7 @@
 #include "app_sync_component.h"
-#include "libserver/message_system_help.h"
-#include "libserver/message_system.h"
-#include "libserver/network_help.h"
+#include "libserver/message/message_system_help.h"
+#include "libserver/message/message_system.h"
+#include "libserver/network/network_help.h"
 
 void AppSyncComponent::Awake()
 {

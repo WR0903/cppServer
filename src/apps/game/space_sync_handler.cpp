@@ -1,7 +1,7 @@
 #include "space_sync_handler.h"
 
-#include "libserver/thread_mgr.h"
-#include "libserver/message_system.h"
+#include "libserver/thread/thread_mgr.h"
+#include "libserver/message/message_system.h"
 
 void SpaceSyncHandler::Awake()
 {

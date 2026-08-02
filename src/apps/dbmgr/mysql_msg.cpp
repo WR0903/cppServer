@@ -1,8 +1,8 @@
 ﻿
 #include "mysql_connector.h"
-#include "libserver/log4_help.h"
-#include "libserver/message_system_help.h"
-#include "libserver/message_system.h"
+#include "libserver/log/log4_help.h"
+#include "libserver/message/message_system_help.h"
+#include "libserver/message/message_system.h"
 
 void MysqlConnector::InitMessageComponent()
 {

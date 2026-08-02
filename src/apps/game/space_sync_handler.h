@@ -1,7 +1,7 @@
 #pragma once
 
-#include "libserver/entity.h"
-#include "libserver/sync_component.h"
+#include "libserver/ecs/entity.h"
+#include "libserver/utils/sync_component.h"
 
 class SpaceSyncHandler :public SyncComponent, public Entity<SpaceSyncHandler>, public IAwakeSystem<>
 {

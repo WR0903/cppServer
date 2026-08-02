@@ -1,6 +1,6 @@
 #include "player_collector_component.h"
 #include "player.h"
-#include "libserver/message_system_help.h"
+#include "libserver/message/message_system_help.h"
 
 void PlayerCollectorComponent::Awake()
 {

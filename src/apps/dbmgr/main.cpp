@@ -1,12 +1,12 @@
-#include "libserver/common.h"
-#include "libserver/app_type.h"
-#include "libserver/server_app.h"
-#include "libserver/network_listen.h"
-#include "libserver/component_help.h"
+#include "libserver/utils/common.h"
+#include "libserver/utils/app_type.h"
+#include "libserver/utils/server_app.h"
+#include "libserver/network/network_listen.h"
+#include "libserver/ecs/component_help.h"
 
 #include "dbmgr.h"
 #include "mysql_table_update.h"
-#include "libserver/global.h"
+#include "libserver/utils/global.h"
 
 int main(int argc, char* argv[])
 {

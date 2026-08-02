@@ -1,10 +1,10 @@
 #include "lobby.h"
 
-#include "libserver/message_system_help.h"
+#include "libserver/message/message_system_help.h"
 
 #include "libplayer/player_collector_component.h"
 #include "libplayer/player_component_proto_list.h"
-#include "libserver/message_system.h"
+#include "libserver/message/message_system.h"
 
 #include "world_proxy_component_gather.h"
 #include "player_component_onlinegame.h"
@@ -14,7 +14,7 @@
 #include "world_proxy_help.h"
 #include "world_proxy_locator.h"
 #include "libresource/resource_help.h"
-#include "libserver/socket_locator.h"
+#include "libserver/network/socket_locator.h"
 
 void Lobby::Awake()
 {

@@ -1,7 +1,7 @@
 #pragma once
 #include "mysql_connector.h"
 
-#include "libserver/thread_mgr.h"
+#include "libserver/thread/thread_mgr.h"
 
 inline void InitializeComponentDBMgr(ThreadMgr* pThreadMgr)
 {

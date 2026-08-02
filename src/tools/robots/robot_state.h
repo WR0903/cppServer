@@ -1,6 +1,6 @@
 #pragma once
-#include "libserver/state_template.h"
-#include "libserver/robot_state_type.h"
+#include "libserver/utils/state_template.h"
+#include "libserver/utils/robot_state_type.h"
 
 class Robot;
 

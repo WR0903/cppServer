@@ -1,7 +1,7 @@
 #pragma once
 
-#include "libserver/sync_component.h"
-#include "libserver/system.h"
+#include "libserver/utils/sync_component.h"
+#include "libserver/ecs/system.h"
 #include <json/writer.h>
 
 class AppSyncComponent :public Entity<AppSyncComponent>, public SyncComponent, public IAwakeSystem<>

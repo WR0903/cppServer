@@ -1,7 +1,7 @@
 #include "redis_game.h"
-#include "libserver/redis_constants.h"
-#include "libserver/message_system_help.h"
-#include "libserver/message_system.h"
+#include "libserver/redis/redis_constants.h"
+#include "libserver/message/message_system_help.h"
+#include "libserver/message/message_system.h"
 
 void RedisGame::RegisterMsgFunction()
 {

@@ -1,8 +1,8 @@
 #pragma once
-#include "libserver/common.h"
-#include "libserver/socket_object.h"
-#include "libserver/entity.h"
-#include "libserver/system.h"
+#include "libserver/utils/common.h"
+#include "libserver/network/socket_object.h"
+#include "libserver/ecs/entity.h"
+#include "libserver/ecs/system.h"
 
 #include <random>
 

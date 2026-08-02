@@ -1,9 +1,9 @@
 #include "create_world_component.h"
 #include "libresource/resource_manager.h"
-#include "libserver/message_system_help.h"
-#include "libserver/message_system.h"
+#include "libserver/message/message_system_help.h"
+#include "libserver/message/message_system.h"
 #include "libresource/resource_help.h"
-#include "libserver/network_help.h"
+#include "libserver/network/network_help.h"
 
 void CreateWorldComponent::Awake()
 {

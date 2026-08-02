@@ -1,5 +1,5 @@
 #pragma once
-#include "libserver/thread_mgr.h"
+#include "libserver/thread/thread_mgr.h"
 
 #include "console_cmd_world.h"
 #include "world_operator_component.h"

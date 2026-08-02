@@ -1,5 +1,5 @@
 #pragma once
-#include "libserver/common.h"
+#include "libserver/utils/common.h"
 
 class Player;
 

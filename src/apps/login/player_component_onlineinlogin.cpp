@@ -1,8 +1,8 @@
 #include "player_component_onlineinlogin.h"
-#include "libserver/redis_constants.h"
+#include "libserver/redis/redis_constants.h"
 
 #include "libplayer/player.h"
-#include "libserver/message_system_help.h"
+#include "libserver/message/message_system_help.h"
 
 void PlayerComponentOnlineInLogin::Awake(std::string account)
 {

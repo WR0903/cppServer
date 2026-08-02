@@ -1,5 +1,5 @@
 #include "robot_locator.h"
-#include "libserver/network_connector.h"
+#include "libserver/network/network_connector.h"
 #include "robot.h"
 
 void RobotLocator::Awake()
