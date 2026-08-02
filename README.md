@@ -207,3 +207,4 @@ cppServer/
 - [角色数据存盘机制](docs/player-save.md) 
 - [添加背包系统](docs/bag-component.md)
 - [accept优化](docs/accept-optimization.md)
+- [console调试指令](docs/console-commands.md)
