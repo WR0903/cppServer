@@ -17,8 +17,9 @@ aux_source_directory(./redis LIB_SERVER_SRCS)
 aux_source_directory(./utils LIB_SERVER_SRCS)
 # 收集 protobuf 生成源码
 aux_source_directory(./protobuf LIB_SERVER_SRCS)
-# 收集 mongoose 源码
-aux_source_directory(./mongoose LIB_SERVER_SRCS)
+# mongoose 源码已移至 3rdparty，通过 include_directories 引用
+# 将 mongoose.c 纳入 libserver 编译
+list(APPEND LIB_SERVER_SRCS ${CMAKE_SOURCE_DIR}/src/3rdparty/mongoose/mongoose.c)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -45,7 +46,7 @@ set_source_files_properties(
 )
 
 set_source_files_properties(
-    ${CMAKE_CURRENT_SOURCE_DIR}/mongoose/mongoose.c
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/mongoose/mongoose.c
     PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-unused-variable -Wno-format"
 )
 
@@ -65,9 +66,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/redis
     ${CMAKE_CURRENT_SOURCE_DIR}/utils
     ${CMAKE_CURRENT_SOURCE_DIR}/protobuf
-    ${CMAKE_CURRENT_SOURCE_DIR}/mongoose
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../src/libs
     ${CMAKE_SOURCE_DIR}/src/3rdparty
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/mongoose
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC uuid libprotobuf)

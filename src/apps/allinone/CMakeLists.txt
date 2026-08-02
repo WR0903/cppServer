@@ -46,7 +46,7 @@ target_include_directories(${MyProjectName} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/libs
     ${CMAKE_SOURCE_DIR}/src/libs/libserver
     ${CMAKE_SOURCE_DIR}/src/libs/libserver/protobuf
-    ${CMAKE_SOURCE_DIR}/src/libs/libserver/mongoose
+    ${CMAKE_SOURCE_DIR}/src/3rdparty/mongoose
     ${CMAKE_SOURCE_DIR}/src/libs/libplayer
     ${CMAKE_SOURCE_DIR}/src/libs/libresource
     ${CMAKE_SOURCE_DIR}/src/apps

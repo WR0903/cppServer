@@ -6,7 +6,7 @@
 #include "pool/object_pool_packet.h"
 #include "ecs/component_help.h"
 #include "utils/global.h"
-#include "mongoose/mongoose.h"
+#include "mongoose.h"
 
 void MessageSystemHelp::DispatchPacket(Packet* pPacket)
 {
