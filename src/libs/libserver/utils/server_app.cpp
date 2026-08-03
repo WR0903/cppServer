@@ -62,11 +62,8 @@ void ServerApp::Signalhandler(const int signalValue)
     auto pGlobal = Global::GetInstance();
     switch (signalValue)
     {
-#if ENGINE_PLATFORM != PLATFORM_WIN32
     case SIGSTOP:
     case SIGQUIT:
-#endif
-
     case SIGTERM:
     case SIGINT:
         pGlobal->IsStop = true;

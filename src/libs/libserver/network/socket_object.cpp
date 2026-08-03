@@ -131,33 +131,3 @@ std::ostream& operator<<(std::ostream& os, NetIdentify* pIdentify)
 
     return os;
 }
-
-#if ENGINE_PLATFORM == PLATFORM_WIN32
-log4cplus::tostream& operator<<(log4cplus::tostream& os, TagKey* pTagKey)
-{
-    auto tags = pTagKey->GetTags();
-    for (auto iter = tags->begin(); iter != tags->end(); ++iter)
-    {
-        auto typeName = GetTagTypeName(iter->first);
-        os << " tag:" << typeName << " v:";
-
-        if (IsTagTypeStr(iter->first))
-            os << iter->second.KeyStr.c_str();
-        else
-            os << iter->second.KeyInt64;
-    }
-
-    return os;
-}
-
-log4cplus::tostream& operator<<(log4cplus::tostream& os, NetIdentify* pIdentify)
-{
-    os << " socket:" << pIdentify->GetSocketKey()->Socket
-        << " networkType:" << GetNetworkTypeName(pIdentify->GetSocketKey()->NetType);
-
-    auto tags = pIdentify->GetTagKey();
-    os << tags;
-
-    return os;
-}
-#endif

@@ -1,9 +1,7 @@
 #include "ecs/component_help.h"
 #include "thread/thread_mgr.h"
 
-#if ENGINE_PLATFORM != PLATFORM_WIN32
 #include <execinfo.h>
-#endif
 
 EntitySystem* ComponentHelp::GetGlobalEntitySystem()
 {
@@ -25,7 +23,6 @@ TraceComponent* ComponentHelp::GetTraceComponent()
     return ThreadMgr::GetInstance()->GetEntitySystem()->GetComponent<TraceComponent>();
 }
 
-#if ENGINE_PLATFORM != PLATFORM_WIN32
 void ComponentHelp::CatchError(bool bResult)
 {
     if (bResult)
@@ -48,4 +45,3 @@ void ComponentHelp::CatchError(bool bResult)
     LOG_ERROR(ss.str().c_str());
     free(strings);
 }
-#endif

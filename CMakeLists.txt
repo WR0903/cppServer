@@ -2,12 +2,16 @@ cmake_minimum_required(VERSION 3.1)
 
 project(GameServer)
 
-# 全局编译设置
+# ========== 全局编译设置 ==========
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread -DEPOLL")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread -Wno-deprecated-declarations -Wno-unknown-pragmas")
 set(CMAKE_CXX_FLAGS_DEBUG "-D_DEBUG -O0 -g -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+
+# ========== 全局输出路径 ==========
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/libs)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 # ========== 第三方库源码编译（只编译一次） ==========
 

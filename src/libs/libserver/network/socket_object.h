@@ -1,7 +1,6 @@
 #pragma once
 #include "utils/common.h"
 
-#include <log4cplus/streams.h>
 #include <ostream>
 
 #include "network/network_type.h"
@@ -122,8 +121,3 @@ protected:
 
 std::ostream& operator <<(std::ostream& os, TagKey* pTagKey);
 std::ostream& operator <<(std::ostream& os, NetIdentify* pIdentify);
-
-#if ENGINE_PLATFORM == PLATFORM_WIN32
-log4cplus::tostream& operator <<(log4cplus::tostream& os, TagKey* pTagKey);
-log4cplus::tostream& operator <<(log4cplus::tostream& os, NetIdentify* pIdentify);
-#endif

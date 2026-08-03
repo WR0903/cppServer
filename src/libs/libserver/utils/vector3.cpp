@@ -29,11 +29,3 @@ std::ostream& operator<<(std::ostream& os, Vector3 v)
     os << "x:" << v.X << " y:" << v.Y << " z:" << v.Z;
     return os;
 }
-
-#if ENGINE_PLATFORM == PLATFORM_WIN32
-log4cplus::tostream& operator<<(log4cplus::tostream& os, Vector3 v)
-{
-    os << " x:" << v.X << " y:" << v.Y << " z:" << v.Z;
-    return os;
-}
-#endif

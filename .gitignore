@@ -3,23 +3,15 @@
 # CMake 构建目录
 build/
 
-# 可执行文件输出目录（Debug/Release 产物 + 运行日志）
-bin/appmgr
-bin/appmgrd
-bin/login
-bin/logind
-bin/dbmgr
-bin/dbmgrd
-bin/game
-bin/gamed
-bin/space
-bin/spaced
-bin/allinone
-bin/allinoned
-bin/robots
-bin/robotsd
-bin/stdout_*.log
+# bin 目录下的编译产物（忽略所有文件，但保留脚本）
+bin/*
+!bin/*.sh
+!bin/.gitkeep
+
+# 静态库输出目录
 libs/
+
+# 日志文件
 *.log*
 # ========== IDE / 编辑器 ==========
 

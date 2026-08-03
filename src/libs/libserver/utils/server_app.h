@@ -4,11 +4,7 @@
 #include "thread/thread_mgr.h"
 #include "utils/app_type.h"
 
-#if ENGINE_PLATFORM != PLATFORM_WIN32
 #include <signal.h>
-#else
-#include <csignal>
-#endif
 
 class ServerApp :public Singleton<ServerApp>, public IDisposable
 {

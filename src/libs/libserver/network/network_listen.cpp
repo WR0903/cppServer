@@ -61,23 +61,16 @@ void NetworkListen::Awake(std::string ip, int port, NetworkType iType)
         return;
     }
 
-#ifdef EPOLL
     LOG_INFO("epoll model. listen " << ip << "(" << bindIp << ")" << ":" << port << " SOMAXCONN:" << maxConn);
     InitEpoll();
     AddEvent(_epfd, _masterSocket, EPOLLIN | EPOLLET);
-    // AddEvent(_epfd, _masterSocket, EPOLLIN | EPOLLET | EPOLLOUT | EPOLLRDHUP);
-#else
-    LOG_INFO("select model. listen " << ip << "(" << bindIp << ")" << ":" << port << " SOMAXCONN:" << maxConn);
-#endif
 
     return;
 }
 
 void NetworkListen::BackToPool()
 {
-#ifdef EPOLL
     _mainSocketEventIndex = -1;
-#endif
 
     //std::cout << "network dispose. close socket:" << _socket << std::endl;
     _sock_close(_masterSocket);
@@ -117,7 +110,6 @@ int NetworkListen::Accept()
         const SOCKET socket = _sock_accept(_masterSocket, &socketClient, &socketLength);
         if (socket == INVALID_SOCKET)
         {
-#if ENGINE_PLATFORM != PLATFORM_WIN32
             if (errno == EAGAIN || errno == EWOULDBLOCK)
                 return rs;
             if (errno == EINTR)
@@ -125,11 +117,6 @@ int NetworkListen::Accept()
             LOG_ERROR("accept failed. err:" << _sock_err()
                       << " networktype:" << GetNetworkTypeName(_networkType));
             return rs;
-#else
-            if (_sock_is_blocked())
-                return rs;
-            return rs;
-#endif
         }
 
         //LOG_DEBUG("accept socket:" << socket << " networktype:" << GetNetworkTypeName(_networkType));
@@ -159,45 +146,6 @@ void NetworkListen::CmdShow()
     LOG_DEBUG("\tsocket size:" << _sockets.size());
 }
 
-#ifndef EPOLL
-
-void NetworkListen::Update()
-{
-#if LOG_TRACE_COMPONENT_OPEN
-    CheckBegin();
-#endif
-
-    FD_ZERO(&readfds);
-    FD_ZERO(&writefds);
-    FD_ZERO(&exceptfds);
-
-    FD_SET(_masterSocket, &readfds);
-    FD_SET(_masterSocket, &writefds);
-    FD_SET(_masterSocket, &exceptfds);
-
-    _fdMax = _masterSocket;
-
-    Select();
-
-#if LOG_TRACE_COMPONENT_OPEN
-    CheckPoint(std::string(GetNetworkTypeName(_networkType)) + "01");
-#endif
-
-    if (FD_ISSET(_masterSocket, &readfds))
-    {
-        Accept();
-    }
-
-    Network::OnNetworkUpdate();
-
-#if LOG_TRACE_COMPONENT_OPEN
-    CheckPoint(std::string(GetNetworkTypeName(_networkType)) + "02");
-#endif
-
-}
-
-#else
-
 void NetworkListen::OnEpoll(SOCKET fd, int index)
 {
     if (fd == _masterSocket)
@@ -219,8 +167,6 @@ void NetworkListen::Update()
 
     Network::OnNetworkUpdate();
 }
-
-#endif
 
 void NetworkListen::HandleListenKey(Packet* pPacket)
 {

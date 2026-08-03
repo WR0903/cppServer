@@ -20,10 +20,8 @@ void Network::BackToPool()
     }
     _sockets.clear();
 
-#ifdef EPOLL
     ::close(_epfd);
     _epfd = -1;
-#endif
 }
 
 void Network::SetSocketOpt(SOCKET socket)
@@ -32,8 +30,6 @@ void Network::SetSocketOpt(SOCKET socket)
     int netTimeout = 3000; // 1000 = 1秒
     setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, (SetsockOptType)&netTimeout, sizeof(netTimeout));
     setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, (SetsockOptType)&netTimeout, sizeof(netTimeout));
-
-#if ENGINE_PLATFORM != PLATFORM_WIN32
 
     if (_networkType != NetworkType::HttpConnector && _networkType != NetworkType::HttpListen)
     {
@@ -59,8 +55,6 @@ void Network::SetSocketOpt(SOCKET socket)
         setsockopt(socket, SOL_TCP, TCP_KEEPINTVL, (void*)&keepInterval, optlen);
         setsockopt(socket, SOL_TCP, TCP_KEEPCNT, (void*)&keepCount, optlen);
     }
-
-#endif
 
     // 非阻塞
     _sock_nonblock(socket);
@@ -139,9 +133,7 @@ bool Network::CreateConnectObj(SOCKET socket, TagType tagType, TagValue tagValue
     ComponentHelp::GetTraceComponent()->Trace(TraceType::Connector, socket, traceMsg);
 #endif
 
-#ifdef EPOLL
     AddEvent(_epfd, socket, EPOLLIN | EPOLLOUT | EPOLLET | EPOLLRDHUP);
-#endif
 
     return true;
 }
@@ -161,8 +153,6 @@ void Network::HandleDisconnect(Packet* pPacket)
 
     RemoveConnectObj(socket);
 }
-
-#ifdef EPOLL
 
 void Network::AddEvent(int epollfd, int fd, int flag)
 {
@@ -233,74 +223,6 @@ void Network::Epoll()
     }
 }
 
-#else
-
-void Network::Select()
-{
-    for (auto socket : _sockets)
-    {
-        ConnectObj* pObj = _connects[socket];
-        if (socket > _fdMax)
-            _fdMax = socket;
-
-        FD_SET(socket, &readfds);
-        FD_SET(socket, &exceptfds);
-
-        if (pObj->HasSendData())
-            FD_SET(socket, &writefds);
-    }
-
-#if LOG_TRACE_COMPONENT_OPEN
-    CheckPoint("select begin");
-#endif
-
-    struct timeval timeout;
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 0;
-    const int nfds = ::select(_fdMax + 1, &readfds, &writefds, &exceptfds, &timeout);
-    if (nfds <= 0)
-        return;
-
-#if LOG_TRACE_COMPONENT_OPEN
-    CheckPoint("select end");
-#endif
-
-    auto iter = _sockets.begin();
-    while (iter != _sockets.end())
-    {
-        auto socket = *iter;
-        auto pObj = _connects[socket];
-        if (FD_ISSET(socket, &exceptfds))
-        {
-            std::cout << "socket except!! socket:" << socket << std::endl;
-            RemoveConnectObjByItem(iter);
-            continue;
-        }
-
-        if (FD_ISSET(socket, &readfds))
-        {
-            if (!pObj->Recv())
-            {
-                RemoveConnectObjByItem(iter);
-                continue;
-            }
-        }
-
-        if (FD_ISSET(socket, &writefds))
-        {
-            if (!pObj->Send())
-            {
-                RemoveConnectObjByItem(iter);
-                continue;
-            }
-        }
-
-        ++iter;
-    }
-}
-
-#endif
-
 void Network::OnNetworkUpdate()
 {
     _sendMsgMutex.lock();
@@ -333,9 +255,7 @@ void Network::OnNetworkUpdate()
 
         pObj->SendPacket(pPacket);
 
-#ifdef  EPOLL
         ModifyEvent(_epfd, socket, EPOLLIN | EPOLLOUT | EPOLLRDHUP);
-#endif
     }
     pList->clear();
 }

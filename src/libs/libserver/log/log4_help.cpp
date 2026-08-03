@@ -3,15 +3,6 @@
 
 #include <list>
 
-#if ENGINE_PLATFORM == PLATFORM_WIN32
-
-void SetColor(const int colorEx)
-{
-    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), colorEx);
-}
-
-#endif
-
 #if LOG_MSG_OPEN
 
 bool IsLogShowMsg(const int msgId)

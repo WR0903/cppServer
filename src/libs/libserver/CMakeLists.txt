@@ -17,34 +17,18 @@ aux_source_directory(./redis LIB_SERVER_SRCS)
 aux_source_directory(./utils LIB_SERVER_SRCS)
 # 收集 protobuf 生成源码
 aux_source_directory(./protobuf LIB_SERVER_SRCS)
-# mongoose 源码已移至 3rdparty，通过 include_directories 引用
 # 将 mongoose.c 纳入 libserver 编译
 list(APPEND LIB_SERVER_SRCS ${CMAKE_SOURCE_DIR}/src/3rdparty/mongoose/mongoose.c)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../../libs)
-
-set(CMAKE_CXX_FLAGS "-Wall -std=c++14 -pthread -DEPOLL -Wno-deprecated-declarations")
-set(CMAKE_CXX_FLAGS_DEBUG "-D_DEBUG -O0 -g -ggdb")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-
 # protobuf 生成的 .pb.cc 文件有大量 deprecated 警告，单独用宽松编译选项
-set(PB_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/msg.pb.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/db.pb.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/proto_id.pb.cc
-)
-
-# mongoose.c 是 C 文件，用 C 编译器兼容选项
 set_source_files_properties(
     ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/msg.pb.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/db.pb.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/proto_id.pb.cc
-    PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations -Wno-unused-parameter -Wno-missing-field-initializers"
+    PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-missing-field-initializers"
 )
 
+# mongoose.c 是 C 文件，用宽松编译选项
 set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/src/3rdparty/mongoose/mongoose.c
     PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-unused-variable -Wno-format"
@@ -53,22 +37,31 @@ set_source_files_properties(
 add_library(${PROJECT_NAME} STATIC ${LIB_SERVER_SRCS})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/..
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/ecs
-    ${CMAKE_CURRENT_SOURCE_DIR}/pool
-    ${CMAKE_CURRENT_SOURCE_DIR}/network
-    ${CMAKE_CURRENT_SOURCE_DIR}/thread
-    ${CMAKE_CURRENT_SOURCE_DIR}/console
-    ${CMAKE_CURRENT_SOURCE_DIR}/log
-    ${CMAKE_CURRENT_SOURCE_DIR}/message
-    ${CMAKE_CURRENT_SOURCE_DIR}/cache
-    ${CMAKE_CURRENT_SOURCE_DIR}/redis
-    ${CMAKE_CURRENT_SOURCE_DIR}/utils
-    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../src/libs
+    ${CMAKE_SOURCE_DIR}/src/libs
+    ${CMAKE_SOURCE_DIR}/src/libs/libserver
+    ${CMAKE_SOURCE_DIR}/src/libs/libserver/ecs
+    ${CMAKE_SOURCE_DIR}/src/libs/libserver/pool
+    ${CMAKE_SOURCE_DIR}/src/libs/libserver/network
+    ${CMAKE_SOURCE_DIR}/src/libs/libserver/thread
+    ${CMAKE_SOURCE_DIR}/src/libs/libserver/console
+    ${CMAKE_SOURCE_DIR}/src/libs/libserver/log
+    ${CMAKE_SOURCE_DIR}/src/libs/libserver/message
+    ${CMAKE_SOURCE_DIR}/src/libs/libserver/cache
+    ${CMAKE_SOURCE_DIR}/src/libs/libserver/redis
+    ${CMAKE_SOURCE_DIR}/src/libs/libserver/utils
+    ${CMAKE_SOURCE_DIR}/src/libs/libserver/protobuf
     ${CMAKE_SOURCE_DIR}/src/3rdparty
     ${CMAKE_SOURCE_DIR}/src/3rdparty/mongoose
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC uuid libprotobuf)
+# 通过 PUBLIC 传递所有第三方库依赖，app 只需链接 libserver 即可
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    uuid
+    libprotobuf
+    jsoncpp
+    yaml-cpp
+    log4cplusS
+    libcurl_static
+    hiredis
+    zlibstatic
+)

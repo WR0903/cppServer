@@ -9,6 +9,9 @@
 #include "libplayer/player_component_last_map.h"
 #include "move_component.h"
 
+#include <algorithm>
+#include <vector>
+
 void World::Awake(int worldId)
 {
     //LOG_DEBUG("create world. id:" << worldId << " sn:" << _sn << " space app id:" << Global::GetAppIdFromSN(_sn));
@@ -20,6 +23,7 @@ void World::Awake(int worldId)
 
     AddTimer(0, 10, false, 0, BindFunP0(this, &World::SyncWorldToGather));
     AddTimer(0, 1, false, 0, BindFunP0(this, &World::SyncAppearTimer));
+    AddTimer(0, 1, false, 0, BindFunP0(this, &World::FlushMovesBroadcast));
 
     // message
     auto pMsgSystem = GetSystemManager()->GetMessageSystem();
@@ -39,6 +43,8 @@ void World::Awake(int worldId)
 void World::BackToPool()
 {
     _addPlayer.clear();
+    _pendingMoves.clear();
+    _lastFlushMovesTime = 0;
 }
 
 Player* World::GetPlayer(NetIdentify* pIdentify)
@@ -291,10 +297,18 @@ void World::HandleMove(Player* pPlayer, Packet* pPacket)
         pAoi->Move(pPlayer->GetPlayerSN(), lastPos);
     }
 
-    // 广播给九宫格范围内的玩家（AOI过滤），包含发起者自己，
-    // 以支持客户端服务器确认式移动（客户端发送 C2S_Move 后，需要收到 S2C_Move 才会驱动角色移动）
-    std::set<uint64> nearbyPlayers = pAoi->GetNearbyPlayers(pPlayer->GetPlayerSN());
-    BroadcastPacket(Proto::MsgId::S2C_Move, proto, nearbyPlayers);
+    // 将移动数据缓存，等待批量广播（广播合并）
+    // 同一个玩家多次移动只保留最新的一次
+    PendingMove& pending = _pendingMoves[pPlayer->GetPlayerSN()];
+    pending.proto = proto;
+    pending.lastPos = lastPos;
+
+    // 检查是否到了广播时间（MOVE_BROADCAST_INTERVAL_MS 间隔）
+    const auto curTime = Global::GetInstance()->TimeTick;
+    if (curTime - _lastFlushMovesTime >= MOVE_BROADCAST_INTERVAL_MS)
+    {
+        FlushMovesBroadcast();
+    }
 }
 
 void World::HandleBagSync(Player* pPlayer, Packet* pPacket)
@@ -338,4 +352,78 @@ void World::HandleItemUse(Player* pPlayer, Packet* pPacket)
         item->CopyFrom(pair.second);
     }
     MessageSystemHelp::SendPacket(Proto::MsgId::S2C_BagSync, protoSync, pPlayer);
+}
+
+void World::FlushMovesBroadcast()
+{
+    if (_pendingMoves.empty())
+        return;
+
+    _lastFlushMovesTime = Global::GetInstance()->TimeTick;
+
+    auto pAoi = GetComponent<AoiComponent>();
+    auto pPlayerMgr = GetComponent<PlayerManagerComponent>();
+
+    // 遍历所有缓存的移动数据，批量广播
+    for (auto& pair : _pendingMoves)
+    {
+        const uint64 playerSn = pair.first;
+        PendingMove& pending = pair.second;
+
+        // 获取九宫格范围内的所有玩家
+        std::set<uint64> nearbyPlayers = pAoi->GetNearbyPlayers(playerSn);
+
+        // 如果附近玩家数量超过 MAX_BROADCAST_PLAYERS，只选最近的 MAX_BROADCAST_PLAYERS 人同步
+        if (static_cast<int>(nearbyPlayers.size()) > MAX_BROADCAST_PLAYERS)
+        {
+            // 计算每个附近玩家与当前移动玩家的距离，按距离排序取最近的
+            struct PlayerDist
+            {
+                uint64 sn;
+                float dist;
+            };
+
+            std::vector<PlayerDist> distList;
+            distList.reserve(nearbyPlayers.size());
+
+            for (uint64 nearbySn : nearbyPlayers)
+            {
+                // 移动发起者自己必须收到确认，始终包含
+                if (nearbySn == playerSn)
+                    continue;
+
+                const auto pNearbyPlayer = pPlayerMgr->GetPlayerBySn(nearbySn);
+                if (pNearbyPlayer == nullptr)
+                    continue;
+
+                const auto pLastMap = pNearbyPlayer->GetComponent<PlayerComponentLastMap>();
+                if (pLastMap == nullptr || pLastMap->GetCur() == nullptr)
+                    continue;
+
+                const Vector3& nearbyPos = pLastMap->GetCur()->Position;
+                const float dist = pending.lastPos.GetDistance(nearbyPos);
+                distList.push_back({ nearbySn, dist });
+            }
+
+            // 按距离升序排序
+            std::sort(distList.begin(), distList.end(), [](const PlayerDist& a, const PlayerDist& b) {
+                return a.dist < b.dist;
+            });
+
+            // 重建接收者集合：自己 + 最近的 (MAX_BROADCAST_PLAYERS - 1) 人
+            nearbyPlayers.clear();
+            nearbyPlayers.insert(playerSn);  // 发起者自己必须收到
+
+            const int maxOthers = MAX_BROADCAST_PLAYERS - 1;
+            for (int i = 0; i < maxOthers && i < static_cast<int>(distList.size()); i++)
+            {
+                nearbyPlayers.insert(distList[i].sn);
+            }
+        }
+
+        // 广播移动消息
+        BroadcastPacket(Proto::MsgId::S2C_Move, pending.proto, nearbyPlayers);
+    }
+
+    _pendingMoves.clear();
 }

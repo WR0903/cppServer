@@ -9,28 +9,6 @@
 #include <log4cplus/consoleappender.h>   
 #include <log4cplus/loggingmacros.h>
 
-#if ENGINE_PLATFORM == PLATFORM_WIN32
-
-#define LogColorRed		FOREGROUND_RED
-#define LogColorGreen	FOREGROUND_GREEN
-#define LogColorYellow	FOREGROUND_RED | FOREGROUND_GREEN
-#define LogColorBlue	FOREGROUND_BLUE
-#define LogColorPurple	FOREGROUND_BLUE | FOREGROUND_RED
-#define LogColorCyan	FOREGROUND_BLUE | FOREGROUND_GREEN
-
-#define LogColorGrey	FOREGROUND_INTENSITY
-
-#define LogColorRedEx		FOREGROUND_RED | FOREGROUND_INTENSITY
-#define LogColorGreenEx		FOREGROUND_GREEN | FOREGROUND_INTENSITY
-#define LogColorYellowEx	FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY
-#define LogColorBlueEx		FOREGROUND_BLUE | FOREGROUND_INTENSITY
-#define LogColorPurpleEx	FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY
-#define LogColorCyanEx		FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY
-
-#define LogColorNormal	FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE
-
-#else
-
 #define LogColorRed		31
 #define LogColorGreen	32
 #define LogColorYellow	33
@@ -47,12 +25,6 @@
 #define LogColorPurpleEx	95
 #define LogColorCyanEx		96
 
-#endif
-
-#if ENGINE_PLATFORM == PLATFORM_WIN32
-void SetColor(int colorEx);
-#endif
-
 #define LOG_TRACE(...) { \
     LOG4CPLUS_INFO( log4cplus::Logger::getRoot( ), "["<<  __func__ << "]" <<__VA_ARGS__ ); \
 }
@@ -65,28 +37,6 @@ void SetColor(int colorEx);
     LOG4CPLUS_INFO( log4cplus::Logger::getRoot( ), __VA_ARGS__ );  \
 }
 
-#if ENGINE_PLATFORM == PLATFORM_WIN32
-
-#define LOG_WARN(...)  { \
-    SetColor( LogColorGreenEx ); \
-    LOG4CPLUS_WARN( log4cplus::Logger::getRoot( ), "[" <<  __func__ << "]" << __VA_ARGS__ );\
-    SetColor( LogColorNormal ); \
-}
-
-#define LOG_ERROR(...)  { \
-    SetColor( LogColorRedEx ); \
-    LOG4CPLUS_ERROR( log4cplus::Logger::getRoot( ), "[" <<  __FILE__ << ":" << __LINE__ << "]" << __VA_ARGS__ );\
-    SetColor( LogColorNormal ); \
-}
-
-#define LOG_COLOR( colorEx, ...)  { \
-    SetColor( colorEx ); \
-    LOG4CPLUS_DEBUG( log4cplus::Logger::getRoot( ), __VA_ARGS__ );\
-    SetColor( LogColorNormal ); \
-}
-
-#else
-
 #define LOG_WARN(...)  { \
     LOG4CPLUS_WARN( log4cplus::Logger::getRoot( ),  "\33[0;" << LogColorGreenEx << "m" <<  __VA_ARGS__ << "\33[0m" );\
 }
@@ -98,8 +48,6 @@ void SetColor(int colorEx);
 #define LOG_COLOR( colorEx, msg )  { \
     LOG4CPLUS_DEBUG( log4cplus::Logger::getRoot( ),  "\33[0;" << colorEx << "m" <<  msg << "\33[0m" );\
 }
-
-#endif
 
 #define LOG_GM(...) { \
         log4cplus::Logger gmLogger = log4cplus::Logger::getInstance( LOG4CPLUS_STRING_TO_TSTRING("GM") ); \

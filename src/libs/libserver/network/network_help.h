@@ -35,14 +35,8 @@ public:
 
     inline static bool IsError(int socketError)
     {
-#if ENGINE_PLATFORM != PLATFORM_WIN32
-        // EINPROGRESS : 当链接设置为非阻塞时，目标没有及时应答，正在执行中
         if (socketError == EINTR || socketError == EWOULDBLOCK || socketError == EAGAIN || socketError == EINPROGRESS)
             return false;
-#else
-        if (socketError == WSAEINTR || socketError == WSAEWOULDBLOCK || socketError == WSAEINPROGRESS)
-            return false;
-#endif
 
         return true;
     }

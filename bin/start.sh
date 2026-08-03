@@ -12,6 +12,14 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 PROJECT_DIR=$(dirname "$SCRIPT_DIR")
 YAML_FILE="${PROJECT_DIR}/res/engine.yaml"
 BIN_DIR="${SCRIPT_DIR}"
+LOG_DIR="${PROJECT_DIR}/logs"
+
+# 统一日志目录：stdout 重定向日志、log4cplus 业务日志都写到这里
+mkdir -p "${LOG_DIR}"
+
+# 固定工作目录为项目根目录，保证 log4 配置里 "./logs/xxx.log" 这类相对路径
+# 无论从哪个目录调用本脚本，最终都落在同一个 logs 目录下
+cd "${PROJECT_DIR}" || exit 1
 
 # 每批启动后的等待秒数（让监听 socket 就绪后再启动依赖方）
 BOOT_WAIT=2
@@ -83,7 +91,7 @@ start_proc() {
     echo "[START] ${exe_name} ${args}"
     # stdin 重定向到 /dev/null：后台进程读终端会收到 SIGTTIN 被挂起（卡死）
     # stdout/stderr 重定向到日志文件：避免多进程输出交叉混乱
-    "$exe_path" $args < /dev/null > "${BIN_DIR}/stdout_${log_suffix}.log" 2>&1 &
+    "$exe_path" $args < /dev/null > "${LOG_DIR}/stdout_${log_suffix}.log" 2>&1 &
     PIDS+=($!)
     return 0
 }

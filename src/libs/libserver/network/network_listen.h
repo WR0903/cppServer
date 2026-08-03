@@ -23,15 +23,9 @@ private:
 
 protected:
     virtual int Accept();
-#ifdef EPOLL
     virtual void OnEpoll(SOCKET fd, int index) override;
-#endif
 
 private:
-
-#ifdef EPOLL
     int _mainSocketEventIndex{ -1 };
-#endif
-
     SOCKET _masterSocket{ INVALID_SOCKET };
 };

@@ -28,12 +28,8 @@ void NetworkConnector::Awake(int iType, int mixConnectAppType)
     pMsgSystem->RegisterFunction(this, Proto::MsgId::MI_NetworkConnect, BindFunP1(this, &NetworkConnector::HandleNetworkConnect));
     pMsgSystem->RegisterFunction(this, Proto::MsgId::MI_NetworkRequestDisconnect, BindFunP1(this, &NetworkConnector::HandleDisconnect));
 
-#ifdef EPOLL
-    std::cout << "epoll model. connector:" << GetNetworkTypeName(_networkType) << std::endl;
+    LOG_INFO("epoll model. connector:" << GetNetworkTypeName(_networkType));
     InitEpoll();
-#else
-    std::cout << "select model. connector:" << GetNetworkTypeName(_networkType) << std::endl;
-#endif
 
     if (_networkType == NetworkType::TcpConnector && mixConnectAppType > 0)
     {
@@ -145,8 +141,6 @@ void NetworkConnector::HandleNetworkConnect(Packet* pPacket)
     _connecting.AddObj(pObj);
 }
 
-#ifdef EPOLL
-
 void NetworkConnector::Update()
 {
     // 有新的连接请求
@@ -169,43 +163,4 @@ void NetworkConnector::Update()
     OnNetworkUpdate();
 }
 
-#else
-
-void NetworkConnector::Update()
-{
-#if LOG_TRACE_COMPONENT_OPEN
-    CheckBegin();
-#endif
-
-    // 有新的连接请求
-    if (_connecting.CanSwap())
-        _connecting.Swap(nullptr);
-
-    if (!_connecting.GetReaderCache()->empty())
-    {
-        auto pReader = _connecting.GetReaderCache();
-        for (auto iter = pReader->begin(); iter != pReader->end(); ++iter)
-        {
-            if (Connect(iter->second))
-            {
-                _connecting.RemoveObj(iter->first);
-            }
-        }
-    }
-
-    FD_ZERO(&readfds);
-    FD_ZERO(&writefds);
-    FD_ZERO(&exceptfds);
-
-    _fdMax = 0;
-
-    Select();
-    OnNetworkUpdate();
-
-#if LOG_TRACE_COMPONENT_OPEN
-    CheckPoint(GetNetworkTypeName(_networkType));
-#endif
-}
-
-#endif
 

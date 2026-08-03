@@ -1,7 +1,6 @@
 #pragma once
 
 #include "utils/common.h"
-#include <log4cplus/streams.h>
 
 struct Vector3
 {
@@ -19,7 +18,3 @@ struct Vector3
 };
 
 std::ostream& operator <<(std::ostream& os, Vector3 v);
-
-#if ENGINE_PLATFORM == PLATFORM_WIN32
-log4cplus::tostream& operator <<(log4cplus::tostream& os, Vector3 v);
-#endif

@@ -4,7 +4,7 @@
 >
 > 客户端工程（Unity）：[https://github.com/WR0903/unityClient](https://github.com/WR0903/unityClient)
 
-基于 **ECS + Actor** 模型的 C++ 游戏服务器框架，支持多进程分布式部署与多线程并发，使用 epoll（Linux）/ select（Windows）IO 多路复用。
+基于 **ECS + Actor** 模型的 C++ 游戏服务器框架，支持多进程分布式部署与多线程并发，使用 epoll（Linux）IO 多路复用。
 
 ---
 
@@ -111,11 +111,11 @@ cd bin
 
 Unity 客户端登录并进入游戏：
 
-![Unity 登录](game.png) ![Unity 游戏场景](game2.png)
+![Unity 登录](docs/game.png) ![Unity 游戏场景](docs/game2.png)
 
 100 个机器人在 2 核 2G 腾讯云服务器上运行，CPU 使用约 50%：
 
-![CPU 监控](cpu.png)
+![CPU 监控](docs/cpu.png)
 
 ---
 
