@@ -165,13 +165,13 @@ graph TD
 
 ```mermaid
 stateDiagram-v2
-    [*] --> 创建: "EntitySystem::AddComponent / CreateComponent"
-    创建 --> 初始化: "Awake() — 注册消息处理函数"
-    初始化 --> 运行中: "接收并处理 Packet 消息"
-    运行中 --> 运行中: "HandleXxx(Packet*) / Update()"
-    运行中 --> 销毁: "RemoveComponent()"
-    销毁 --> 回收: "ComponentBackToPool()"
-    回收 --> [*]: "归还对象池"
+    [*] --> 创建: EntitySystem.AddComponent / CreateComponent
+    创建 --> 初始化: Awake. 注册消息处理函数
+    初始化 --> 运行中: 接收并处理 Packet 消息
+    运行中 --> 运行中: HandleXxx Packet / Update
+    运行中 --> 销毁: RemoveComponent
+    销毁 --> 回收: ComponentBackToPool
+    回收 --> [*]: 归还对象池
 ```
 
 ### 典型 Actor 示例 — Account
