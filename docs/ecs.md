@@ -2,7 +2,7 @@
 
 ## 概述
 
-本框架实现了一套**变体 ECS 架构**，与传统游戏引擎的 ECS 有所不同：
+本框架实现了一套 **变体 ECS 架构** ，与传统游戏引擎的 ECS 有所不同：
 
 - **Entity（实体）**：可以挂载子组件的组件，本身也是 `IComponent`
 - **Component（组件）**：最小功能单元，持有数据和行为
@@ -800,3 +800,5 @@ graph TD
 | `src/libs/libserver/cache/cache_swap.h` | 双缓存交换 |
 | `src/libs/libserver/utils/common.h` | BindFunP 宏定义 |
 | `src/libs/libserver/utils/global.h` | GenerateSN 定义 |
+
+---
