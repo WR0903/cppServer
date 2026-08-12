@@ -26,7 +26,7 @@ perf script -i /root/perf.data &> /root/perf.unfold
 ```
 ./FlameGraph/stackcollapse-perf.pl /root/perf.unfold &> /root/perf.folded
 ```
-最后就是生成火焰?图了
+最后就是生成火焰图了
 ```
 ./FlameGraph/flamegraph.pl /root/perf.folded > /root/perf.svg
 ```
