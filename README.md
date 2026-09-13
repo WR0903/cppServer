@@ -113,6 +113,10 @@ Unity 客户端登录并进入游戏：
 
 ![Unity 登录](docs/game.png) ![Unity 游戏场景](docs/game2.png)
 
+整个游戏客户端场景：
+
+![Unity 游戏客户端场景](docs/gameScene.png)
+
 100 个机器人在 2 核 2G 腾讯云服务器上运行，CPU 使用约 50%：
 
 ![CPU 监控](docs/cpu.png)
